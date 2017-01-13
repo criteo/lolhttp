@@ -17,6 +17,7 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
   def contentString(req: Request)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
     await(Client.run(req)(_.read[String]))
   }
+  def getString(content: Content, codec: String = "utf-8") = new String(getBytes(content).toArray, codec)
   def getBytes(content: Content): Vector[Byte] = content.stream.runLog.unsafeRun()
   def bytes(data: Int*): Seq[Byte] = data.map(_.toByte)
   val timer = new Timer(true)

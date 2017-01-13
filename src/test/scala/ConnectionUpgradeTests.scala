@@ -1,7 +1,5 @@
 package lol.http
 
-import Headers._
-
 import fs2.{ Stream }
 import fs2.text.{ lines, utf8Decode, utf8Encode }
 
@@ -16,7 +14,7 @@ class ConnectionUpgradeTests extends Tests {
       Ok("Home")
 
     case request @ GET at "/echo" =>
-      request.headers.get(UPGRADE) match {
+      request.headers.get(Headers.Upgrade) match {
         case Some("ReverseEcho") =>
           SwitchingProtocol("ReverseEcho", {
             _ through utf8Decode through lines map (msg => s"${msg.reverse}\n") through utf8Encode
@@ -34,9 +32,9 @@ class ConnectionUpgradeTests extends Tests {
       val url = s"http://localhost:${server.port}/echo"
 
       await {
-        Client.run(Get(url).addHeaders(UPGRADE -> "ReverseEcho")) { response =>
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
           response.status should be (101)
-          response.headers.get(UPGRADE) should be (Some("ReverseEcho"))
+          response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
 
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
@@ -58,9 +56,9 @@ class ConnectionUpgradeTests extends Tests {
       val url = s"http://localhost:${server.port}/"
 
       await {
-        Client.run(Get(url).addHeaders(UPGRADE -> "ReverseEcho")) { response =>
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
           response.status should not be (101)
-          response.headers.get(UPGRADE) should be (None)
+          response.headers.get(Headers.Upgrade) should be (None)
 
           // Upgrade anyway :)
           val upstream = Stream.pure("watever\n", "oops\n", "bad protocol\n") through utf8Encode

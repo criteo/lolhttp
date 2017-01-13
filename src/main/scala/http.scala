@@ -1,7 +1,5 @@
 package lol
 
-import http.Headers._
-
 import fs2.{ Stream, Task}
 
 import scala.concurrent.{ Future }
@@ -21,21 +19,21 @@ package object http {
   def Ok = Response(200)
   def InternalServerError = Response(500)
   def Redirect(url: String, permanent: Boolean = false) = {
-    Response(if(permanent) 308 else 307).addHeaders(LOCATION -> url)
+    Response(if(permanent) 308 else 307).addHeaders(Headers.Location -> url)
   }
   def NotFound = Response(404)
   def BadRequest = Response(400)
   def SwitchingProtocol(protocol: String, upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte]) = {
     Response(101, upgradeConnection = upgradeConnection).
-      addHeaders(UPGRADE -> protocol, CONNECTION -> "Upgrade")
+      addHeaders(Headers.Upgrade -> protocol, Headers.Connection -> "Upgrade")
   }
-  def UpgradeRequired(protocol: String) = Response(426).addHeaders(UPGRADE -> protocol)
+  def UpgradeRequired(protocol: String) = Response(426).addHeaders(Headers.Upgrade -> protocol)
 
   // Request builders
   private def request(url: String) = {
     if(url.startsWith("http://") || url.startsWith("https://")) {
       val (scheme, host, port, path, queryString) = Internal.extract(url)
-      Request(GET, path, queryString, scheme, headers = Map(Headers.HOST -> s"$host:$port"))
+      Request(GET, path, queryString, scheme, headers = Map(Headers.Host -> s"$host:$port"))
     }
     else {
       url.split("[?]").toList match {

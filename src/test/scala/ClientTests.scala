@@ -1,7 +1,5 @@
 package lol.http
 
-import Headers._
-
 import scala.util._
 import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration._
@@ -51,7 +49,7 @@ class ClientTests extends Tests {
 
   test("Connection close") {
     withServer(Server.listen() {
-      case GET at "/bye" => Ok("See you").addHeaders(CONNECTION -> "Close")
+      case GET at "/bye" => Ok("See you").addHeaders(Headers.Connection -> "Close")
       case GET at "/hello" => Ok("World")
     }) { server =>
       await {
@@ -75,7 +73,7 @@ class ClientTests extends Tests {
           for {
             hello <- client.run(Get("/hello"))(_.read[String])
             _ = hello should be ("World")
-            hello <- client.run(Get("/hello").addHeaders(CONNECTION -> "Close"))(_.read[String])
+            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> "Close"))(_.read[String])
             _ = hello should be ("World")
             _ = client.nbConnections should be (0)
             _ <- client.stop()

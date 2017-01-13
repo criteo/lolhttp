@@ -3,38 +3,41 @@ package lol.http
 import scala.io.{ Codec }
 import scala.util.{ Try }
 
+import scala.concurrent.{ blocking, ExecutionContext }
+
 import java.io.{ InputStream }
 import java.net.{ URLDecoder, URLEncoder }
 import java.nio.{ ByteBuffer, CharBuffer }
 
-import fs2.{ Chunk, Task, Stream }
+import fs2.{ Strategy, Chunk, Task, Stream }
 
 case class Content(
   stream: Stream[Task,Byte],
-  contentType: Option[String] = None,
-  length: Option[Long] = None
+  length: Option[Long],
+  headers: Map[String,String] = Map.empty
 ) {
   def as[A](implicit decoder: ContentDecoder[A]): Task[A] = decoder(this)
+  def addHeaders(newHeaders: (String,String) *) = copy(headers = headers ++ newHeaders.toMap)
 }
 
 object Content {
-  val empty = Content(Stream.empty, None, Some(0))
+  val empty = Content(Stream.empty, Some(0))
   def apply[A](a: A)(implicit encoder: ContentEncoder[A]): Content = encoder(a)
 }
 
 trait ContentDecoder[+A] { def apply(content: Content): Task[A] }
 object ContentDecoder {
-  private val MAX_SIZE = Try {
+  private val MaxSize = Try {
     System.getProperty("lol.http.ContentDecoder.maxSizeInMemory").toInt
   }.getOrElse(1024 * 1024)
 
-  private val US_ASCII = Codec("us-ascii")
+  private val UsAscii = Codec("us-ascii")
 
   implicit val discard = new ContentDecoder[Unit] {
     def apply(content: Content) = content.stream.drain.run
   }
 
-  def binary(maxSize: Int = MAX_SIZE): ContentDecoder[Array[Byte]] = new ContentDecoder[Array[Byte]] {
+  def binary(maxSize: Int = MaxSize): ContentDecoder[Array[Byte]] = new ContentDecoder[Array[Byte]] {
     def apply(content: Content) = content.stream.take(maxSize).chunks.runLog.map { arrays =>
       val totalSize = arrays.foldLeft(0)(_ + _.size)
       val result = Array.ofDim[Byte](totalSize)
@@ -46,17 +49,17 @@ object ContentDecoder {
       result
     }
   }
-  implicit val defaultBinary = binary(MAX_SIZE)
+  implicit val defaultBinary = binary(MaxSize)
 
-  def text(maxSize: Int = MAX_SIZE, codec: Codec = Codec.UTF8): ContentDecoder[String] = new ContentDecoder[String] {
+  def text(maxSize: Int = MaxSize, codec: Codec = Codec.UTF8): ContentDecoder[String] = new ContentDecoder[String] {
     def apply(content: Content) = binary(maxSize)(content).map { bytes =>
       codec.decoder.decode(ByteBuffer.wrap(bytes)).toString
     }
   }
-  implicit val defaultText = text(MAX_SIZE, Codec.UTF8)
+  implicit val defaultText = text(MaxSize, Codec.UTF8)
 
   // https://www.w3.org/TR/html5/forms.html#url-encoded-form-data
-  def urlEncoded(maxSize: Int = MAX_SIZE, codec: Codec = US_ASCII): ContentDecoder[Map[String,Seq[String]]] = new ContentDecoder[Map[String,Seq[String]]] {
+  def urlEncoded(maxSize: Int = MaxSize, codec: Codec = UsAscii): ContentDecoder[Map[String,Seq[String]]] = new ContentDecoder[Map[String,Seq[String]]] {
     val ENTITY = """[&][#](\d+)[;]""".r
     def apply(content: Content) = text(maxSize, codec)(content).map { text =>
       def decode1(str: String) = URLDecoder.decode(str, "iso8859-1")
@@ -86,16 +89,16 @@ object ContentDecoder {
       }
     }
   }
-  implicit val defaultUrlEncoded = urlEncoded(MAX_SIZE, US_ASCII)
+  implicit val defaultUrlEncoded = urlEncoded(MaxSize, UsAscii)
 
-  def urlEncoded0(maxSize: Int = MAX_SIZE, codec: Codec = US_ASCII): ContentDecoder[Map[String,String]] = new ContentDecoder[Map[String,String]] {
+  def urlEncoded0(maxSize: Int = MaxSize, codec: Codec = UsAscii): ContentDecoder[Map[String,String]] = new ContentDecoder[Map[String,String]] {
     def apply(content: Content) = urlEncoded(maxSize, codec)(content).map { data =>
       data.mapValues(_.headOption).collect {
         case (key, Some(value)) => (key,value)
       }
     }
   }
-  implicit val defaultUrlEncoded0 = urlEncoded0(MAX_SIZE, US_ASCII)
+  implicit val defaultUrlEncoded0 = urlEncoded0(MaxSize, UsAscii)
 }
 
 trait ContentEncoder[-A] { def apply(a: A): Content }
@@ -110,9 +113,9 @@ object ContentEncoder {
 
   implicit val binary = new ContentEncoder[Array[Byte]] {
     def apply(data: Array[Byte]) = Content(
-      contentType = Some("application/octet-stream"),
+      stream = Stream.chunk(Chunk.bytes(data)),
       length = Some(data.size),
-      stream = Stream.chunk(Chunk.bytes(data))
+      headers = Map(Headers.ContentType -> "application/octet-stream")
     )
   }
 
@@ -121,9 +124,9 @@ object ContentEncoder {
       val bytes = Array.ofDim[Byte](data.remaining)
       data.get(bytes)
       Content(
-        contentType = Some("application/octet-stream"),
+        stream = Stream.chunk(Chunk.bytes(bytes)),
         length = Some(bytes.size),
-        stream = Stream.chunk(Chunk.bytes(bytes))
+        headers = Map(Headers.ContentType -> "application/octet-stream")
       )
     }
   }
@@ -140,28 +143,42 @@ object ContentEncoder {
         data.flatMap { case (key, values) => values.map { case value =>
           s"${encode(key)}=${encode(value)}"
         }}.mkString("&")
-      }.copy(contentType = Some("application/x-www-form-urlencoded"))
+      }.addHeaders(Headers.ContentType -> "application/x-www-form-urlencoded")
     }
   }
 
   def text(codec: Codec = Codec.UTF8): ContentEncoder[CharSequence] = new ContentEncoder[CharSequence] {
     def apply(data: CharSequence) = byteBuffer(
       codec.encoder.encode(CharBuffer.wrap(data))
-    ).copy(contentType = Some(s"text/plain; charset=$codec"))
+    ).addHeaders(Headers.ContentType -> s"text/plain; charset=$codec")
   }
   implicit val defaultText = text(Codec.UTF8)
 
-  // Broken implementation
-  implicit val inputStream = new ContentEncoder[InputStream] {
+  def inputStream(chunkSize: Int = 16 * 1024)(implicit executor: ExecutionContext) = new ContentEncoder[InputStream] {
     def apply(data: InputStream) = {
-      Content(
-        contentType = Some("application/octet-stream"),
-        length = Some(data.available),
-        stream = {
-          val bytes = Array.ofDim[Byte](data.available)
-          data.read(bytes)
-          Stream.chunk(Chunk.bytes(bytes))
+      implicit val S = Strategy.fromExecutionContext(executor)
+      val stream = Stream.eval(Task.async[Option[Chunk[Byte]]] { cb =>
+        try {
+          blocking {
+            val buffer = Array.ofDim[Byte](chunkSize)
+            val read = data.read(buffer)
+            if(read > -1) {
+              cb(Right(Some(Chunk.bytes(buffer, 0, read))))
+            }
+            else {
+              cb(Right(None))
+            }
+          }
         }
+        catch {
+          case e: Throwable => cb(Left(e))
+        }
+      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get))
+
+      Content(
+        stream,
+        length = None,
+        headers = Map(Headers.ContentType -> "application/octet-stream")
       )
     }
   }

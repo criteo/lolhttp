@@ -79,8 +79,10 @@ object Server {
               scheme = exchange.getRequestScheme,
               content = Content(
                 requestStream,
-                Option(exchange.getRequestHeaders.getFirst(H.CONTENT_TYPE)),
-                Option(exchange.getRequestContentLength).filter(_ >= 0)
+                Option(exchange.getRequestContentLength).filter(_ >= 0),
+                Option(exchange.getRequestHeaders.getFirst(H.CONTENT_TYPE)).map { contentType =>
+                  Map(Headers.ContentType -> contentType)
+                }.getOrElse(Map.empty)
               ),
               headers = exchange.getRequestHeaders.getHeaderNames.asScala.map { h =>
                 (h.toString, exchange.getRequestHeaders.getFirst(h))
@@ -122,8 +124,12 @@ object Server {
                     _ <- Task.delay {
                       exchange.setStatusCode(status)
                       content.length.foreach(exchange.setResponseContentLength)
-                      content.contentType.foreach(exchange.getResponseHeaders.put(H.CONTENT_TYPE, _))
-                      headers.foreach { case (key,value) => exchange.getResponseHeaders.put(new HttpString(key), value) }
+                      content.headers.foreach { case (key,value) =>
+                        exchange.getResponseHeaders.put(new HttpString(key), value)
+                      }
+                      headers.foreach { case (key,value) =>
+                        exchange.getResponseHeaders.put(new HttpString(key), value)
+                      }
                     }
                     out <- Internal.sink(exchange.getResponseChannel)
                     flush <- content.stream.to(out).drain.run

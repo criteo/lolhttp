@@ -20,8 +20,6 @@ import java.util.concurrent.atomic.{ AtomicLong }
 import java.io.{ IOException }
 import java.net.{ URI }
 
-import Headers.{ LOCATION }
-
 case class ClientOptions(
   ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 2),
   bufferSize: Int = 16 * 1024,
@@ -88,7 +86,7 @@ private class Connection(
                       headers = exchange.getResponse.getResponseHeaders.asScala.map { h =>
                         (h.getHeaderName.toString, h.pollFirst)
                       }.toMap,
-                      content = Content(responseStream, None, None),
+                      content = Content(responseStream, None),
                       upgradeConnection = (upstream) => {
                         val stream = exchange.getConnection.performUpgrade
                         (for {
@@ -246,7 +244,7 @@ class Client(
             apply(request).flatMap { response =>
               if(response.isRedirect) {
                 response.drain.flatMap { _ =>
-                  response.headers.get(LOCATION).map { location =>
+                  response.headers.get(Headers.Location).map { location =>
                     followRedirects0(request.withUrl(location)(Content.empty))
                   }.getOrElse {
                     Future.failed(new Exception(s"Missing `Location` header in response: $response"))
@@ -306,7 +304,7 @@ object Client {
   def run[A](request: Request, followRedirects: Boolean = false)
     (f: Response => Future[A] = (_: Response) => Future.successful(()))
     (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
-    request.headers.get(Headers.HOST).map { hostHeader =>
+    request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.split("[:]").toList match {
         case host :: port :: Nil if Try(port.toInt).isSuccess =>
           Client(host, port.toInt, request.scheme, ssl)

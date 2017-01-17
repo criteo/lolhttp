@@ -5,9 +5,11 @@ import scala.util.{ Try }
 
 import scala.concurrent.{ blocking, ExecutionContext }
 
-import java.io.{ InputStream }
+import java.io.{ File, InputStream }
 import java.net.{ URLDecoder, URLEncoder }
 import java.nio.{ ByteBuffer, CharBuffer }
+import java.nio.channels.{ AsynchronousFileChannel, CompletionHandler }
+import java.nio.file.{ StandardOpenOption }
 
 import fs2.{ Strategy, Chunk, Task, Stream }
 
@@ -154,9 +156,9 @@ object ContentEncoder {
   }
   implicit val defaultText = text(Codec.UTF8)
 
-  def inputStream(chunkSize: Int = 16 * 1024)(implicit executor: ExecutionContext) = new ContentEncoder[InputStream] {
+  def inputStream(chunkSize: Int = 16 * 1024, blockingExecutor: ExecutionContext) = new ContentEncoder[InputStream] {
     def apply(data: InputStream) = {
-      implicit val S = Strategy.fromExecutionContext(executor)
+      implicit val S = Strategy.fromExecutionContext(blockingExecutor)
       val stream = Stream.eval(Task.async[Option[Chunk[Byte]]] { cb =>
         try {
           blocking {
@@ -173,7 +175,9 @@ object ContentEncoder {
         catch {
           case e: Throwable => cb(Left(e))
         }
-      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get))
+      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get)).onFinalize(Task.delay {
+        data.close()
+      })
 
       Content(
         stream,
@@ -182,4 +186,58 @@ object ContentEncoder {
       )
     }
   }
+
+  def file(chunkSize: Int = 16 * 1024)(implicit executor: ExecutionContext) = new ContentEncoder[File] {
+    def apply(data: File) = {
+      implicit val S = Strategy.fromExecutionContext(executor)
+      val channel = AsynchronousFileChannel.open(data.toPath, StandardOpenOption.READ)
+      val buffer = ByteBuffer.allocateDirect(chunkSize)
+      var position = 0
+      val stream = Stream.eval(Task.async[Option[Chunk[Byte]]] { cb =>
+        try {
+          if(channel.isOpen) {
+            channel.read(buffer, position, (), new CompletionHandler[Integer,Unit] {
+              def completed(read: Integer, a: Unit) = {
+                val bytes = {
+                  buffer.flip()
+                  val x = Array.ofDim[Byte](buffer.remaining)
+                  buffer.get(x)
+                  x
+                }
+                if(read > -1) {
+                  {
+                    position = position + read
+                    buffer.clear()
+                  }
+                  cb(Right(Some(Chunk.bytes(bytes))))
+                }
+                else {
+                  cb(Right(None))
+                }
+              }
+              def failed(e: Throwable, a: Unit) = {
+                cb(Left(e))
+              }
+            })
+          }
+          else {
+            cb(Right(None))
+          }
+        }
+        catch {
+          case e: Throwable => cb(Left(e))
+        }
+      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get)).onFinalize(Task.delay {
+        channel.close()
+      })
+
+      Content(
+        stream,
+        length = Some(data.length),
+        headers = Map(Headers.ContentType -> Internal.guessContentType(data.getName))
+      )
+    }
+  }
+  implicit def defaultFile(implicit executor: ExecutionContext) = file()
+
 }

@@ -105,4 +105,12 @@ private object Internal {
     })
   }
 
+  def guessContentType(fileName: String): String = {
+    fileName.split("[.]").lastOption.map {
+      case "css"          => "text/css"
+      case "htm" | "html" => "text/html"
+      case "js"           => "application/javascript"
+    }.getOrElse("application/octet-stream")
+  }
+
 }

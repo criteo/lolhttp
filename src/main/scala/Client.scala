@@ -27,17 +27,15 @@ case class ClientOptions(
   tcpNoDelay: Boolean = true
 )
 
-private class Connection(
-  private val client: ClientConnection,
-  private val worker: XnioWorker,
-  private val byteBufferPool: ByteBufferPool,
-  val connectedTo: (String, Int)
+private[http] class Connection(
+  private val connection: ClientConnection,
+  private val byteBufferPool: ByteBufferPool
 )(implicit executor: ExecutionContext) {
 
   implicit val S = Strategy.fromExecutionContext(executor)
 
   private val closedPromise = Promise[Unit]
-  client.addCloseListener(new ChannelListener[ClientConnection] {
+  connection.addCloseListener(new ChannelListener[ClientConnection] {
     override def handleEvent(connection: ClientConnection): Unit = {
       if(!connection.isOpen) {
         closedPromise.success(())
@@ -48,12 +46,11 @@ private class Connection(
   lazy val closed: Future[Unit] = closedPromise.future
 
   def close(): Future[Unit] = {
-    client.close()
-    closed.andThen { case _ =>
-      byteBufferPool.close()
-      worker.shutdownNow()
-    }
+    connection.close()
+    closed
   }
+
+  def isOpen: Boolean = connection.isOpen
 
   def apply(request: Request): Future[Response] = {
     val internalRequest = new ClientRequest()
@@ -65,7 +62,7 @@ private class Connection(
       internalRequest.getRequestHeaders.add(new HttpString(key), value)
     }
 
-    client.sendRequest(internalRequest, new ClientCallback[ClientExchange] {
+    connection.sendRequest(internalRequest, new ClientCallback[ClientExchange] {
       def completed(exchange: ClientExchange) = {
         val writeContent = for {
           out <- Internal.sink(exchange.getRequestChannel)
@@ -101,7 +98,9 @@ private class Connection(
                   }).unsafeRunAsyncFuture()
                 }
               }
-              def failed(ex: IOException) = eventuallyResponse.tryFailure(ex)
+              def failed(ex: IOException) = {
+                eventuallyResponse.tryFailure(ex)
+              }
             })
           case Failure(ex) =>
             eventuallyResponse.tryFailure(ex)
@@ -113,7 +112,7 @@ private class Connection(
   }
 }
 
-private object Connection {
+private[http] object Connection {
   lazy val http = new HttpClientProvider
   lazy val xnio = Xnio.getInstance(classOf[Client].getClassLoader)
 
@@ -130,13 +129,9 @@ private object Connection {
     http.connect(
       new ClientCallback[ClientConnection] {
         def completed(connection: ClientConnection) = eventuallyConnection.success(
-          new Connection(connection, worker, byteBufferPool, (host,port))
+          new Connection(connection, byteBufferPool)
         )
-        def failed(ex: IOException) = {
-          worker.shutdownNow()
-          byteBufferPool.close()
-          eventuallyConnection.failure(ex)
-        }
+        def failed(ex: IOException) = eventuallyConnection.failure(ex)
       },
       null,
       new URI(s"$scheme://$host:$port"),
@@ -198,7 +193,7 @@ class Client(
   }
 
   private def acquireConnection(): Future[Connection] = {
-    Option(availableConnections.poll).map(Future.successful).getOrElse {
+    Option(availableConnections.poll).filter(_.isOpen).map(Future.successful).getOrElse {
       val i = liveConnections.incrementAndGet()
       if(i <= maxConnections) {
         connect(host, port, scheme, ssl, options, worker, byteBufferPool).
@@ -221,6 +216,9 @@ class Client(
     waiters.clear()
     Future.sequence(connections.asScala.map(_.close())).map { _ =>
       if(liveConnections.intValue != 0) oops
+    }.andThen { case _ =>
+      byteBufferPool.close()
+      worker.shutdownNow()
     }
   }
 

@@ -1,5 +1,6 @@
 package lol.http
 
+import java.io.{ File }
 import scala.io.{ Source, Codec }
 
 import fs2.{ Stream }
@@ -73,18 +74,48 @@ class ContentTests extends Tests {
     b != null should be (true)
 
     val bRealContent = Source.fromInputStream(b)(Codec.UTF8).mkString
+    val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-    import scala.concurrent.ExecutionContext.Implicits.global
+    getBytes(ContentEncoder.inputStream(blockingExecutor = ec).apply(a)) should contain theSameElementsInOrderAs "LOL\n".getBytes("utf-8")
+    getString(ContentEncoder.inputStream(blockingExecutor = ec).apply(b)) should be (bRealContent)
 
-    getBytes(ContentEncoder.inputStream().apply(a)) should contain theSameElementsInOrderAs "LOL\n".getBytes("utf-8")
-    getString(ContentEncoder.inputStream().apply(b)) should be (bRealContent)
-
-    ContentEncoder.inputStream(chunkSize = 1).apply(a).stream.chunks.map(c => new String(c.toArray)).
+    ContentEncoder.inputStream(chunkSize = 1, blockingExecutor = ec).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
       runLog.unsafeRun().mkString should be ("L_O_L_\n_")
 
-    ContentEncoder.inputStream(chunkSize = 2).apply(a).stream.chunks.map(c => new String(c.toArray)).
+    ContentEncoder.inputStream(chunkSize = 2, blockingExecutor = ec).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
       runLog.unsafeRun().mkString should be ("LO_L\n_")
+  }
+
+  test("File") {
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    val url = this.getClass.getResource("/index.html")
+    url != null should be (true)
+    url.toString.startsWith("file:") should be (true)
+
+    val file = new File(url.toString.drop(5))
+    file.exists should be (true)
+
+    val realContent = Source.fromFile(file)(Codec.UTF8).mkString
+
+    val content = implicitly[ContentEncoder[java.io.File]].apply(file)
+
+    content.length should be (Some(59))
+    content.headers should be (Map(Headers.ContentType -> "text/html"))
+
+    getString(content) should be (realContent)
+
+    val content2 = ContentEncoder.file(1).apply(file)
+
+    content2.length should be (Some(59))
+    content2.headers should be (Map(Headers.ContentType -> "text/html"))
+
+    val x = content2.stream.chunks.map(c => new String(c.toArray)).
+      interleave(Stream("_").repeat).
+      runLog.unsafeRun().mkString
+
+    x should be (realContent.zip(0 to realContent.size map(_ => '_')).map { case (a,b) => "" + a + b }.mkString)
   }
 }

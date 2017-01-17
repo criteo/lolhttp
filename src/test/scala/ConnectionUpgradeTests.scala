@@ -51,7 +51,7 @@ class ConnectionUpgradeTests extends Tests {
     }
   }
 
-  ignore("Server refuse to upgrade") {
+  test("Server refuse to upgrade") {
     withServer(Server.listen()(App)) { server =>
       val url = s"http://localhost:${server.port}/"
 

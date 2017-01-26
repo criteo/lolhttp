@@ -1,5 +1,9 @@
 package lol.http
 
+import fs2.{ Task, Chunk, Stream }
+
+import java.util.concurrent.{ TimeoutException }
+
 import scala.util._
 import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration._
@@ -27,10 +31,11 @@ class ClientTests extends Tests {
     }
 
     withServer(Server.listen()(App)) { server =>
-      await {
+      await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
             keys <- client.run(Get("/keys"))(_.read[String])
+            _ = keys should be ("1,2,3")
             oops <- client.run(Get("/blah"))(res => success(res.status))
             _ = oops should be (404)
             results <- Future.sequence(
@@ -47,37 +52,62 @@ class ClientTests extends Tests {
     }
   }
 
+  test("Large content") {
+    val App: Service = {
+      case GET at url"/huge" => {
+        Ok(
+          Content(
+            Stream.eval(Task.delay(Chunk.bytes(("A" * 1024).getBytes("us-ascii")))).
+              repeat.
+              take(1024).
+              flatMap(Stream.chunk),
+            None
+          )
+        )
+      }
+    }
+
+    withServer(Server.listen()(App)) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          for {
+            response <- client(Get("/huge"))
+            _ = response.status should be (200)
+            length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size).unsafeRunAsyncFuture()
+          } yield length
+        }
+      } should be (1024 * 1024)
+    }
+  }
+
   test("Connection close") {
     withServer(Server.listen() {
       case GET at "/bye" => Ok("See you").addHeaders(Headers.Connection -> "Close")
       case GET at "/hello" => Ok("World")
     }) { server =>
-      await {
+      await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            hello <- client.run(Get("/hello"))(_.read[String])
-            _ = hello should be ("World")
-            hello <- client.run(Get("/hello"))(_.read[String])
-            _ = hello should be ("World")
             bye <- client.run(Get("/bye"))(_.read[String])
             _ = bye should be ("See you")
-            _ = client.nbConnections should be (0)
+            _ = eventually(client.nbConnections should be (0))
+            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> "Close"))(_.read[String])
+            _ = hello should be ("World")
+            _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()
-            _ = an [Exception] should be thrownBy await(client.run(Get("/hello"))())
+            _ = an [Exception] should be thrownBy await() { client.run(Get("/hello"))() }
           } yield ()
         }
       }
 
-      await {
+      await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            hello <- client.run(Get("/hello"))(_.read[String])
-            _ = hello should be ("World")
             hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> "Close"))(_.read[String])
             _ = hello should be ("World")
-            _ = client.nbConnections should be (0)
+            _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()
-            _ = an [Exception] should be thrownBy await(client.run(Get("/hello"))())
+            _ = an [Exception] should be thrownBy await() { client.run(Get("/hello"))() }
           } yield ()
         }
       }
@@ -85,7 +115,7 @@ class ClientTests extends Tests {
   }
 
   test("Connection leak") {
-    withServer(Server.listen() { _ => Ok("World") }) { server =>
+    withServer(Server.listen() { _ => Ok("World" * 1024 * 100) }) { server =>
 
       def makeCalls(client: Client, x: Int) = Future.sequence {
         (1 to x).map { i =>
@@ -98,13 +128,13 @@ class ClientTests extends Tests {
         }
       }
 
-      await {
+      await() {
         Client("localhost", server.port, maxConnections = 2, maxWaiters = 10).runAndStop { client =>
           makeCalls(client, 2)
         }
       } should contain theSameElementsAs List("OK", "OK")
 
-      await {
+      await() {
         Client("localhost", server.port, maxConnections = 2, maxWaiters = 10).runAndStop { client =>
           makeCalls(client, 20)
         }
@@ -113,6 +143,42 @@ class ClientTests extends Tests {
         "TIMEOUT", "TIMEOUT", "TIMEOUT", "REJECTED", "REJECTED", "REJECTED", "REJECTED", "REJECTED",
         "REJECTED", "REJECTED", "REJECTED"
       )
+    }
+  }
+
+  test("Single connection", Slow) {
+    withServer(Server.listen() { case GET at url"/$word" =>
+      Ok(Content(Stream.chunk(Chunk.bytes((word * 1024 * 100).getBytes("us-ascii"))), None))
+    }) { server =>
+
+      await() {
+        Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
+          for {
+            response <- client(Get("/Hello"))
+            _ = response.status should be (200)
+            helloBytes <- response.content.stream.take(8).runLog.unsafeRunAsyncFuture()
+            _ = new String(helloBytes.toArray, "us-ascii") should be ("HelloHel")
+
+            // illegal to reopen the stream
+            moreBytes <- response.content.stream.runLog.unsafeRunAsyncFuture()
+            _ = moreBytes.size should be (0)
+          } yield ()
+        }
+      }
+
+      a [TimeoutException] should be thrownBy await(2 seconds) {
+        Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
+          for {
+            response <- client(Get("/Hello"))
+            _ = response.status should be (200)
+
+            // we forgot to consume the stream, so the connection is not ready for
+            // the next request
+            response2 <- client(Get("/lol"))
+          } yield ()
+        }
+      }
+
     }
   }
 }

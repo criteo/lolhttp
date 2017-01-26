@@ -4,18 +4,22 @@ import org.scalatest._
 
 import java.util.{ Timer, TimerTask }
 
+import scala.util.{ Try, Success, Failure }
+
 import scala.concurrent.{ Await, Promise, Future, ExecutionContext }
 import scala.concurrent.duration._
 
 abstract class Tests extends FunSuite with Matchers with OptionValues with Inside with Inspectors {
-  def await[A](a: Future[A], atMost: Duration = 5 seconds): A = Await.result(a, atMost)
+  val Pure = Tag("Pure")
+  val Slow = Tag("Slow")
+  def await[A](atMost: Duration = 5 seconds)(a: Future[A]): A = Await.result(a, atMost)
   def withServer(server: Server)(test: Server => Unit) = try { test(server) } finally { server.stop() }
   def success[A](a: A) = Future.successful(a)
-  def status(req: Request)(implicit e: ExecutionContext, ssl: SSL.Configuration): Int = {
-    await(Client.run(req)(res => success(res.status)))
+  def status(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): Int = {
+    await(atMost) { Client.run(req)(res => success(res.status)) }
   }
-  def contentString(req: Request)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
-    await(Client.run(req)(_.read[String]))
+  def contentString(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
+    await(atMost) { Client.run(req)(_.read[String]) }
   }
   def getString(content: Content, codec: String = "utf-8") = new String(getBytes(content).toArray, codec)
   def getBytes(content: Content): Vector[Byte] = content.stream.runLog.unsafeRun()
@@ -25,5 +29,14 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
     val p = Promise[A]
     timer.schedule(new TimerTask { def run() = p.success(a) }, d.toMillis)
     p.future
+  }
+  def eventually[A](assertion: => A, timeout: Duration = 1 second): A = {
+    val start = System.currentTimeMillis
+    def go(): A = Try(assertion) match {
+      case Success(a) => a
+      case Failure(e) =>
+        if(System.currentTimeMillis - start < timeout.toMillis) go() else throw e
+    }
+    go()
   }
 }

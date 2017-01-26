@@ -9,10 +9,8 @@ import ExecutionContext.Implicits.global
 class ConnectionUpgradeTests extends Tests {
 
   val App: Service = {
-
     case GET at "/" =>
       Ok("Home")
-
     case request @ GET at "/echo" =>
       request.headers.get(Headers.Upgrade) match {
         case Some("ReverseEcho") =>
@@ -22,7 +20,15 @@ class ConnectionUpgradeTests extends Tests {
         case _ =>
           UpgradeRequired("ReverseEcho")
       }
-
+    case request @ GET at "/push" =>
+      request.headers.get(Headers.Upgrade) match {
+        case Some("Push") =>
+          SwitchingProtocol("Push", { _ =>
+            Stream(1 to 1024: _*) map(_.toString + "\n") through utf8Encode
+          })
+        case _ =>
+          UpgradeRequired("Push")
+      }
     case _ =>
       NotFound
   }
@@ -31,7 +37,7 @@ class ConnectionUpgradeTests extends Tests {
     withServer(Server.listen()(App)) { server =>
       val url = s"http://localhost:${server.port}/echo"
 
-      await {
+      await() {
         Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
@@ -51,25 +57,82 @@ class ConnectionUpgradeTests extends Tests {
     }
   }
 
+  test("Server push directly") {
+    withServer(Server.listen()(App)) { server =>
+      val url = s"http://localhost:${server.port}/push"
+
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          for {
+            result <- client.run(Get(url).addHeaders(Headers.Upgrade -> "Push")) { response =>
+              Thread.sleep(250)
+              (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
+                runLog.unsafeRunAsyncFuture()
+            }
+            _ = eventually(client.nbConnections should be (0))
+          } yield result
+        }
+      } should be (((1 to 1024 map (_.toString)) ++ Seq("")).toVector)
+    }
+  }
+
+  test("Read content twice") {
+    withServer(Server.listen()(App)) { server =>
+      val url = s"http://localhost:${server.port}/echo"
+
+      await() {
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
+          response.status should be (101)
+          response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
+
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
+          val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
+
+          downstream.runLog.unsafeRunAsyncFuture().flatMap { _ =>
+            downstream.runLog.unsafeRunAsyncFuture()
+          }
+        }
+      } shouldBe empty
+    }
+  }
+
+  test("Upgrade twice") {
+    withServer(Server.listen()(App)) { server =>
+      val url = s"http://localhost:${server.port}/echo"
+
+      await() {
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
+          response.status should be (101)
+          response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
+
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
+          val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
+          val downstream2 = response.upgradeConnection(upstream) through utf8Decode through lines
+
+          downstream.runLog.unsafeRunAsyncFuture().flatMap { _ =>
+            downstream2.runLog.unsafeRunAsyncFuture()
+          }
+        }
+      } shouldBe empty
+    }
+  }
+
   test("Server refuse to upgrade") {
     withServer(Server.listen()(App)) { server =>
       val url = s"http://localhost:${server.port}/"
 
-      await {
+      an [Exception] should be thrownBy await() {
         Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
           response.status should not be (101)
           response.headers.get(Headers.Upgrade) should be (None)
 
           // Upgrade anyway :)
-          val upstream = Stream.pure("watever\n", "oops\n", "bad protocol\n") through utf8Encode
-          val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
+          val upstream = Stream.pure("lol") through utf8Encode
+          val downstream = response.upgradeConnection(upstream)
 
-          downstream.runLog.unsafeRunAsyncFuture()
+          downstream.run.unsafeRunAsyncFuture()
         }
-      } should contain inOrder (
-        "HomeHTTP/1.1 400 Bad Request", // the original response content, directly followed by a 400 response
-        "Connection: close" // the server ask to close the connection
-      )
+      }
     }
   }
 

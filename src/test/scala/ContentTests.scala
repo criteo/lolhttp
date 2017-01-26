@@ -7,7 +7,7 @@ import fs2.{ Stream }
 
 class ContentTests extends Tests {
 
-  test("Text encoding") {
+  test("Text encoding", Pure) {
     val textContent = Content("Héhé")
     textContent.headers.get(Headers.ContentType) should be (Some("text/plain; charset=UTF-8"))
     getBytes(textContent) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-8")
@@ -22,7 +22,7 @@ class ContentTests extends Tests {
     getBytes(textContent3) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-16")
   }
 
-  test("Text decoding") {
+  test("Text decoding", Pure) {
     val text = "Do you speak English? えいごをはなせますか"
     val textContent = Content(text)
 
@@ -36,7 +36,7 @@ class ContentTests extends Tests {
     }
   }
 
-  test("UrlEncoded") {
+  test("UrlEncoded", Pure) {
     val form = Map(
       "Héhé" -> Seq("lol", "wat&hop"),
       "Do you speak English?" -> Seq("えいごをはなせますか")
@@ -66,7 +66,7 @@ class ContentTests extends Tests {
     formWithCharsetContent.as[Map[String,Seq[String]]].unsafeRun() should be (formWithCharset)
   }
 
-  test("InputStream") {
+  test("InputStream", Pure) {
     def a = this.getClass.getResourceAsStream("/lol.txt")
     def b = this.getClass.getResourceAsStream("/META-INF/INDEX.LIST")
 

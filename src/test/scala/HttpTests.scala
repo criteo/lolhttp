@@ -1,9 +1,13 @@
 package lol.http
 
-import scala.concurrent.{ ExecutionContext }
+import java.util.logging.{Level, Logger}
+
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 class HttpTests extends Tests {
+
+  Logger.getLogger("io.netty.channel.DefaultChannelPipeline").setLevel(Level.FINE)
 
   test("Hello World") {
     withServer(Server.listen() { _ => Ok("Hello World") }) { server =>
@@ -39,7 +43,7 @@ class HttpTests extends Tests {
         s"Host: localhost:${server.port}, User-Agent: lol"
       )
 
-      val responseHeaders = await(Client.run(Get(url))(res => success(res.headers)))
+      val responseHeaders = await() { Client.run(Get(url))(res => success(res.headers)) }
 
       responseHeaders should contain allOf (
         "X-Lol" -> "xxx",
@@ -95,8 +99,8 @@ class HttpTests extends Tests {
       status(Get(s"$url/lol")) should be (200)
       status(Get(s"$url/wat")) should be (404)
 
-      await(Client.run(Get(s"$url/"), followRedirects = true)(_.read[String])) should be ("lol")
-      await(Client.run(Get(s"$url/old"), followRedirects = true)(_.read[String])) should be ("lol")
+      await() { Client.run(Get(s"$url/"), followRedirects = true)(_.read[String]) } should be ("lol")
+      await() { Client.run(Get(s"$url/old"), followRedirects = true)(_.read[String]) } should be ("lol")
     }
   }
 

@@ -16,10 +16,10 @@ import fs2.{ Strategy, Chunk, Task, Stream }
 case class Content(
   stream: Stream[Task,Byte],
   length: Option[Long],
-  headers: Map[String,String] = Map.empty
+  headers: Map[HttpString,HttpString] = Map.empty
 ) {
   def as[A](implicit decoder: ContentDecoder[A]): Task[A] = decoder(this)
-  def addHeaders(newHeaders: (String,String) *) = copy(headers = headers ++ newHeaders.toMap)
+  def addHeaders(newHeaders: (HttpString,HttpString) *) = copy(headers = headers ++ newHeaders.toMap)
 }
 
 object Content {
@@ -117,7 +117,7 @@ object ContentEncoder {
     def apply(data: Array[Byte]) = Content(
       stream = Stream.chunk(Chunk.bytes(data)),
       length = Some(data.size),
-      headers = Map(Headers.ContentType -> "application/octet-stream")
+      headers = Map(Headers.ContentType -> h"application/octet-stream")
     )
   }
 
@@ -128,7 +128,7 @@ object ContentEncoder {
       Content(
         stream = Stream.chunk(Chunk.bytes(bytes)),
         length = Some(bytes.size),
-        headers = Map(Headers.ContentType -> "application/octet-stream")
+        headers = Map(Headers.ContentType -> h"application/octet-stream")
       )
     }
   }
@@ -145,14 +145,14 @@ object ContentEncoder {
         data.flatMap { case (key, values) => values.map { case value =>
           s"${encode(key)}=${encode(value)}"
         }}.mkString("&")
-      }.addHeaders(Headers.ContentType -> "application/x-www-form-urlencoded")
+      }.addHeaders(Headers.ContentType -> h"application/x-www-form-urlencoded")
     }
   }
 
   def text(codec: Codec = Codec.UTF8): ContentEncoder[CharSequence] = new ContentEncoder[CharSequence] {
     def apply(data: CharSequence) = byteBuffer(
       codec.encoder.encode(CharBuffer.wrap(data))
-    ).addHeaders(Headers.ContentType -> s"text/plain; charset=$codec")
+    ).addHeaders(Headers.ContentType -> h"text/plain; charset=$codec")
   }
   implicit val defaultText = text(Codec.UTF8)
 
@@ -182,7 +182,7 @@ object ContentEncoder {
       Content(
         stream,
         length = None,
-        headers = Map(Headers.ContentType -> "application/octet-stream")
+        headers = Map(Headers.ContentType -> h"application/octet-stream")
       )
     }
   }
@@ -234,7 +234,7 @@ object ContentEncoder {
       Content(
         stream,
         length = Some(data.length),
-        headers = Map(Headers.ContentType -> Internal.guessContentType(data.getName))
+        headers = Map(Headers.ContentType -> HttpString(Internal.guessContentType(data.getName)))
       )
     }
   }

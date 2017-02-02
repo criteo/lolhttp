@@ -1,10 +1,10 @@
 package lol.http
 
 object Headers {
-  val ContentType = "Content-Type"
-  val Location = "Location"
-  val Host = "Host"
-  val UserAgent = "User-Agent"
-  val Upgrade = "Upgrade"
-  val Connection = "Connection"
+  val ContentType = h"Content-Type"
+  val Location = h"Location"
+  val Host = h"Host"
+  val UserAgent = h"User-Agent"
+  val Upgrade = h"Upgrade"
+  val Connection = h"Connection"
 }

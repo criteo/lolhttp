@@ -47,9 +47,9 @@ private[http] object NettySupport {
   }
 
   implicit class BetterChannel(channel: Channel) {
-    def runInEventLoop[A](block: => A) = channel.eventLoop.execute(
+    def runInEventLoop[A](block: => A): Unit = channel.eventLoop.submit(
       new Runnable() { def run = block }
-    )
+    ).await()
 
     def httpContentSink(implicit e: ExecutionContext): Sink[Task,Byte] = {
       implicit val S = Strategy.fromExecutionContext(e)

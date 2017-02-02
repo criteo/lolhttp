@@ -10,7 +10,7 @@ case class Request(
   queryString: Option[String] = None,
   scheme: String = "http",
   content: Content = Content.empty,
-  headers: Map[String, String] = Map.empty
+  headers: Map[HttpString,HttpString] = Map.empty
 ) {
 
   // Content
@@ -20,9 +20,9 @@ case class Request(
   def drain: Future[Unit] = read[Unit]
 
   // Headers
-  def addHeaders(headers: Map[String,String]) = copy(headers = this.headers ++ headers)
-  def addHeaders(headers: (String,String)*) = copy(headers = this.headers ++ headers.toMap)
-  def removeHeader(header: String) = copy(headers = this.headers - header)
+  def addHeaders(headers: Map[HttpString,HttpString]) = copy(headers = this.headers ++ headers)
+  def addHeaders(headers: (HttpString,HttpString)*) = copy(headers = this.headers ++ headers.toMap)
+  def removeHeader(header: HttpString) = copy(headers = this.headers - header)
 
   // URL
   lazy val url = path + queryString.map(q => s"?$q").getOrElse("")

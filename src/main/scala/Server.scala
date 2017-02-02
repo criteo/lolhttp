@@ -9,7 +9,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import io.undertow.{ Undertow }
 import io.undertow.UndertowOptions._
 import io.undertow.server.{ HttpServerExchange, HttpHandler, HttpUpgradeListener }
-import io.undertow.util.{ Headers => H, HttpString }
+import io.undertow.util.{ Headers => H, HttpString => HString }
 
 import fs2.{ Task, Strategy }
 
@@ -81,11 +81,11 @@ object Server {
                 requestStream,
                 Option(exchange.getRequestContentLength).filter(_ >= 0),
                 Option(exchange.getRequestHeaders.getFirst(H.CONTENT_TYPE)).map { contentType =>
-                  Map(Headers.ContentType -> contentType)
+                  Map(Headers.ContentType -> HttpString(contentType))
                 }.getOrElse(Map.empty)
               ),
               headers = exchange.getRequestHeaders.getHeaderNames.asScala.map { h =>
-                (h.toString, exchange.getRequestHeaders.getFirst(h))
+                (HttpString(h.toString), HttpString(exchange.getRequestHeaders.getFirst(h)))
               }.toMap
             )
           }
@@ -98,7 +98,9 @@ object Server {
                 // Protocol upgrade
                 case Response(101, _, headers, upgradedConnection) =>
                   Future.fromTry(Try {
-                    headers.foreach { case (key,value) => exchange.getResponseHeaders.put(new HttpString(key), value) }
+                    headers.foreach { case (key,value) =>
+                      exchange.getResponseHeaders.put(new HString(key.toString), value.toString)
+                    }
                     exchange.upgradeChannel(new HttpUpgradeListener {
                       def handleUpgrade(socket: StreamConnection, exchange: HttpServerExchange): Unit = {
                         (for {
@@ -125,10 +127,10 @@ object Server {
                       exchange.setStatusCode(status)
                       content.length.foreach(exchange.setResponseContentLength)
                       content.headers.foreach { case (key,value) =>
-                        exchange.getResponseHeaders.put(new HttpString(key), value)
+                        exchange.getResponseHeaders.put(new HString(key.toString), value.toString)
                       }
                       headers.foreach { case (key,value) =>
-                        exchange.getResponseHeaders.put(new HttpString(key), value)
+                        exchange.getResponseHeaders.put(new HString(key.toString), value.toString)
                       }
                     }
                     out <- Internal.sink(exchange.getResponseChannel)

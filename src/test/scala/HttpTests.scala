@@ -27,37 +27,43 @@ class HttpTests extends Tests {
     withServer(Server.listen() { req =>
       val requestHeaders = req.headers.toSeq.sortBy(_._1).map { case (k,v) => s"$k: $v"}.mkString(", ")
       Ok(requestHeaders).
-        addHeaders("X-Lol" -> "ooo").
-        addHeaders("X-Foo" -> "Bar", "X-Bam" -> "Bom").
-        addHeaders("X-Lol" -> "xxx").
-        addHeaders("X-Ohh" -> "Ahh").
-        addHeaders(Map("X-Paf" -> "Pif")).
-        removeHeader("X-Ohh")
+        addHeaders(h"X-Lol" -> h"ooo").
+        addHeaders(h"X-Foo" -> h"Bar", h"X-Bam" -> h"Bom").
+        addHeaders(h"X-Lol" -> h"xxx").
+        addHeaders(h"X-Ohh" -> h"Ahh").
+        addHeaders(Map(h"X-Paf" -> h"Pif")).
+        removeHeader(h"X-Ohh")
     }) { server =>
       val url = s"http://localhost:${server.port}/"
 
       contentString(Get(url)) should equal (
         s"Host: localhost:${server.port}"
       )
-      contentString(Get(url).addHeaders("User-Agent" -> "lol")) should equal (
+      contentString(Get(url).addHeaders(h"User-Agent" -> h"lol")) should equal (
         s"Host: localhost:${server.port}, User-Agent: lol"
       )
 
       val responseHeaders = await() { Client.run(Get(url))(res => success(res.headers)) }
 
       responseHeaders should contain allOf (
-        "X-Lol" -> "xxx",
-        "X-Foo" -> "Bar",
-        "X-Bam" -> "Bom",
-        "X-Paf" -> "Pif"
+        h"X-Lol" -> h"xxx",
+        h"X-Foo" -> h"Bar",
+        h"X-Bam" -> h"Bom",
+        h"X-Paf" -> h"Pif"
       )
-      responseHeaders.keys should not contain ("X-Ohh")
       responseHeaders should contain allOf (
-        "Content-Type" -> "text/plain; charset=UTF-8",
-        "Connection" -> "keep-alive"
+        h"x-LOL" -> h"XxX",
+        h"X-FOO" -> h"BAR",
+        h"X-Bam" -> h"bom",
+        h"x-paf" -> h"Pif"
       )
-      responseHeaders.get("Content-Length") should be (Some(
-        s"Host: localhost:${server.port}".size.toString
+      responseHeaders.keys should not contain (h"X-Ohh")
+      responseHeaders should contain allOf (
+        h"Content-Type" -> h"text/plain; charset=UTF-8",
+        h"Connection" -> h"keep-alive"
+      )
+      responseHeaders.get(h"Content-Length") should be (Some(
+        h"Host: localhost:${server.port}".toString.size.toString
       ))
     }
   }
@@ -79,9 +85,9 @@ class HttpTests extends Tests {
       // expected because HEAD ignore the body
       contentString(Head(url)) should be ("")
 
-      contentString(Request(HttpMethod("Delete"), headers = Map("Host" -> s"localhost:${server.port}"))) should be ("DELETE")
-      contentString(Request(HttpMethod("yolo"), headers = Map("Host" -> s"localhost:${server.port}"))) should be ("<-")
-      contentString(Request(HttpMethod("Boom"), headers = Map("Host" -> s"localhost:${server.port}"))) should be ("BOOM")
+      contentString(Request(HttpMethod("Delete"), headers = Map(h"Host" -> h"localhost:${server.port}"))) should be ("DELETE")
+      contentString(Request(HttpMethod("yolo"), headers = Map(h"Host" -> h"localhost:${server.port}"))) should be ("<-")
+      contentString(Request(HttpMethod("Boom"), headers = Map(h"Host" -> h"localhost:${server.port}"))) should be ("BOOM")
     }
   }
 

@@ -19,21 +19,21 @@ package object http {
   def Ok = Response(200)
   def InternalServerError = Response(500)
   def Redirect(url: String, permanent: Boolean = false) = {
-    Response(if(permanent) 308 else 307).addHeaders(Headers.Location -> url)
+    Response(if(permanent) 308 else 307).addHeaders(Headers.Location -> HttpString(url))
   }
   def NotFound = Response(404)
   def BadRequest = Response(400)
-  def SwitchingProtocol(protocol: String, upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte]) = {
+  def SwitchingProtocol(protocol: HttpString, upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte]) = {
     Response(101, upgradeConnection = upgradeConnection).
-      addHeaders(Headers.Upgrade -> protocol, Headers.Connection -> "Upgrade")
+      addHeaders(Headers.Upgrade -> protocol, Headers.Connection -> h"Upgrade")
   }
-  def UpgradeRequired(protocol: String) = Response(426).addHeaders(Headers.Upgrade -> protocol)
+  def UpgradeRequired(protocol: HttpString) = Response(426).addHeaders(Headers.Upgrade -> protocol)
 
   // Request builders
   private def request(url: String) = {
     if(url.startsWith("http://") || url.startsWith("https://")) {
       val (scheme, host, port, path, queryString) = Internal.extract(url)
-      Request(GET, path, queryString, scheme, headers = Map(Headers.Host -> s"$host:$port"))
+      Request(GET, path, queryString, scheme, headers = Map(Headers.Host -> h"$host:$port"))
     }
     else {
       url.split("[?]").toList match {
@@ -54,12 +54,18 @@ package object http {
   }
 
   // Utilities
-  implicit class UrlPattern(ctx: StringContext) {
+  implicit class StringInterpolations(ctx: StringContext) {
     object url {
       def apply(args: Any*): String = ctx.s(args:_*)
       def unapplySeq(req: Request): Option[Seq[String]] = unapplySeq(req.url)
       def unapplySeq(url: String): Option[Seq[String]] = {
         ctx.parts.mkString("([^/]*)").replace("?", "[?]").r.unapplySeq(url)
+      }
+    }
+    object h {
+      def apply(args: Any*): HttpString = HttpString(ctx.s(args:_*))
+      def unapplySeq(hString: HttpString): Option[Seq[Unit]] = {
+        if(hString == ctx.s()) Some(Nil) else None
       }
     }
   }

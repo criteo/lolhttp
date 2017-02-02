@@ -82,7 +82,7 @@ class ClientTests extends Tests {
 
   test("Connection close") {
     withServer(Server.listen() {
-      case GET at "/bye" => Ok("See you").addHeaders(Headers.Connection -> "Close")
+      case GET at "/bye" => Ok("See you").addHeaders(Headers.Connection -> h"Close")
       case GET at "/hello" => Ok("World")
     }) { server =>
       await() {
@@ -91,7 +91,7 @@ class ClientTests extends Tests {
             bye <- client.run(Get("/bye"))(_.read[String])
             _ = bye should be ("See you")
             _ = eventually(client.nbConnections should be (0))
-            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> "Close"))(_.read[String])
+            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"CLOSE"))(_.read[String])
             _ = hello should be ("World")
             _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()
@@ -103,7 +103,7 @@ class ClientTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> "Close"))(_.read[String])
+            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"Close"))(_.read[String])
             _ = hello should be ("World")
             _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()

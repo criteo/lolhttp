@@ -105,7 +105,7 @@ private[http] class Connection(
       s"${request.path}${request.queryString.map(q => s"?$q").getOrElse("")}"
     )
     (request.headers ++ request.content.headers).foreach { case (key,value) =>
-      nettyRequest.headers().set(key, value)
+      nettyRequest.headers().set(key.toString, value.toString)
     }
 
     // install a new InboundHandler to handle this response header + content
@@ -121,7 +121,9 @@ private[http] class Connection(
             eventuallyResponse.success {
               Response(
                 status = response.status.code,
-                headers = response.headers.asScala.map { h => (h.getKey, h.getValue) }.toMap,
+                headers = response.headers.asScala.map { h =>
+                  (HttpString(h.getKey), HttpString(h.getValue))
+                }.toMap,
                 content = response.status.code match {
                   case 101 =>
                     // If the server accepted to upgrade the connection,
@@ -381,7 +383,7 @@ class Client(
               if(response.isRedirect) {
                 response.drain.flatMap { _ =>
                   response.headers.get(Headers.Location).map { location =>
-                    followRedirects0(request.withUrl(location)(Content.empty))
+                    followRedirects0(request.withUrl(location.toString)(Content.empty))
                   }.getOrElse(Future.successful(response))
                 }
               }
@@ -436,11 +438,11 @@ object Client {
     (f: Response => Future[A] = (_: Response) => Future.successful(()))
     (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
     request.headers.get(Headers.Host).map { hostHeader =>
-      val client = hostHeader.split("[:]").toList match {
+      val client = hostHeader.toString.split("[:]").toList match {
         case host :: port :: Nil if Try(port.toInt).isSuccess =>
           Client(host, port.toInt, request.scheme, ssl)
         case _ =>
-          Client(hostHeader, if(request.scheme == "http") 80 else 443, request.scheme, ssl)
+          Client(hostHeader.toString, if(request.scheme == "http") 80 else 443, request.scheme, ssl)
       }
       (for {
         response <- client(request, followRedirects)

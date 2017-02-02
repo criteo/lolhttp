@@ -9,16 +9,16 @@ class ContentTests extends Tests {
 
   test("Text encoding", Pure) {
     val textContent = Content("Héhé")
-    textContent.headers.get(Headers.ContentType) should be (Some("text/plain; charset=UTF-8"))
+    textContent.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=UTF-8"))
     getBytes(textContent) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-8")
 
     val textContent2 = Content("Héhé")(ContentEncoder.text(Codec.ISO8859))
-    textContent2.headers.get(Headers.ContentType) should be (Some("text/plain; charset=ISO-8859-1"))
+    textContent2.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=ISO-8859-1"))
     getBytes(textContent2) should contain theSameElementsInOrderAs "Héhé".getBytes("iso8859-1")
 
     implicit val defaultTextEncoderHere = ContentEncoder.text(Codec("utf-16"))
     val textContent3 = Content("Héhé")
-    textContent3.headers.get(Headers.ContentType) should be (Some("text/plain; charset=UTF-16"))
+    textContent3.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=UTF-16"))
     getBytes(textContent3) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-16")
   }
 

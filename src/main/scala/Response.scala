@@ -10,7 +10,7 @@ import scala.util.{ Success, Try }
 case class Response(
   status: Int,
   content: Content = Content.empty,
-  headers: Map[String, String] = Map.empty,
+  headers: Map[HttpString,HttpString] = Map.empty,
   upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte] = _ => Stream.empty
 ) extends Future[Response] {
 
@@ -21,9 +21,9 @@ case class Response(
   def drain: Future[Unit] = read[Unit]
 
   // Headers
-  def addHeaders(headers: Map[String,String]) = copy(headers = this.headers ++ headers)
-  def addHeaders(headers: (String,String)*) = copy(headers = this.headers ++ headers.toMap)
-  def removeHeader(header: String) = copy(headers = this.headers - header)
+  def addHeaders(headers: Map[HttpString,HttpString]) = copy(headers = this.headers ++ headers)
+  def addHeaders(headers: (HttpString,HttpString)*) = copy(headers = this.headers ++ headers.toMap)
+  def removeHeader(header: HttpString) = copy(headers = this.headers - header)
 
   // Utility
   def isRedirect = status match {

@@ -13,21 +13,21 @@ class ConnectionUpgradeTests extends Tests {
       Ok("Home")
     case request @ GET at "/echo" =>
       request.headers.get(Headers.Upgrade) match {
-        case Some("ReverseEcho") =>
-          SwitchingProtocol("ReverseEcho", {
+        case Some(h"ReverseEcho") =>
+          SwitchingProtocol(h"ReverseEcho", {
             _ through utf8Decode through lines map (msg => s"${msg.reverse}\n") through utf8Encode
           })
         case _ =>
-          UpgradeRequired("ReverseEcho")
+          UpgradeRequired(h"ReverseEcho")
       }
     case request @ GET at "/push" =>
       request.headers.get(Headers.Upgrade) match {
-        case Some("Push") =>
-          SwitchingProtocol("Push", { _ =>
+        case Some(h"Push") =>
+          SwitchingProtocol(h"Push", { _ =>
             Stream(1 to 1024: _*) map(_.toString + "\n") through utf8Encode
           })
         case _ =>
-          UpgradeRequired("Push")
+          UpgradeRequired(h"Push")
       }
     case _ =>
       NotFound
@@ -38,9 +38,9 @@ class ConnectionUpgradeTests extends Tests {
       val url = s"http://localhost:${server.port}/echo"
 
       await() {
-        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should be (101)
-          response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
+          response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
@@ -64,7 +64,7 @@ class ConnectionUpgradeTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            result <- client.run(Get(url).addHeaders(Headers.Upgrade -> "Push")) { response =>
+            result <- client.run(Get(url).addHeaders(Headers.Upgrade -> h"Push")) { response =>
               Thread.sleep(250)
               (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
                 runLog.unsafeRunAsyncFuture()
@@ -81,9 +81,9 @@ class ConnectionUpgradeTests extends Tests {
       val url = s"http://localhost:${server.port}/echo"
 
       await() {
-        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should be (101)
-          response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
+          response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
@@ -101,9 +101,9 @@ class ConnectionUpgradeTests extends Tests {
       val url = s"http://localhost:${server.port}/echo"
 
       await() {
-        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should be (101)
-          response.headers.get(Headers.Upgrade) should be (Some("ReverseEcho"))
+          response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
@@ -122,7 +122,7 @@ class ConnectionUpgradeTests extends Tests {
       val url = s"http://localhost:${server.port}/"
 
       an [Exception] should be thrownBy await() {
-        Client.run(Get(url).addHeaders(Headers.Upgrade -> "ReverseEcho")) { response =>
+        Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should not be (101)
           response.headers.get(Headers.Upgrade) should be (None)
 

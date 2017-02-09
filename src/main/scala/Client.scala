@@ -157,23 +157,15 @@ private[http] class Connection(
                         case false =>
                           Stream.fail(Error.StreamAlreadyConsumed)
                         case true =>
-                          (
-                            (upstream to channel.bytesSink).
-                              onFinalize(Task.fromFuture {
-                                channel.runInEventLoop {
-                                  channel.shutdownOutput()
-                                }
-                              })
-                          ) mergeDrainL (
-                            content.dequeue.
-                              takeWhile(_.nonEmpty).
-                              flatMap(Stream.chunk).
-                              onFinalize(Task.fromFuture {
-                                channel.runInEventLoop {
-                                  channel.shutdownInput()
-                                }
-                              })
-                          )
+                          (upstream to channel.bytesSink).run.unsafeRunAsyncFuture()
+                          content.dequeue.
+                            takeWhile(_.nonEmpty).
+                            flatMap(Stream.chunk).
+                            onFinalize(Task.fromFuture {
+                              channel.runInEventLoop {
+                                channel.close()
+                              }
+                            })
                       }
                   }
                   case _ => (upstream) => {
@@ -184,7 +176,6 @@ private[http] class Connection(
             }
             if(nettyResponse.status.code == 101) {
               // This is not an HTTP connection anymore
-              channel.config.setAllowHalfClosure(true)
               channel.pipeline.remove("ResponseHandler")
               channel.pipeline.remove("HttpCompress")
               channel.pipeline.remove("Http")
@@ -196,31 +187,18 @@ private[http] class Connection(
                     buffer = Chunk.concat(Seq(buffer, msg.toChunk))
                   }
                   override def channelReadComplete(ctx: ChannelHandlerContext) = {
-                    (if(channel.isInputShutdown) {
-                      (for {
-                        _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                        _ <- content.enqueue1(Chunk.empty)
-                      } yield ()).unsafeRunAsyncFuture()
-                    }
-                    else {
-                      (for {
-                        _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                        _ <- Task.fromFuture {
-                          channel.runInEventLoop {
-                            buffer = Chunk.empty
-                            channel.read()
-                          }
+                    (for {
+                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                      _ <- Task.fromFuture {
+                        channel.runInEventLoop {
+                          buffer = Chunk.empty
+                          channel.read()
                         }
-                      } yield ()).unsafeRunAsyncFuture()
-                    }).
-                    andThen { case _ =>
-                      if(channel.isInputShutdown && channel.isOutputShutdown) {
-                        channel.close()
                       }
-                    }
+                    } yield ()).unsafeRunAsyncFuture()
                   }
                   override def channelInactive(ctx: ChannelHandlerContext) = {
-                    releaseConnection.set(true).unsafeRunAsyncFuture()
+                    content.enqueue1(Chunk.empty).unsafeRunAsyncFuture()
                   }
                 }
               )

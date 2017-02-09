@@ -15,7 +15,7 @@ class ConnectionUpgradeTests extends Tests {
       request.headers.get(Headers.Upgrade) match {
         case Some(h"ReverseEcho") =>
           SwitchingProtocol(h"ReverseEcho", {
-            _ through utf8Decode through lines map (msg => s"${msg.reverse}\n") through utf8Encode
+            _ through utf8Decode through lines takeWhile(_ != "EOF") map (msg => s"${msg.reverse}\n") through utf8Encode
           })
         case _ =>
           UpgradeRequired(h"ReverseEcho")
@@ -42,7 +42,7 @@ class ConnectionUpgradeTests extends Tests {
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
-          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
           downstream.runLog.unsafeRunAsyncFuture()
@@ -51,8 +51,7 @@ class ConnectionUpgradeTests extends Tests {
         "dlrow olleH",
         "lol",
         "??taw",
-        "ENOD",
-        "" // because of the way `text.lines` works we get this final chunk
+        ""
       )
     }
   }
@@ -85,7 +84,7 @@ class ConnectionUpgradeTests extends Tests {
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
-          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
           downstream.runLog.unsafeRunAsyncFuture().flatMap { _ =>
@@ -105,7 +104,7 @@ class ConnectionUpgradeTests extends Tests {
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
-          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "DONE").pure through utf8Encode
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").pure through utf8Encode
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
           val downstream2 = response.upgradeConnection(upstream) through utf8Decode through lines
 

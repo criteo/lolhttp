@@ -196,7 +196,6 @@ object Server {
                           r <- async.semaphore[Task](1)
                         } yield (c,r)).unsafeRun()
 
-                        channel.config.setAllowHalfClosure(true)
                         channel.pipeline.remove("HttpRequestDecoder")
                         channel.pipeline.remove("RequestHandler")
                         channel.pipeline.addBefore(
@@ -207,27 +206,18 @@ object Server {
                               buffer = Chunk.concat(Seq(buffer, msg.toChunk))
                             }
                             override def channelReadComplete(ctx: ChannelHandlerContext) = {
-                              (if(channel.isInputShutdown) {
-                                (for {
-                                  _ <- content.enqueue1(Chunk.empty)
-                                } yield ()).unsafeRunAsyncFuture()
-                              }
-                              else {
-                                (for {
-                                  _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                                  _ <- Task.fromFuture {
-                                    channel.runInEventLoop {
-                                      buffer = Chunk.empty
-                                      channel.read()
-                                    }
+                              (for {
+                                _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                                _ <- Task.fromFuture {
+                                  channel.runInEventLoop {
+                                    buffer = Chunk.empty
+                                    channel.read()
                                   }
-                                } yield ()).unsafeRunAsyncFuture()
-                              }).
-                              andThen { case _ =>
-                                if(channel.isInputShutdown && channel.isOutputShutdown) {
-                                  channel.close()
                                 }
-                              }
+                              } yield ()).unsafeRunAsyncFuture()
+                            }
+                            override def channelInactive(ctx: ChannelHandlerContext) = {
+                              content.enqueue1(Chunk.empty).unsafeRunAsyncFuture()
                             }
                           }
                         )
@@ -243,12 +233,7 @@ object Server {
                               case true =>
                                 content.dequeue.
                                   takeWhile(_.nonEmpty).
-                                  flatMap(Stream.chunk).
-                                  onFinalize(Task.fromFuture {
-                                    channel.runInEventLoop {
-                                      channel.shutdownInput()
-                                    }
-                                  })
+                                  flatMap(Stream.chunk)
                             }
                         )
 
@@ -258,7 +243,7 @@ object Server {
                           _ <- (downstream to channel.bytesSink).
                             onFinalize(Task.fromFuture {
                               channel.runInEventLoop {
-                                channel.shutdownOutput()
+                                channel.close()
                               }
                             }).
                             run.

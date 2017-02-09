@@ -20,7 +20,6 @@ lazy val lolhttp =
     libraryDependencies ++= Seq(
       "co.fs2" %% "fs2-core" % "0.9.2",
       "io.netty" % "netty-codec-http2" % "4.1.7.Final",
-      "io.undertow" % "undertow-core" % "1.4.8.Final",
       "org.bouncycastle" % "bcpkix-jdk15on" % "1.55",
       "org.bouncycastle" % "bcprov-jdk15on" % "1.55",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"

@@ -13,6 +13,7 @@ import scala.concurrent.{
   Future,
   Promise,
   ExecutionContext }
+import scala.collection.mutable.{ ListBuffer }
 
 private[http] object NettySupport {
 
@@ -34,11 +35,14 @@ private[http] object NettySupport {
   }
 
   implicit class NettyByteBuffer(buffer: ByteBuf) {
-    def toChunk: Chunk[Byte] = Chunk.bytes {
-      val bytes = Array.ofDim[Byte](buffer.readableBytes)
-      buffer.readBytes(bytes)
-      if(buffer.readableBytes > 0) sys.error("TODO")
-      bytes
+    def toChunk: Chunk[Byte] = {
+      val chunks = ListBuffer.empty[Chunk[Byte]]
+      while(buffer.readableBytes > 0) {
+        val bytes = Array.ofDim[Byte](buffer.readableBytes)
+        buffer.readBytes(bytes)
+        chunks += Chunk.bytes(bytes)
+      }
+      Chunk.concat(chunks)
     }
   }
 
@@ -49,7 +53,7 @@ private[http] object NettySupport {
   implicit class BetterChannel(channel: Channel) {
     def runInEventLoop[A](block: => A): Unit = channel.eventLoop.submit(
       new Runnable() { def run = block }
-    ).await()
+    )
 
     def httpContentSink(implicit e: ExecutionContext): Sink[Task,Byte] = {
       implicit val S = Strategy.fromExecutionContext(e)

@@ -80,7 +80,7 @@ class ConnectionUpgradeTests extends Tests {
     withServer(Server.listen()(App)) { server =>
       val url = s"http://localhost:${server.port}/echo"
 
-      await() {
+      the [Error] thrownBy await() {
         Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
@@ -92,7 +92,7 @@ class ConnectionUpgradeTests extends Tests {
             downstream.runLog.unsafeRunAsyncFuture()
           }
         }
-      } shouldBe empty
+      } should be (Error.StreamAlreadyConsumed)
     }
   }
 
@@ -100,7 +100,7 @@ class ConnectionUpgradeTests extends Tests {
     withServer(Server.listen()(App)) { server =>
       val url = s"http://localhost:${server.port}/echo"
 
-      await() {
+      the [Error] thrownBy await() {
         Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
@@ -113,7 +113,7 @@ class ConnectionUpgradeTests extends Tests {
             downstream2.runLog.unsafeRunAsyncFuture()
           }
         }
-      } shouldBe empty
+      } should be (Error.StreamAlreadyConsumed)
     }
   }
 
@@ -121,7 +121,7 @@ class ConnectionUpgradeTests extends Tests {
     withServer(Server.listen()(App)) { server =>
       val url = s"http://localhost:${server.port}/"
 
-      an [Exception] should be thrownBy await() {
+      the [Error] thrownBy await() {
         Client.run(Get(url).addHeaders(Headers.Upgrade -> h"ReverseEcho")) { response =>
           response.status should not be (101)
           response.headers.get(Headers.Upgrade) should be (None)
@@ -132,7 +132,7 @@ class ConnectionUpgradeTests extends Tests {
 
           downstream.run.unsafeRunAsyncFuture()
         }
-      }
+      } should be (Error.UpgradeRefused)
     }
   }
 

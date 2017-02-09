@@ -13,17 +13,15 @@ import io.netty.bootstrap.{ Bootstrap }
 import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.channel.socket.nio.{ NioSocketChannel }
-import io.netty.handler.ssl.{
-  SslContext,
-  JdkSslContext,
-  ClientAuth }
+import io.netty.handler.logging.{ LogLevel, LoggingHandler }
+import io.netty.handler.ssl.{ JdkSslContext, ClientAuth }
 import io.netty.handler.codec.http.{
   DefaultHttpRequest,
   HttpResponse,
   HttpContent,
   LastHttpContent,
-  HttpVersion => NHttpVersion,
-  HttpMethod => NHttpMethod,
+  HttpVersion => NettyHttpVersion,
+  HttpMethod => NettyHttpMethod,
   HttpObject,
   HttpClientCodec,
   HttpContentDecompressor }
@@ -39,43 +37,42 @@ case class ClientOptions(
   ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 4),
   bufferSize: Int = 16 * 1024,
   directBuffers: Boolean = true,
-  tcpNoDelay: Boolean = true
+  tcpNoDelay: Boolean = true,
+  debug: Option[String] = None
 )
 
 private[http] class Connection(
   private val channel: SocketChannel,
-  private val ssl: Option[SslContext]
+  private val debug: Option[String]
 )(implicit executor: ExecutionContext) {
   implicit val S = Strategy.fromExecutionContext(executor)
 
   private var upgraded = false
 
-  channel.runInEventLoop {
-    ssl.foreach { ssl =>
-      channel.pipeline.addLast("SSL", ssl.newHandler(channel.alloc()))
-    }
-    channel.pipeline.addLast("Http", new HttpClientCodec())
-    channel.pipeline.addLast("HttpCompress", new HttpContentDecompressor())
-    channel.pipeline.addLast("CatchAll", new SimpleChannelInboundHandler[Any] {
-      override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = msg match {
-        case last: LastHttpContent if upgraded && last.content.readableBytes == 0 =>
-          // Expected because we upgraded the connection
-        case msg =>
-          Panic.!!!(s"Missed $msg")
-      }
-      override def exceptionCaught(ctx: ChannelHandlerContext, e: Throwable) = {
-        ctx.close()
-        e match {
-          case Panic(_) => throw e
-          case e =>
-        }
-      }
-    })
-  }
-
   // used for internal sanity check
   val id = Connection.connectionIds.incrementAndGet()
   val concurrentUses = new AtomicLong(0)
+
+  debug.foreach { logger =>
+    channel.pipeline.addLast("Debug", new LoggingHandler(s"$logger.$id", LogLevel.INFO))
+  }
+  channel.pipeline.addLast("Http", new HttpClientCodec())
+  channel.pipeline.addLast("HttpCompress", new HttpContentDecompressor())
+  channel.pipeline.addLast("CatchAll", new SimpleChannelInboundHandler[Any] {
+    override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = msg match {
+      case last: LastHttpContent if upgraded && last.content.readableBytes == 0 =>
+        // Expected because we upgraded the connection
+      case msg =>
+        Panic.!!!(s"Missed $msg")
+    }
+    override def exceptionCaught(ctx: ChannelHandlerContext, e: Throwable) = {
+      ctx.close()
+      e match {
+        case Panic(_) => throw e
+        case e =>
+      }
+    }
+  })
 
   val closed: Future[Unit] = channel.closeFuture.toFuture.map(_ => ())
   def close(): Future[Unit] = channel.close().toFuture.map(_ => ())
@@ -100,12 +97,12 @@ private[http] class Connection(
     }
 
     val nettyRequest = new DefaultHttpRequest(
-      NHttpVersion.HTTP_1_1,
-      new NHttpMethod(request.method.toString),
+      NettyHttpVersion.HTTP_1_1,
+      new NettyHttpMethod(request.method.toString),
       s"${request.path}${request.queryString.map(q => s"?$q").getOrElse("")}"
     )
     (request.headers ++ request.content.headers).foreach { case (key,value) =>
-      nettyRequest.headers().set(key.toString, value.toString)
+      nettyRequest.headers.set(key.toString, value.toString)
     }
 
     // install a new InboundHandler to handle this response header + content
@@ -115,16 +112,16 @@ private[http] class Connection(
       new SimpleChannelInboundHandler[HttpObject] {
       override def channelRead0(ctx: ChannelHandlerContext, msg: HttpObject) = {
         msg match {
-          case response: HttpResponse =>
+          case nettyResponse: HttpResponse =>
             if(eventuallyResponse.isCompleted) Panic.!!!()
             if(buffer.nonEmpty) Panic.!!!()
             eventuallyResponse.success {
               Response(
-                status = response.status.code,
-                headers = response.headers.asScala.map { h =>
+                status = nettyResponse.status.code,
+                headers = nettyResponse.headers.asScala.map { h =>
                   (HttpString(h.getKey), HttpString(h.getValue))
                 }.toMap,
-                content = response.status.code match {
+                content = nettyResponse.status.code match {
                   case 101 =>
                     // If the server accepted to upgrade the connection,
                     // we consider the upcoming content as part of the new protocol
@@ -137,7 +134,7 @@ private[http] class Connection(
                         eval(readers.tryDecrement).
                         flatMap {
                           case false =>
-                            Stream.empty
+                            Stream.fail(Error.StreamAlreadyConsumed)
                           case true =>
                             content.dequeue.
                               takeWhile(_.nonEmpty).
@@ -150,17 +147,16 @@ private[http] class Connection(
                                   interruptWhen(releaseConnection).
                                   drain.run
                               }
-                        },
-                      None
+                        }
                     )
                 },
-                upgradeConnection = response.status.code match {
+                upgradeConnection = nettyResponse.status.code match {
                   case 101 => (upstream) => {
                     Stream.
                       eval(readers.tryDecrement).
                       flatMap {
                         case false =>
-                          Stream.empty
+                          Stream.fail(Error.StreamAlreadyConsumed)
                         case true =>
                           (
                             (upstream to channel.bytesSink).
@@ -187,8 +183,9 @@ private[http] class Connection(
                 }
               )
             }
-            if(response.status.code == 101) {
+            if(nettyResponse.status.code == 101) {
               // This is not an HTTP connection anymore
+              channel.config.setAllowHalfClosure(true)
               channel.pipeline.remove("ResponseHandler")
               channel.pipeline.remove("HttpCompress")
               channel.pipeline.remove("Http")
@@ -200,21 +197,30 @@ private[http] class Connection(
                     buffer = Chunk.concat(Seq(buffer, msg.toChunk))
                   }
                   override def channelReadComplete(ctx: ChannelHandlerContext) = {
-                    (for {
-                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                      _ <- Task.now {
-                        channel.runInEventLoop {
-                          buffer = Chunk.empty
-                          channel.read()
+                    (if(channel.isInputShutdown) {
+                      (for {
+                        _ <- content.enqueue1(Chunk.empty)
+                      } yield ()).unsafeRunAsyncFuture()
+                    }
+                    else {
+                      (for {
+                        _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                        _ <- Task.now {
+                          channel.runInEventLoop {
+                            buffer = Chunk.empty
+                            channel.read()
+                          }
                         }
+                      } yield ()).unsafeRunAsyncFuture()
+                    }).
+                    andThen { case _ =>
+                      if(channel.isInputShutdown && channel.isOutputShutdown) {
+                        channel.close()
                       }
-                    } yield ()).unsafeRunAsyncFuture()
+                    }
                   }
                   override def channelInactive(ctx: ChannelHandlerContext) = {
-                    (for {
-                      _ <- content.enqueue1(Chunk.empty)
-                      _ <- releaseConnection.set(true)
-                    } yield ()).unsafeRunAsyncFuture()
+                    releaseConnection.set(true).unsafeRunAsyncFuture()
                   }
                 }
               )
@@ -240,13 +246,11 @@ private[http] class Connection(
                 releaseConnection.set(true).unsafeRun()
 
                 // Close the connection if requested by the protocol
+                val response = eventuallyResponse.future.value.flatMap(_.toOption).getOrElse(Panic.!!!())
                 if(
-                  eventuallyResponse.future.value.flatMap(_.toOption).getOrElse(Panic.!!!()).
-                    headers.get(Headers.Connection).exists(_ == "Close") ||
+                  response.headers.get(Headers.Connection).exists(_ == "Close") ||
                   request.headers.get(Headers.Connection).exists(_ == "Close")
-                ) {
-                  channel.close()
-                }
+                ) channel.close()
               }
               else {
                 buffer = Chunk.empty
@@ -261,9 +265,17 @@ private[http] class Connection(
     (for {
       _ <- channel.writeAndFlush(nettyRequest).toFuture
       _ <- (request.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture()
-      _ <- Task.now(channel.runInEventLoop { channel.read() }).unsafeRunAsyncFuture()
+      _ <- Task.now {
+        // Read the next response message
+        channel.runInEventLoop { channel.read() }
+      }.unsafeRunAsyncFuture()
       response <- eventuallyResponse.future
-    } yield (response, releaseConnection))
+    } yield (response, releaseConnection)).
+    andThen {
+      case Failure(e) =>
+        eventuallyResponse.tryComplete(Failure(e))
+        channel.close()
+    }
   }
 }
 
@@ -281,7 +293,7 @@ class Client(
   val maxWaiters: Int
 )(implicit executor: ExecutionContext) extends Service {
 
-  private val eventLoop = new NioEventLoopGroup()
+  private val eventLoop = new NioEventLoopGroup(options.ioThreads)
   private val bootstrap = new Bootstrap().
     group(eventLoop).
     channel(classOf[NioSocketChannel]).
@@ -289,6 +301,10 @@ class Client(
     handler(new ChannelInitializer[SocketChannel] {
     override def initChannel(channel: SocketChannel) = {
       channel.config.setAutoRead(false)
+      Option(scheme).filter(_ == "https").foreach { _ =>
+        val sslCtx = new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)
+        channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
+      }
     }
   })
 
@@ -331,9 +347,7 @@ class Client(
           map { channel =>
             new Connection(
               channel.asInstanceOf[SocketChannel],
-              Option(scheme).filter(_ == "https").map { _ =>
-                new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)
-              }
+              options.debug
             )
           }.
           andThen {
@@ -383,7 +397,7 @@ class Client(
               if(response.isRedirect) {
                 response.drain.flatMap { _ =>
                   response.headers.get(Headers.Location).map { location =>
-                    followRedirects0(request.withUrl(location.toString)(Content.empty))
+                    followRedirects0(request.copy(url = location.toString)(Content.empty))
                   }.getOrElse(Future.successful(response))
                 }
               }
@@ -434,15 +448,19 @@ object Client {
     maxWaiters
   )
 
-  def run[A](request: Request, followRedirects: Boolean = false)
-    (f: Response => Future[A] = (_: Response) => Future.successful(()))
-    (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
+  def run[A](
+    request: Request,
+    followRedirects: Boolean = false,
+    options: ClientOptions = ClientOptions(ioThreads = 1)
+  )
+  (f: Response => Future[A] = (_: Response) => Future.successful(()))
+  (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
     request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.toString.split("[:]").toList match {
         case host :: port :: Nil if Try(port.toInt).isSuccess =>
-          Client(host, port.toInt, request.scheme, ssl)
+          Client(host, port.toInt, request.scheme, ssl, options)
         case _ =>
-          Client(hostHeader.toString, if(request.scheme == "http") 80 else 443, request.scheme, ssl)
+          Client(hostHeader.toString, if(request.scheme == "http") 80 else 443, request.scheme, ssl, options)
       }
       (for {
         response <- client(request, followRedirects)

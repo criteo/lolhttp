@@ -1,48 +1,59 @@
 package lol.http
 
 import java.net.{ InetSocketAddress }
+import java.util.concurrent.atomic.{ AtomicLong }
 
-import scala.util.{ Try, Failure }
+import io.netty.channel.{
+  ChannelInitializer,
+  SimpleChannelInboundHandler,
+  ChannelHandlerContext }
+import io.netty.buffer.{ ByteBuf }
+import io.netty.channel.nio.{ NioEventLoopGroup }
+import io.netty.bootstrap.{ ServerBootstrap }
+import io.netty.channel.socket.nio.{ NioServerSocketChannel }
+import io.netty.channel.socket.{ SocketChannel }
+import io.netty.handler.logging.{ LogLevel, LoggingHandler }
+import io.netty.handler.ssl.{ JdkSslContext, ClientAuth }
+import io.netty.handler.codec.http.{
+  DefaultHttpResponse,
+  HttpRequest,
+  HttpContent,
+  LastHttpContent,
+  HttpVersion => NettyHttpVersion,
+  HttpResponseStatus,
+  HttpObject,
+  HttpRequestDecoder,
+  HttpResponseEncoder }
+
+import scala.util.{ Try }
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 
-import io.undertow.{ Undertow }
-import io.undertow.UndertowOptions._
-import io.undertow.server.{ HttpServerExchange, HttpHandler, HttpUpgradeListener }
-import io.undertow.util.{ Headers => H, HttpString => HString }
+import fs2.{ Stream, Task, Strategy, Chunk, async }
 
-import fs2.{ Task, Strategy }
-
-import org.xnio.Options._
-import org.xnio.{ StreamConnection }
+import internal.NettySupport._
 
 case class ServerOptions(
   ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 2),
   bufferSize: Int = 16 * 1024,
   directBuffers: Boolean = true,
-  tcpNoDelay: Boolean = true
+  tcpNoDelay: Boolean = true,
+  debug: Option[String] = None
 )
 
 class Server(
-  private val server: Undertow,
-  private val ssl: Option[SSL.Configuration],
-  private val options: ServerOptions
+  val socketAddress: InetSocketAddress,
+  val ssl: Option[SSL.Configuration],
+  val options: ServerOptions,
+  private val doClose: () => Unit
 ) {
-  private def listenerInfo = {
-    server.getListenerInfo.asScala.headOption.getOrElse(sys.error("Should not happen"))
-  }
-  def socketAddress = {
-    Try(listenerInfo.getAddress.asInstanceOf[InetSocketAddress]).getOrElse(sys.error("Should not happen"))
-  }
   def port = socketAddress.getPort
-  def stop(): Unit = server.stop()
-  override def toString() = s"Server($listenerInfo, $options)"
+  def stop() = doClose()
+  override def toString() = s"Server($socketAddress, $options)"
 }
 
 object Server {
-  java.util.logging.Logger.getLogger("org.xnio").setLevel(java.util.logging.Level.OFF)
-
-  private val defaultErrorResponse = Response(500, Content("Internal server error"))
+  private val defaultErrorResponse = Response(500, Content.of("Internal server error"))
 
   def listen(
     port: Int = 0,
@@ -51,101 +62,238 @@ object Server {
     options: ServerOptions = ServerOptions(),
     onError: (Throwable => Response) = _ => defaultErrorResponse
   )(f: Service)(implicit executor: ExecutionContext) = {
-
     implicit val S = Strategy.fromExecutionContext(executor)
 
-    val server = {
-      val server = Undertow.builder()
-        .setIoThreads(options.ioThreads)
-        .setDirectBuffers(options.directBuffers)
-        .setBufferSize(options.bufferSize)
-        .setServerOption(ENABLE_HTTP2.asInstanceOf[org.xnio.Option[Any]], true)
-        .setServerOption(TCP_NODELAY.asInstanceOf[org.xnio.Option[Any]], options.tcpNoDelay)
-        .setServerOption(WORKER_TASK_CORE_THREADS.asInstanceOf[org.xnio.Option[Any]], 0)
-        .setSocketOption(TCP_NODELAY.asInstanceOf[org.xnio.Option[Any]], options.tcpNoDelay)
-      ssl.map(ssl => server.addHttpsListener(port, address, ssl.ctx)).getOrElse(server.addHttpListener(port, address))
-    }.setHandler(new HttpHandler() {
-        override def handleRequest(exchange: HttpServerExchange): Unit = {
+    val connectionIds = new AtomicLong(0)
+    val eventLoop = new NioEventLoopGroup(options.ioThreads)
+    val bootstrap = new ServerBootstrap().
+      group(eventLoop).
+      channel(classOf[NioServerSocketChannel]).
+      childHandler(new ChannelInitializer[SocketChannel] {
+      override def initChannel(channel: SocketChannel) = {
+        // used for internal sanity check
+        val id = connectionIds.incrementAndGet()
 
-          val readContent = for {
-            in <- Task.delay(exchange.getRequestChannel)
-            requestStream <- Internal.source(in, exchange.getConnection.getByteBufferPool)
-          } yield {
-            in.resumeReads()
-            Request(
-              method = HttpMethod(exchange.getRequestMethod.toString),
-              path = exchange.getRequestPath,
-              queryString = Some(exchange.getQueryString).filterNot(_.isEmpty),
-              scheme = exchange.getRequestScheme,
-              content = Content(
-                requestStream,
-                Option(exchange.getRequestContentLength).filter(_ >= 0),
-                Option(exchange.getRequestHeaders.getFirst(H.CONTENT_TYPE)).map { contentType =>
-                  Map(Headers.ContentType -> HttpString(contentType))
-                }.getOrElse(Map.empty)
-              ),
-              headers = exchange.getRequestHeaders.getHeaderNames.asScala.map { h =>
-                (HttpString(h.toString), HttpString(exchange.getRequestHeaders.getFirst(h)))
-              }.toMap
-            )
-          }
-
-          readContent.unsafeRunAsyncFuture.flatMap { request =>
-            (try { f(request) } catch { case e: Throwable => Future.failed(e) })
-              .recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }
-              .flatMap {
-
-                // Protocol upgrade
-                case Response(101, _, headers, upgradedConnection) =>
-                  Future.fromTry(Try {
-                    headers.foreach { case (key,value) =>
-                      exchange.getResponseHeaders.put(new HString(key.toString), value.toString)
-                    }
-                    exchange.upgradeChannel(new HttpUpgradeListener {
-                      def handleUpgrade(socket: StreamConnection, exchange: HttpServerExchange): Unit = {
-                        (for {
-                          in <- Task.delay(socket.getSourceChannel)
-                          stream <- Internal.source(in, exchange.getConnection.getByteBufferPool)
-                        } yield stream).
-                        flatMap { source =>
-                          (for {
-                            sink <- Task.delay(upgradedConnection(source))
-                            out <- Internal.sink(socket.getSinkChannel)
-                            flush <- sink.to(out).drain.run
-                          } yield flush)
-                        }.
-                        unsafeRunAsyncFuture.
-                        andThen { case _ => socket.close() }
-                      }
-                    })
-                  })
-
-                // Normal response
-                case Response(status, content, headers, _) =>
-                  (for {
-                    _ <- Task.delay {
-                      exchange.setStatusCode(status)
-                      content.length.foreach(exchange.setResponseContentLength)
-                      content.headers.foreach { case (key,value) =>
-                        exchange.getResponseHeaders.put(new HString(key.toString), value.toString)
-                      }
-                      headers.foreach { case (key,value) =>
-                        exchange.getResponseHeaders.put(new HString(key.toString), value.toString)
-                      }
-                    }
-                    out <- Internal.sink(exchange.getResponseChannel)
-                    flush <- content.stream.to(out).drain.run
-                  } yield flush).
-                  unsafeRunAsyncFuture
-              }
-          }
-          .andThen { case _ => exchange.endExchange() }
-          .andThen { case Failure(e) => throw e }
+        ssl.foreach { ssl =>
+          val sslCtx = new JdkSslContext(ssl.ctx, false, ClientAuth.NONE)
+          channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
         }
-      }).build()
+        options.debug.foreach { logger =>
+          channel.pipeline.addLast("Debug", new LoggingHandler(s"$logger.$id",LogLevel.INFO))
+        }
+        channel.pipeline.addLast("HttpRequestDecoder", new HttpRequestDecoder())
+        channel.pipeline.addLast("HttpResponseEncoder", new HttpResponseEncoder())
+        channel.pipeline.addLast("CatchAll", new SimpleChannelInboundHandler[Any] {
+          override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = {
+            Panic.!!!(s"Missed $msg")
+          }
+          override def exceptionCaught(ctx: ChannelHandlerContext, e: Throwable) = {
+            ctx.close()
+            e match {
+              case Panic(_) => throw e
+              case e =>
+            }
+          }
+        })
 
-    server.start()
-    new Server(server, ssl, options)
+        var handleContent = Option.empty[(Option[HttpObject] => Unit)]
+        channel.pipeline.addBefore(
+          "CatchAll",
+          "RequestHandler",
+          new SimpleChannelInboundHandler[HttpObject] {
+            override def channelRead0(ctx: ChannelHandlerContext, msg: HttpObject) = msg match {
+              case nettyRequest: HttpRequest =>
+                var buffer: Chunk[Byte] = Chunk.empty
+                val (content, readers, requestFullyConsumed) = (for {
+                  c <- async.synchronousQueue[Task,Chunk[Byte]]
+                  r <- async.semaphore[Task](1)
+                  e <- async.signalOf[Task,Boolean](false)
+                } yield (c,r,e)).unsafeRun()
+
+                handleContent = Some({
+                  case Some(part: HttpContent) =>
+                    buffer = Chunk.concat(Seq(buffer, part.content.toChunk))
+                    if(part.isInstanceOf[LastHttpContent]) {
+                      requestFullyConsumed.set(true).unsafeRun()
+                    }
+                  case None =>
+                    (for {
+                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                      _ <- if(requestFullyConsumed.get.unsafeRun()) {
+                        Task.now(channel.runInEventLoop {
+                          handleContent = None
+                          // Read the next request
+                          channel.read()
+                        }).flatMap { _ =>
+                          content.enqueue1(Chunk.empty)
+                        }
+                      }
+                      else {
+                        Task.now(channel.runInEventLoop {
+                          buffer = Chunk.empty
+                          channel.read()
+                        })
+                      }
+                    } yield ()).unsafeRunAsyncFuture()
+                  case _ =>
+                    Panic.!!!()
+                })
+
+                val request = Request(
+                  method = HttpMethod(nettyRequest.method.name),
+                  url = nettyRequest.uri,
+                  scheme = "http",
+                  headers = nettyRequest.headers.asScala.map { h =>
+                    (HttpString(h.getKey), HttpString(h.getValue))
+                  }.toMap,
+                  content = Content(
+                    Stream.
+                      // The content stream can be read only once
+                      eval(readers.tryDecrement).
+                      flatMap {
+                        case false =>
+                          Stream.fail(Error.StreamAlreadyConsumed)
+                        case true =>
+                          content.dequeue.
+                            takeWhile(_.nonEmpty).
+                            flatMap(Stream.chunk).
+                            onFinalize {
+                              // When user code finalize the stream
+                              // we drain the queue so the connection
+                              // is ready for the next request
+                              content.dequeue.
+                                interruptWhen(requestFullyConsumed).
+                                run
+                            }
+                      }
+                  )
+                )
+
+                Future(try { f(request) } catch { case e: Throwable => Future.failed(e) })(executor).
+                  flatMap(identity).
+                  recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }.
+                  flatMap { response =>
+                    val nettyResponse = new DefaultHttpResponse(
+                      NettyHttpVersion.HTTP_1_1,
+                      HttpResponseStatus.valueOf(response.status)
+                    )
+                    (response.headers ++ response.content.headers).foreach { case (key,value) =>
+                      nettyResponse.headers.set(key.toString, value.toString)
+                    }
+
+                    (for {
+                      _ <- channel.writeAndFlush(nettyResponse).toFuture
+                      _ <- {
+                        if(response.status == 101) {
+                          // Upgrade the connection
+                          var buffer: Chunk[Byte] = Chunk.empty
+                          val (content, readers) = (for {
+                            c <- async.synchronousQueue[Task,Chunk[Byte]]
+                            r <- async.semaphore[Task](1)
+                          } yield (c,r)).unsafeRun()
+                          channel.runInEventLoop {
+                            channel.config.setAllowHalfClosure(true)
+                            channel.pipeline.remove("HttpRequestDecoder")
+                            channel.pipeline.remove("HttpResponseEncoder")
+                            channel.pipeline.remove("RequestHandler")
+                            channel.pipeline.addBefore(
+                              "CatchAll",
+                              "UpgradedConnectionHandler",
+                              new SimpleChannelInboundHandler[ByteBuf] {
+                                override def channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) = {
+                                  buffer = Chunk.concat(Seq(buffer, msg.toChunk))
+                                }
+                                override def channelReadComplete(ctx: ChannelHandlerContext) = {
+                                  (if(channel.isInputShutdown) {
+                                    (for {
+                                      _ <- content.enqueue1(Chunk.empty)
+                                    } yield ()).unsafeRunAsyncFuture()
+                                  }
+                                  else {
+                                    (for {
+                                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                                      _ <- Task.now {
+                                        channel.runInEventLoop {
+                                          buffer = Chunk.empty
+                                          channel.read()
+                                        }
+                                      }
+                                    } yield ()).unsafeRunAsyncFuture()
+                                  }).
+                                  andThen { case _ =>
+                                    if(channel.isInputShutdown && channel.isOutputShutdown) {
+                                      channel.close()
+                                    }
+                                  }
+                                }
+                              }
+                            )
+                            channel.read()
+                          }
+                          val upstream = {
+                            Stream.
+                              // The content stream can be read only once
+                              eval(readers.tryDecrement).
+                              flatMap {
+                                case false =>
+                                  Stream.fail(Error.StreamAlreadyConsumed)
+                                case true =>
+                                  content.dequeue.
+                                    takeWhile(_.nonEmpty).
+                                    flatMap(Stream.chunk).
+                                    onFinalize(Task.delay {
+                                      channel.runInEventLoop {
+                                        channel.shutdownInput()
+                                      }
+                                    })
+                              }
+                          }
+                          val downstream = response.upgradeConnection(upstream)
+
+                          (downstream to channel.bytesSink).
+                            onFinalize(Task.delay {
+                              channel.runInEventLoop {
+                                channel.shutdownOutput()
+                              }
+                            }).
+                            run.
+                            unsafeRunAsyncFuture()
+                        }
+                        else {
+                          (response.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture().
+                            flatMap { _ =>
+                              // Drain the request content
+                              (for {
+                                _ <- request.drain
+                                _ <- requestFullyConsumed.discrete.takeWhile(!_).run.unsafeRunAsyncFuture()
+                              } yield ())
+                            }
+                        }
+                      }
+                    } yield ())
+                  }
+
+              case msg =>
+                handleContent.map(_(Some(msg))).getOrElse { Panic.!!!() }
+            }
+            override def channelReadComplete(ctx: ChannelHandlerContext) = {
+              handleContent.foreach(_(None))
+            }
+          }
+        )
+
+        // Wait for the first request
+        channel.config.setAutoRead(false)
+        channel.read()
+      }
+    })
+    options.debug.foreach { logger =>
+      bootstrap.handler(new LoggingHandler(s"$logger",LogLevel.INFO))
+    }
+
+    val channel = bootstrap.bind(address, port).sync().channel()
+    val localAddress = Try(channel.localAddress.asInstanceOf[InetSocketAddress]).getOrElse(Panic.!!!())
+    new Server(localAddress, ssl, options, () => eventLoop.shutdownGracefully())
   }
 
 }

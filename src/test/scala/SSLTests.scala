@@ -25,7 +25,7 @@ class SSLTests extends Tests {
 
   test("insecure connection rejected") {
     withServer(Server.listen(ssl = Some(SSL.selfSigned()))(App)) { server =>
-      an [Exception] should be thrownBy contentString(Get(s"https://localhost:${server.port}/"))
+      an [javax.net.ssl.SSLException] should be thrownBy contentString(Get(s"https://localhost:${server.port}/"))
     }
   }
 

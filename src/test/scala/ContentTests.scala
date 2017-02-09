@@ -8,23 +8,23 @@ import fs2.{ Stream }
 class ContentTests extends Tests {
 
   test("Text encoding", Pure) {
-    val textContent = Content("Héhé")
+    val textContent = Content.of("Héhé")
     textContent.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=UTF-8"))
     getBytes(textContent) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-8")
 
-    val textContent2 = Content("Héhé")(ContentEncoder.text(Codec.ISO8859))
+    val textContent2 = Content.of("Héhé")(ContentEncoder.text(Codec.ISO8859))
     textContent2.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=ISO-8859-1"))
     getBytes(textContent2) should contain theSameElementsInOrderAs "Héhé".getBytes("iso8859-1")
 
     implicit val defaultTextEncoderHere = ContentEncoder.text(Codec("utf-16"))
-    val textContent3 = Content("Héhé")
+    val textContent3 = Content.of("Héhé")
     textContent3.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=UTF-16"))
     getBytes(textContent3) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-16")
   }
 
   test("Text decoding", Pure) {
     val text = "Do you speak English? えいごをはなせますか"
-    val textContent = Content(text)
+    val textContent = Content.of(text)
 
     textContent.as[String].unsafeRun() should be (text)
     textContent.as(ContentDecoder.text(codec = Codec.ISO8859)).unsafeRun() should not be (text)
@@ -41,7 +41,7 @@ class ContentTests extends Tests {
       "Héhé" -> Seq("lol", "wat&hop"),
       "Do you speak English?" -> Seq("えいごをはなせますか")
     )
-    val formContent = Content(form)
+    val formContent = Content.of(form)
     formContent.headers.get(Headers.ContentType) should be (Some("application/x-www-form-urlencoded"))
     new String(getBytes(formContent).toArray, "us-ascii") should be (
       "H%C3%A9h%C3%A9=lol&H%C3%A9h%C3%A9=wat%26hop&Do+you+speak+English%3F=%E3%81%88%E3%81%84%E3%81%94" +
@@ -58,7 +58,7 @@ class ContentTests extends Tests {
       "Héhé" -> Seq("lol", "wat&hop"),
       "Do you speak English?" -> Seq("えいごをはなせますか")
     )
-    val formWithCharsetContent = Content(formWithCharset)
+    val formWithCharsetContent = Content.of(formWithCharset)
     formWithCharsetContent.headers.get(Headers.ContentType) should be (Some("application/x-www-form-urlencoded"))
     new String(getBytes(formWithCharsetContent).toArray, "us-ascii") should be (
       "_charset_=windows-1252&H%E9h%E9=lol&H%E9h%E9=wat%26hop&Do+you+speak+English%3F=%26%2312360%3B%26%2312356%3B%26%2312372%3B%26%2312434%3B%26%2312399%3B%26%2312394%3B%26%2312379%3B%26%2312414%3B%26%2312377%3B%26%2312363%3B"
@@ -102,15 +102,19 @@ class ContentTests extends Tests {
 
     val content = implicitly[ContentEncoder[java.io.File]].apply(file)
 
-    content.length should be (Some(59))
-    content.headers should be (Map(Headers.ContentType -> "text/html"))
+    content.headers should be (Map(
+      Headers.ContentLength -> h"59",
+      Headers.ContentType -> h"text/html"
+    ))
 
     getString(content) should be (realContent)
 
     val content2 = ContentEncoder.file(1).apply(file)
 
-    content2.length should be (Some(59))
-    content2.headers should be (Map(Headers.ContentType -> "text/html"))
+    content2.headers should be (Map(
+      Headers.ContentLength -> h"59",
+      Headers.ContentType -> h"text/html"
+    ))
 
     val x = content2.stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).

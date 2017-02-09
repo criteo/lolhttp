@@ -32,15 +32,14 @@ package object http {
   // Request builders
   private def request(url: String) = {
     if(url.startsWith("http://") || url.startsWith("https://")) {
-      val (scheme, host, port, path, queryString) = Internal.extract(url)
-      Request(GET, path, queryString, scheme, headers = Map(Headers.Host -> h"$host:$port"))
+      val (scheme, host, port, path, queryString) = internal.extract(url)
+      Request(
+        GET, s"""$path${queryString.map(x => "?" + x).getOrElse("")}""",scheme,
+        headers = Map(Headers.Host -> h"$host:$port")
+      )
     }
     else {
-      url.split("[?]").toList match {
-        case path :: Nil => Request(GET, path)
-        case path :: queryString :: Nil => Request(GET, path, Some(queryString))
-        case _ => sys.error(s"Invalid url $url")
-      }
+      Request(GET, url)
     }
   }
   def Get(url: String) = request(url)

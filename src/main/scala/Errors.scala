@@ -3,12 +3,13 @@ package lol.http
 case class Panic(msg: String) extends RuntimeException(s"Unexpected error, probably a bug. $msg")
 object Panic { def !!!(msg: String = "") = throw Panic(msg) }
 
-case class Error(msg: String) extends RuntimeException(msg)
+case class Error(code: Int, msg: String) extends RuntimeException(msg)
 object Error {
-  val ConnectionClosed = Error("Connection closed")
-  val ClientAlreadyClosed = Error("Client already closed")
-  val UpgradeRefused = Error("Connection upgrade was denied by the server")
-  val TooManyWaiters = Error("Client has already too many waiting requests")
-  val AutoRedirectNotSupported = Error("Automatic redirects is only allowed for GET requests")
-  val HostHeaderMissing = Error("The Host header was missing in the request")
+  val ConnectionClosed = Error(1, "Connection closed")
+  val ClientAlreadyClosed = Error(2, "Client already closed")
+  val StreamAlreadyConsumed = Error(3, "The content stream has already been consumed")
+  val UpgradeRefused = Error(4, "Connection upgrade was denied by the server")
+  val TooManyWaiters = Error(5, "Client has already too many waiting requests")
+  val AutoRedirectNotSupported = Error(6, "Automatic redirects is only allowed for GET requests")
+  val HostHeaderMissing = Error(7, "The Host header was missing in the request")
 }

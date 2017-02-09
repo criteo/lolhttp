@@ -15,7 +15,6 @@ import fs2.{ Strategy, Chunk, Task, Stream }
 
 case class Content(
   stream: Stream[Task,Byte],
-  length: Option[Long],
   headers: Map[HttpString,HttpString] = Map.empty
 ) {
   def as[A](implicit decoder: ContentDecoder[A]): Task[A] = decoder(this)
@@ -23,8 +22,8 @@ case class Content(
 }
 
 object Content {
-  val empty = Content(Stream.empty, Some(0))
-  def apply[A](a: A)(implicit encoder: ContentEncoder[A]): Content = encoder(a)
+  val empty = Content(Stream.empty, Map(Headers.ContentLength -> h"0"))
+  def of[A](a: A)(implicit encoder: ContentEncoder[A]): Content = encoder(a)
 }
 
 trait ContentDecoder[+A] { def apply(content: Content): Task[A] }
@@ -116,8 +115,10 @@ object ContentEncoder {
   implicit val binary = new ContentEncoder[Array[Byte]] {
     def apply(data: Array[Byte]) = Content(
       stream = Stream.chunk(Chunk.bytes(data)),
-      length = Some(data.size),
-      headers = Map(Headers.ContentType -> h"application/octet-stream")
+      headers = Map(
+        Headers.ContentLength -> HttpString(data.size),
+        Headers.ContentType -> h"application/octet-stream"
+      )
     )
   }
 
@@ -127,8 +128,10 @@ object ContentEncoder {
       data.get(bytes)
       Content(
         stream = Stream.chunk(Chunk.bytes(bytes)),
-        length = Some(bytes.size),
-        headers = Map(Headers.ContentType -> h"application/octet-stream")
+        headers = Map(
+          Headers.ContentLength -> HttpString(bytes.size),
+          Headers.ContentType -> h"application/octet-stream"
+        )
       )
     }
   }
@@ -181,7 +184,6 @@ object ContentEncoder {
 
       Content(
         stream,
-        length = None,
         headers = Map(Headers.ContentType -> h"application/octet-stream")
       )
     }
@@ -233,8 +235,10 @@ object ContentEncoder {
 
       Content(
         stream,
-        length = Some(data.length),
-        headers = Map(Headers.ContentType -> HttpString(Internal.guessContentType(data.getName)))
+        headers = Map(
+          Headers.ContentLength -> HttpString(data.length),
+          Headers.ContentType -> HttpString(internal.guessContentType(data.getName))
+        )
       )
     }
   }

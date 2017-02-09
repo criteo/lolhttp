@@ -15,10 +15,13 @@ case class Response(
 ) extends Future[Response] {
 
   // Content
-  def apply[A: ContentEncoder](content: A) = copy(content = Content(content))
+  def apply[A: ContentEncoder](content: A) = copy(content = Content.of(content))
   def read[A: ContentDecoder]: Future[A] = content.as[A].unsafeRunAsyncFuture
   def read[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = effect(content.stream).unsafeRunAsyncFuture
-  def drain: Future[Unit] = read[Unit]
+  def drain: Future[Unit] = read(_.onError {
+    case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
+    case e: Throwable => Stream.fail(e)
+  }.drain.run)
 
   // Headers
   def addHeaders(headers: Map[HttpString,HttpString]) = copy(headers = this.headers ++ headers)

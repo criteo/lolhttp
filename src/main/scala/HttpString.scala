@@ -14,3 +14,8 @@ case class HttpString(str: String) extends Ordered[HttpString] {
   }
   override def toString = str
 }
+
+object HttpString {
+  def apply(n: Int): HttpString = apply(n.toString)
+  def apply(n: Long): HttpString = apply(n.toString)
+}

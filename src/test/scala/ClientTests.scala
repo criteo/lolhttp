@@ -52,7 +52,7 @@ class ClientTests extends Tests {
     }
   }
 
-  test("Large content") {
+  test("Large content", Slow) {
     val App: Service = {
       case GET at url"/huge" => {
         Ok(
@@ -61,7 +61,7 @@ class ClientTests extends Tests {
               repeat.
               take(1024).
               flatMap(Stream.chunk),
-            None
+            Map(Headers.ContentLength -> HttpString(1024 * 1024))
           )
         )
       }
@@ -95,7 +95,7 @@ class ClientTests extends Tests {
             _ = hello should be ("World")
             _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()
-            _ = an [Exception] should be thrownBy await() { client.run(Get("/hello"))() }
+            _ = the [Error] thrownBy await() { client.run(Get("/hello"))() } shouldBe (Error.ClientAlreadyClosed)
           } yield ()
         }
       }
@@ -107,7 +107,7 @@ class ClientTests extends Tests {
             _ = hello should be ("World")
             _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()
-            _ = an [Exception] should be thrownBy await() { client.run(Get("/hello"))() }
+            _ = the [Error] thrownBy await() { client.run(Get("/hello"))() } shouldBe (Error.ClientAlreadyClosed)
           } yield ()
         }
       }
@@ -148,10 +148,13 @@ class ClientTests extends Tests {
 
   test("Single connection", Slow) {
     withServer(Server.listen() { case GET at url"/$word" =>
-      Ok(Content(Stream.chunk(Chunk.bytes((word * 1024 * 100).getBytes("us-ascii"))), None))
+      Ok(Content(
+        Stream.chunk(Chunk.bytes((word * 1024 * 100).getBytes("us-ascii"))),
+        Map(Headers.ContentLength -> HttpString(1024 * 100 * word.size))
+      ))
     }) { server =>
 
-      await() {
+      the [Error] thrownBy await() {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
           for {
             response <- client(Get("/Hello"))
@@ -160,11 +163,10 @@ class ClientTests extends Tests {
             _ = new String(helloBytes.toArray, "us-ascii") should be ("HelloHel")
 
             // illegal to reopen the stream
-            moreBytes <- response.content.stream.runLog.unsafeRunAsyncFuture()
-            _ = moreBytes.size should be (0)
+            _ <- response.content.stream.runLog.unsafeRunAsyncFuture()
           } yield ()
         }
-      }
+      } should be (Error.StreamAlreadyConsumed)
 
       a [TimeoutException] should be thrownBy await(2 seconds) {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>

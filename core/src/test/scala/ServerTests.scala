@@ -3,8 +3,6 @@ package lol.http
 import fs2.{ Stream, Chunk, Task }
 
 import scala.concurrent.{ ExecutionContext }
-import scala.concurrent.duration._
-
 import ExecutionContext.Implicits.global
 
 class ServerTests extends Tests {
@@ -114,11 +112,11 @@ class ServerTests extends Tests {
   test("Upload", Slow) {
     withServer(Server.listen(options = ServerOptions(debug = None)) {
       case req @ POST at url"/" =>
-        req.read(_.chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
+        req.readWith(_.chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
           Ok(s"Received $contentSize bytes")
         }
       case req @ POST at url"/take/$size" =>
-        req.read(_.take(size.toInt).chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
+        req.readWith(_.take(size.toInt).chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
           Ok(s"Took $contentSize bytes")
         }
     }) { server =>

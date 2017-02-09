@@ -60,7 +60,7 @@ object Server {
     ssl: Option[SSL.Configuration] = None,
     options: ServerOptions = ServerOptions(),
     onError: (Throwable => Response) = _ => defaultErrorResponse
-  )(f: Service)(implicit executor: ExecutionContext) = {
+  )(f: Service)(implicit executor: ExecutionContext): Server = {
     implicit val S = Strategy.fromExecutionContext(executor)
 
     val connectionIds = new AtomicLong(0)
@@ -278,9 +278,16 @@ object Server {
       bootstrap.handler(new LoggingHandler(s"$logger",LogLevel.INFO))
     }
 
-    val channel = bootstrap.bind(address, port).sync().channel()
-    val localAddress = Try(channel.localAddress.asInstanceOf[InetSocketAddress]).getOrElse(Panic.!!!())
-    new Server(localAddress, ssl, options, () => eventLoop.shutdownGracefully())
+    try {
+      val channel = bootstrap.bind(address, port).sync().channel()
+      val localAddress = Try(channel.localAddress.asInstanceOf[InetSocketAddress]).getOrElse(Panic.!!!())
+      new Server(localAddress, ssl, options, () => eventLoop.shutdownGracefully())
+    }
+    catch {
+      case e: Throwable =>
+        eventLoop.shutdownGracefully()
+        throw e
+    }
   }
 
 }

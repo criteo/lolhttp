@@ -17,6 +17,7 @@ package object http {
 
   // Response builders
   def Ok = Response(200)
+  def Created = Response(201)
   def InternalServerError = Response(500)
   def Redirect(url: String, permanent: Boolean = false) = {
     Response(if(permanent) 308 else 307).addHeaders(Headers.Location -> HttpString(url))

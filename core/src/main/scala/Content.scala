@@ -28,7 +28,7 @@ object Content {
 
 trait ContentDecoder[+A] { def apply(content: Content): Task[A] }
 object ContentDecoder {
-  private val MaxSize = Try {
+  val MaxSize = Try {
     System.getProperty("lol.http.ContentDecoder.maxSizeInMemory").toInt
   }.getOrElse(1024 * 1024)
 

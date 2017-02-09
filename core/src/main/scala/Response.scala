@@ -17,8 +17,8 @@ case class Response(
   // Content
   def apply[A: ContentEncoder](content: A) = copy(content = Content.of(content))
   def read[A: ContentDecoder]: Future[A] = content.as[A].unsafeRunAsyncFuture
-  def read[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = effect(content.stream).unsafeRunAsyncFuture
-  def drain: Future[Unit] = read(_.onError {
+  def readWith[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = effect(content.stream).unsafeRunAsyncFuture
+  def drain: Future[Unit] = readWith(_.onError {
     case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
     case e: Throwable => Stream.fail(e)
   }.drain.run)
@@ -42,4 +42,6 @@ case class Response(
     override def run = f(Success(Response.this))
   })
   def value: Option[Try[Response]] = Some(Success(this))
+  def transform[S](f: Try[Response] => Try[S])(implicit executor: ExecutionContext) = ???
+  def transformWith[S](f: Try[Response] => Future[S])(implicit executor: ExecutionContext) = ???
 }

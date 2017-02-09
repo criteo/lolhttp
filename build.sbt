@@ -24,5 +24,8 @@ lazy val lolhttp =
       "org.bouncycastle" % "bcprov-jdk15on" % "1.55",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     ),
-    fork in Test := true
+    fork in Test := true,
+    commands += Command.single("loop") { (state, arg) =>
+      arg :: s"loop $arg" :: state
+    }
   )

@@ -126,7 +126,7 @@ object Server {
                     (for {
                       _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
                       _ <- if(requestFullyConsumed.get.unsafeRun()) {
-                        Task.now(channel.runInEventLoop {
+                        Task.fromFuture(channel.runInEventLoop {
                           handleContent = None
                           // Read the next request
                           channel.read()
@@ -135,7 +135,7 @@ object Server {
                         }
                       }
                       else {
-                        Task.now(channel.runInEventLoop {
+                        Task.fromFuture(channel.runInEventLoop {
                           buffer = Chunk.empty
                           channel.read()
                         })
@@ -187,96 +187,93 @@ object Server {
                       nettyResponse.headers.set(key.toString, value.toString)
                     }
 
-                    (for {
-                      _ <- channel.writeAndFlush(nettyResponse).toFuture
-                      _ <- {
-                        if(response.status == 101) {
-                          // Upgrade the connection
-                          var buffer: Chunk[Byte] = Chunk.empty
-                          val (content, readers) = (for {
-                            c <- async.synchronousQueue[Task,Chunk[Byte]]
-                            r <- async.semaphore[Task](1)
-                          } yield (c,r)).unsafeRun()
-                          channel.runInEventLoop {
-                            channel.config.setAllowHalfClosure(true)
-                            channel.pipeline.remove("HttpRequestDecoder")
-                            channel.pipeline.remove("HttpResponseEncoder")
-                            channel.pipeline.remove("RequestHandler")
-                            channel.pipeline.addBefore(
-                              "CatchAll",
-                              "UpgradedConnectionHandler",
-                              new SimpleChannelInboundHandler[ByteBuf] {
-                                override def channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) = {
-                                  buffer = Chunk.concat(Seq(buffer, msg.toChunk))
-                                }
-                                override def channelReadComplete(ctx: ChannelHandlerContext) = {
-                                  (if(channel.isInputShutdown) {
-                                    (for {
-                                      _ <- content.enqueue1(Chunk.empty)
-                                    } yield ()).unsafeRunAsyncFuture()
-                                  }
-                                  else {
-                                    (for {
-                                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                                      _ <- Task.now {
-                                        channel.runInEventLoop {
-                                          buffer = Chunk.empty
-                                          channel.read()
-                                        }
-                                      }
-                                    } yield ()).unsafeRunAsyncFuture()
-                                  }).
-                                  andThen { case _ =>
-                                    if(channel.isInputShutdown && channel.isOutputShutdown) {
-                                      channel.close()
+                    channel.runInEventLoop {
+                      if(response.status == 101) {
+                        // Upgrade the connection
+                        var buffer: Chunk[Byte] = Chunk.empty
+                        val (content, readers) = (for {
+                          c <- async.synchronousQueue[Task,Chunk[Byte]]
+                          r <- async.semaphore[Task](1)
+                        } yield (c,r)).unsafeRun()
+
+                        channel.config.setAllowHalfClosure(true)
+                        channel.pipeline.remove("HttpRequestDecoder")
+                        channel.pipeline.remove("RequestHandler")
+                        channel.pipeline.addBefore(
+                          "CatchAll",
+                          "UpgradedConnectionHandler",
+                          new SimpleChannelInboundHandler[ByteBuf] {
+                            override def channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) = {
+                              buffer = Chunk.concat(Seq(buffer, msg.toChunk))
+                            }
+                            override def channelReadComplete(ctx: ChannelHandlerContext) = {
+                              (if(channel.isInputShutdown) {
+                                (for {
+                                  _ <- content.enqueue1(Chunk.empty)
+                                } yield ()).unsafeRunAsyncFuture()
+                              }
+                              else {
+                                (for {
+                                  _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                                  _ <- Task.fromFuture {
+                                    channel.runInEventLoop {
+                                      buffer = Chunk.empty
+                                      channel.read()
                                     }
                                   }
+                                } yield ()).unsafeRunAsyncFuture()
+                              }).
+                              andThen { case _ =>
+                                if(channel.isInputShutdown && channel.isOutputShutdown) {
+                                  channel.close()
                                 }
                               }
-                            )
-                            channel.read()
+                            }
                           }
-                          val upstream = {
-                            Stream.
-                              // The content stream can be read only once
-                              eval(readers.tryDecrement).
-                              flatMap {
-                                case false =>
-                                  Stream.fail(Error.StreamAlreadyConsumed)
-                                case true =>
-                                  content.dequeue.
-                                    takeWhile(_.nonEmpty).
-                                    flatMap(Stream.chunk).
-                                    onFinalize(Task.delay {
-                                      channel.runInEventLoop {
-                                        channel.shutdownInput()
-                                      }
-                                    })
-                              }
-                          }
-                          val downstream = response.upgradeConnection(upstream)
+                        )
+                        channel.read()
 
-                          (downstream to channel.bytesSink).
-                            onFinalize(Task.delay {
+                        val downstream = response.upgradeConnection(
+                          Stream.
+                            // The content stream can be read only once
+                            eval(readers.tryDecrement).
+                            flatMap {
+                              case false =>
+                                Stream.fail(Error.StreamAlreadyConsumed)
+                              case true =>
+                                content.dequeue.
+                                  takeWhile(_.nonEmpty).
+                                  flatMap(Stream.chunk).
+                                  onFinalize(Task.fromFuture {
+                                    channel.runInEventLoop {
+                                      channel.shutdownInput()
+                                    }
+                                  })
+                            }
+                        )
+
+                        (for {
+                          _ <- channel.writeAndFlush(nettyResponse).toFuture
+                          _ <- channel.runInEventLoop { channel.pipeline.remove("HttpResponseEncoder") }
+                          _ <- (downstream to channel.bytesSink).
+                            onFinalize(Task.fromFuture {
                               channel.runInEventLoop {
                                 channel.shutdownOutput()
                               }
                             }).
                             run.
                             unsafeRunAsyncFuture()
-                        }
-                        else {
-                          (response.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture().
-                            flatMap { _ =>
-                              // Drain the request content
-                              (for {
-                                _ <- request.drain
-                                _ <- requestFullyConsumed.discrete.takeWhile(!_).run.unsafeRunAsyncFuture()
-                              } yield ())
-                            }
-                        }
+                        } yield ())
                       }
-                    } yield ())
+                      else {
+                        (for {
+                          _ <- channel.writeAndFlush(nettyResponse).toFuture
+                          _ <- (response.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture()
+                          _ <- request.drain
+                          _ <- requestFullyConsumed.discrete.takeWhile(!_).run.unsafeRunAsyncFuture()
+                        } yield ())
+                      }
+                    }
                   }
 
               case msg =>

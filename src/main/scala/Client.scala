@@ -159,7 +159,7 @@ private[http] class Connection(
                         case true =>
                           (
                             (upstream to channel.bytesSink).
-                              onFinalize(Task.delay {
+                              onFinalize(Task.fromFuture {
                                 channel.runInEventLoop {
                                   channel.shutdownOutput()
                                 }
@@ -168,7 +168,7 @@ private[http] class Connection(
                             content.dequeue.
                               takeWhile(_.nonEmpty).
                               flatMap(Stream.chunk).
-                              onFinalize(Task.delay {
+                              onFinalize(Task.fromFuture {
                                 channel.runInEventLoop {
                                   channel.shutdownInput()
                                 }
@@ -198,13 +198,14 @@ private[http] class Connection(
                   override def channelReadComplete(ctx: ChannelHandlerContext) = {
                     (if(channel.isInputShutdown) {
                       (for {
+                        _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
                         _ <- content.enqueue1(Chunk.empty)
                       } yield ()).unsafeRunAsyncFuture()
                     }
                     else {
                       (for {
                         _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                        _ <- Task.now {
+                        _ <- Task.fromFuture {
                           channel.runInEventLoop {
                             buffer = Chunk.empty
                             channel.read()
@@ -236,7 +237,7 @@ private[http] class Connection(
         (for {
           _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
           _ <- if(responseDone) content.enqueue1(Chunk.empty) else Task.now(())
-          _ <- Task.now {
+          _ <- Task.fromFuture {
             channel.runInEventLoop {
               if(responseDone) {
                 // This response has been completely handled
@@ -264,10 +265,7 @@ private[http] class Connection(
     (for {
       _ <- channel.writeAndFlush(nettyRequest).toFuture
       _ <- (request.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture()
-      _ <- Task.now {
-        // Read the next response message
-        channel.runInEventLoop { channel.read() }
-      }.unsafeRunAsyncFuture()
+      _ <- channel.runInEventLoop { channel.read() } // Read the next response message
       response <- eventuallyResponse.future
     } yield (response, releaseConnection)).
     andThen {

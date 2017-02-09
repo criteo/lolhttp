@@ -35,9 +35,8 @@ import internal.NettySupport._
 
 case class ServerOptions(
   ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 2),
-  bufferSize: Int = 16 * 1024,
-  directBuffers: Boolean = true,
   tcpNoDelay: Boolean = true,
+  bufferSize: Option[Int] = None,
   debug: Option[String] = None
 )
 
@@ -71,6 +70,13 @@ object Server {
       channel(classOf[NioServerSocketChannel]).
       childHandler(new ChannelInitializer[SocketChannel] {
       override def initChannel(channel: SocketChannel) = {
+        channel.config.setTcpNoDelay(options.tcpNoDelay)
+        options.bufferSize.foreach { size =>
+          channel.config.setReceiveBufferSize(size)
+          channel.config.setSendBufferSize(size)
+        }
+        channel.config.setAutoRead(false)
+
         // used for internal sanity check
         val id = connectionIds.incrementAndGet()
 
@@ -283,7 +289,6 @@ object Server {
         )
 
         // Wait for the first request
-        channel.config.setAutoRead(false)
         channel.read()
       }
     })

@@ -34,10 +34,9 @@ import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 import internal.NettySupport._
 
 case class ClientOptions(
-  ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 4),
-  bufferSize: Int = 16 * 1024,
-  directBuffers: Boolean = true,
+  ioThreads: Int = Math.min(Runtime.getRuntime.availableProcessors, 2),
   tcpNoDelay: Boolean = true,
+  bufferSize: Option[Int] = None,
   debug: Option[String] = None
 )
 
@@ -300,6 +299,11 @@ class Client(
     remoteAddress(host, port).
     handler(new ChannelInitializer[SocketChannel] {
     override def initChannel(channel: SocketChannel) = {
+      channel.config.setTcpNoDelay(options.tcpNoDelay)
+      options.bufferSize.foreach { size =>
+        channel.config.setReceiveBufferSize(size)
+        channel.config.setSendBufferSize(size)
+      }
       channel.config.setAutoRead(false)
       Option(scheme).filter(_ == "https").foreach { _ =>
         val sslCtx = new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)

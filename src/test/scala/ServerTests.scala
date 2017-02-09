@@ -131,7 +131,7 @@ class ServerTests extends Tests {
         Map(Headers.ContentLength -> HttpString(1024 * 1024))
       )
 
-      await(30 seconds) {
+      await() {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
           for {
             a <- client.run(Post("/", oneMeg))(_.read[String])

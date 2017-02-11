@@ -255,7 +255,6 @@ object Server {
                           _ <- channel.writeAndFlush(nettyResponse).toFuture
                           _ <- (response.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture()
                           _ <- request.drain
-                          _ <- requestFullyConsumed.discrete.takeWhile(!_).run.unsafeRunAsyncFuture()
                         } yield ())
                       }
                     }

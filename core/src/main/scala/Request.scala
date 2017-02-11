@@ -29,7 +29,6 @@ case class Request(
     case e: Throwable => Stream.fail(e)
   }.drain.run)
 
-
   // Headers
   def addHeaders(headers: Map[HttpString,HttpString]) = copy(headers = this.headers ++ headers)
   def addHeaders(headers: (HttpString,HttpString)*) = copy(headers = this.headers ++ headers.toMap)

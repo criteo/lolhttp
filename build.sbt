@@ -29,6 +29,22 @@ lazy val commonSettings = Seq(
   }
 )
 
+def removeDependencies(groups: String*)(xml: scala.xml.Node) = {
+  import scala.xml._
+  import scala.xml.transform._
+  (new RuleTransformer(
+    new RewriteRule {
+      override def transform(n: Node): Seq[Node] = n match {
+        case dependency @ Elem(_, "dependency", _, _, _*) =>
+          if(dependency.child.collect { case e: Elem => e}.headOption.exists { e =>
+            groups.exists(group => e.toString == s"<groupId>$group</groupId>")
+          }) Nil else dependency
+        case x => x
+      }
+    }
+  ))(xml)
+}
+
 lazy val lolhttp =
   (project in file("core")).
   settings(commonSettings: _*).
@@ -63,7 +79,8 @@ lazy val lolhttp =
       val core = (artifact in (Compile, packageBin)).value
       val vendorised = (artifact in (Compile, assembly)).value
       vendorised
-    }
+    },
+    pomPostProcess := removeDependencies("io.netty", "org.bouncycastle", "org.scalatest")
   ).
   settings(addArtifact(artifact in (Compile, assembly), assembly): _*)
 
@@ -77,7 +94,8 @@ lazy val loljson =
       "io.circe" %% "circe-parser"
     ).map(_ % "0.6.0") ++ Seq(
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
-    )
+    ),
+    pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
 

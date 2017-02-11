@@ -1,7 +1,7 @@
 package lol.http
 
-case class Panic(msg: String) extends RuntimeException(s"Unexpected error, probably a bug. $msg")
-object Panic { def !!!(msg: String = "") = throw Panic(msg) }
+case class Panic(msg: String) extends RuntimeException(msg)
+object Panic { def !!!(msg: String = "Unexpected behavior") = throw Panic(msg) }
 
 case class Error(code: Int, msg: String) extends RuntimeException(msg)
 object Error {

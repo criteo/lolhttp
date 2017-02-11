@@ -6,7 +6,7 @@ object TestExample {
 
     new Thread() {
       override def run: Unit = {
-        println(s"-- example `$example` started, press [Crtl+D] to quit")
+        println(s"-- example `$example` started, press [Ctrl+D] to quit")
         while (System.in.read != -1) ()
         forked.destroy()
       }

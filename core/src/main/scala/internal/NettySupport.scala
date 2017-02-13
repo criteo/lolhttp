@@ -1,14 +1,17 @@
 package lol.http.internal
 
-import fs2.{ Strategy, Chunk, Task, Pull, Sink }
+import fs2.{ Stream, Strategy, Chunk, Task, Pull, Sink }
 
 import io.netty.channel.{ Channel, ChannelFuture }
 import io.netty.util.concurrent.{ GenericFutureListener }
 import io.netty.buffer.{ Unpooled, ByteBuf }
 import io.netty.handler.codec.http.{
+  HttpMessage,
+  HttpHeaderNames,
   DefaultHttpContent,
   DefaultLastHttpContent }
 
+import scala.util.{ Try }
 import scala.concurrent.{
   Future,
   Promise,
@@ -57,6 +60,37 @@ private[http] object NettySupport {
         new Runnable() { def run = try { block; p.success(()) } catch { case e: Throwable => p.failure(e)} }
       )
       p.future
+    }
+
+    def writeMessage(message: HttpMessage, contentStream: Stream[Task,Byte])(implicit e: ExecutionContext): Unit = {
+      val expectedLength = Try(message.headers.get(HttpHeaderNames.CONTENT_LENGTH).toInt).toOption
+      def go(data: Option[(Chunk[Byte], Stream[Task,Byte])]) = data match {
+        case None =>
+          channel.write(message)
+          channel.writeAndFlush(new DefaultLastHttpContent())
+        case Some((head, tail)) =>
+          channel.write(message)
+          if(expectedLength.exists(_ == head.size)) {
+            channel.writeAndFlush(head.toByteBuf)
+            channel.writeAndFlush(new DefaultLastHttpContent())
+          }
+          else {
+            channel.writeAndFlush(head.toByteBuf).toFuture.flatMap { _ =>
+              (tail to channel.httpContentSink).run.unsafeRunAsyncFuture()
+            }
+          }
+      }
+      contentStream.uncons.runLast.map(_.flatten).unsafeRunSync() match {
+        case Right(data) =>
+          go(data)
+        case Left(continuation) =>
+          continuation {
+            case Right(data) =>
+              go(data)
+            case Left(e) =>
+              throw e
+          }
+      }
     }
 
     def httpContentSink(implicit e: ExecutionContext): Sink[Task,Byte] = {

@@ -18,8 +18,10 @@ import io.netty.handler.codec.http.{
   DefaultHttpResponse,
   HttpRequest,
   HttpContent,
+  HttpHeaderNames,
   LastHttpContent,
   HttpVersion => NettyHttpVersion,
+  HttpMethod => NettyHttpMethod,
   HttpResponseStatus,
   HttpObject,
   HttpRequestDecoder,
@@ -109,50 +111,73 @@ object Server {
           new SimpleChannelInboundHandler[HttpObject] {
             override def channelRead0(ctx: ChannelHandlerContext, msg: HttpObject) = msg match {
               case nettyRequest: HttpRequest =>
-                var buffer: Chunk[Byte] = Chunk.empty
-                val (content, readers, requestFullyConsumed) = (for {
-                  c <- async.synchronousQueue[Task,Chunk[Byte]]
-                  r <- async.semaphore[Task](1)
-                  e <- async.signalOf[Task,Boolean](false)
-                } yield (c,r,e)).unsafeRun()
+                val baseRequest = {
+                  Request(
+                    method = HttpMethod(nettyRequest.method.name),
+                    url = nettyRequest.uri,
+                    scheme = "http",
+                    headers = nettyRequest.headers.asScala.map { h =>
+                      (HttpString(h.getKey), HttpString(h.getValue))
+                    }.toMap,
+                    content = Content(
+                      Stream.empty
+                    )
+                  )
+                }
 
-                handleContent = Some({
-                  case Some(part: HttpContent) =>
-                    buffer = Chunk.concat(Seq(buffer, part.content.toChunk))
-                    if(part.isInstanceOf[LastHttpContent]) {
-                      requestFullyConsumed.set(true).unsafeRun()
-                    }
-                  case None =>
-                    (for {
-                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                      _ <- if(requestFullyConsumed.get.unsafeRun()) {
-                        Task.fromFuture(channel.runInEventLoop {
-                          handleContent = None
-                          // Read the next request
-                          channel.read()
-                        }).flatMap { _ =>
-                          content.enqueue1(Chunk.empty)
+                val request = if(
+                  nettyRequest.method == NettyHttpMethod.GET ||
+                  nettyRequest.method == NettyHttpMethod.HEAD ||
+                  Try(nettyRequest.headers.get(HttpHeaderNames.CONTENT_LENGTH).toInt).toOption.exists(_ == 0)
+                ) {
+                  handleContent = Some({
+                    case None =>
+                      handleContent = None
+                      channel.read()
+                    case Some(part: LastHttpContent) if part.content.readableBytes == 0 =>
+                    case _ =>
+                      Panic.!!!()
+                  })
+                  baseRequest
+                }
+                else {
+                  var buffer: Chunk[Byte] = Chunk.empty
+                  val (content, readers, requestFullyConsumed) = (for {
+                    c <- async.synchronousQueue[Task,Chunk[Byte]]
+                    r <- async.semaphore[Task](1)
+                    e <- async.signalOf[Task,Boolean](false)
+                  } yield (c,r,e)).unsafeRun()
+
+                  handleContent = Some({
+                    case Some(part: HttpContent) =>
+                      buffer = Chunk.concat(Seq(buffer, part.content.toChunk))
+                      if(part.isInstanceOf[LastHttpContent]) {
+                        requestFullyConsumed.set(true).unsafeRun()
+                      }
+                    case None =>
+                      (for {
+                        _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                        _ <- if(requestFullyConsumed.get.unsafeRun()) {
+                          Task.fromFuture(channel.runInEventLoop {
+                            handleContent = None
+                            // Read the next request
+                            channel.read()
+                          }).flatMap { _ =>
+                            content.enqueue1(Chunk.empty)
+                          }
                         }
-                      }
-                      else {
-                        Task.fromFuture(channel.runInEventLoop {
-                          buffer = Chunk.empty
-                          channel.read()
-                        })
-                      }
-                    } yield ()).unsafeRunAsyncFuture()
-                  case _ =>
-                    Panic.!!!()
-                })
+                        else {
+                          Task.fromFuture(channel.runInEventLoop {
+                            buffer = Chunk.empty
+                            channel.read()
+                          })
+                        }
+                      } yield ()).unsafeRunAsyncFuture()
+                    case _ =>
+                      Panic.!!!()
+                  })
 
-                val request = Request(
-                  method = HttpMethod(nettyRequest.method.name),
-                  url = nettyRequest.uri,
-                  scheme = "http",
-                  headers = nettyRequest.headers.asScala.map { h =>
-                    (HttpString(h.getKey), HttpString(h.getValue))
-                  }.toMap,
-                  content = Content(
+                  baseRequest.copy(content = Content(
                     Stream.
                       // The content stream can be read only once
                       eval(readers.tryDecrement).
@@ -172,8 +197,8 @@ object Server {
                                 run
                             }
                       }
-                  )
-                )
+                  ))
+                }
 
                 Future(try { f(request) } catch { case e: Throwable => Future.failed(e) })(executor).
                   flatMap(identity).
@@ -251,11 +276,8 @@ object Server {
                         } yield ())
                       }
                       else {
-                        (for {
-                          _ <- channel.writeAndFlush(nettyResponse).toFuture
-                          _ <- (response.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture()
-                          _ <- request.drain
-                        } yield ())
+                        channel.writeMessage(nettyResponse, response.content.stream)
+                        request.drain
                       }
                     }
                   }

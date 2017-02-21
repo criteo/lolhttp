@@ -100,7 +100,7 @@ private[http] class Connection(
       new NettyHttpMethod(request.method.toString),
       s"${request.path}${request.queryString.map(q => s"?$q").getOrElse("")}"
     )
-    (request.headers ++ request.content.headers).foreach { case (key,value) =>
+    (request.content.headers ++ request.headers).foreach { case (key,value) =>
       nettyRequest.headers.set(key.toString, value.toString)
     }
 

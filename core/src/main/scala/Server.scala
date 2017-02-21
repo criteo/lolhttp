@@ -208,7 +208,7 @@ object Server {
                       NettyHttpVersion.HTTP_1_1,
                       HttpResponseStatus.valueOf(response.status)
                     )
-                    (response.headers ++ response.content.headers).foreach { case (key,value) =>
+                    (response.content.headers ++ response.headers).foreach { case (key,value) =>
                       nettyResponse.headers.set(key.toString, value.toString)
                     }
 

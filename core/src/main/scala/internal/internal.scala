@@ -13,7 +13,7 @@ package object internal {
   }
 
   def guessContentType(fileName: String): String = {
-    fileName.split("[.]").lastOption.map {
+    fileName.split("[.]").lastOption.collect {
       case "css"          => "text/css"
       case "htm" | "html" => "text/html"
       case "js"           => "application/javascript"

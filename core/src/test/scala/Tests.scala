@@ -19,7 +19,7 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
     await(atMost) { Client.run(req)(res => success(res.status)) }
   }
   def contentString(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
-    await(atMost) { Client.run(req)(_.read[String]) }
+    await(atMost) { Client.run(req)(_.readAs[String]) }
   }
   def getString(content: Content, codec: String = "utf-8") = new String(getBytes(content).toArray, codec)
   def getBytes(content: Content): Vector[Byte] = content.stream.runLog.unsafeRun()

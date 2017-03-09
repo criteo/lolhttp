@@ -34,16 +34,16 @@ class ClientTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            keys <- client.run(Get("/keys"))(_.read[String])
+            keys <- client.run(Get("/keys"))(_.readAs[String])
             _ = keys should be ("1,2,3")
             oops <- client.run(Get("/blah"))(res => success(res.status))
             _ = oops should be (404)
             results <- Future.sequence(
               keys.split("[,]").toList.map { key =>
-                client.run(Get(s"/data/$key"))(_.read[String])
+                client.run(Get(s"/data/$key"))(_.readAs[String])
               }
             )
-            (status, content) <- client.run(Get("/data/coco"))(res => res.read[String].map(c => (res.status, c)))
+            (status, content) <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
             _ = status should be (400)
             _ = content should be ("Invalid key format: coco")
           } yield results
@@ -88,10 +88,10 @@ class ClientTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            bye <- client.run(Get("/bye"))(_.read[String])
+            bye <- client.run(Get("/bye"))(_.readAs[String])
             _ = bye should be ("See you")
             _ = eventually(client.nbConnections should be (0))
-            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"CLOSE"))(_.read[String])
+            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"CLOSE"))(_.readAs[String])
             _ = hello should be ("World")
             _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()
@@ -103,7 +103,7 @@ class ClientTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"Close"))(_.read[String])
+            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"Close"))(_.readAs[String])
             _ = hello should be ("World")
             _ = eventually(client.nbConnections should be (0))
             _ <- client.stop()

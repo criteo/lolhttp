@@ -56,7 +56,7 @@ class JsonTests extends   Tests {
         case GET at "/results" =>
           Ok(Payload(data.size, data).asJson)
         case req @ POST at "/add" =>
-          req.read(json[Stuff]).
+          req.readAs(json[Stuff]).
             map { newStuff =>
               data += newStuff
               Created
@@ -69,21 +69,21 @@ class JsonTests extends   Tests {
       await() {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
           for {
-            r <- client.run(Get("/results"))(_.read(json[Payload]))
+            r <- client.run(Get("/results"))(_.readAs(json[Payload]))
             _ = r.size should be (3)
             _ = r.data.find(_.id == 2).map(_.label) should be (Some("Lol"))
 
             r <- client.run(Post("/add", Stuff(8, "Bam").asJson))(res => Future.successful(res.status))
             _ = r should be (201)
 
-            r <- client.run(Get("/results"))(_.read(json[Payload]))
+            r <- client.run(Get("/results"))(_.readAs(json[Payload]))
             _ = r.size should be (4)
             _ = r.data.find(_.id == 8).map(_.label) should be (Some("Bam"))
 
-            r <- client.run(Post("/add", "xxx"))(_.read[String])
+            r <- client.run(Post("/add", "xxx"))(_.readAs[String])
             _ = r should startWith ("expected json value got x")
 
-            r <- client.run(Post("/add", "{}"))(_.read[String])
+            r <- client.run(Post("/add", "{}"))(_.readAs[String])
             _ = r should startWith ("Attempt to decode value on failed cursor")
           } yield ()
         }

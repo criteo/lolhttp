@@ -35,6 +35,13 @@ import fs2.{ Stream, Task, Strategy, Chunk, async }
 
 import internal.NettySupport._
 
+/** = Allow to configure an HTTP server =
+  *
+  * @param ioThreads the number of threads used for the IO work. Default to `max(availableProcessors, 2)`.
+  * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
+  * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
+  * @param debug if defined log the TCP traffic with the provided logger name. Default to `None`.
+  */
 case class ServerOptions(
   ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 2),
   tcpNoDelay: Boolean = true,
@@ -42,27 +49,68 @@ case class ServerOptions(
   debug: Option[String] = None
 )
 
-class Server(
-  val socketAddress: InetSocketAddress,
-  val ssl: Option[SSL.Configuration],
-  val options: ServerOptions,
-  private val doClose: () => Unit
-) {
+/** == An HTTP server == */
+trait Server {
+  /** The underlying server socket. */
+  def socketAddress: InetSocketAddress
+  
+  /** The SSL configuration if enabled. */
+  def ssl: Option[SSL.Configuration]
+
+  /** The server options such as the number of IO thread used. */
+  def options: ServerOptions
+
+  /** Retrieve the TCP port from the underlying server socket. */
   def port = socketAddress.getPort
-  def stop() = doClose()
+  
+  /** Stop this server instance. Close the server socket, and interrupt all connections. */
+  def stop(): Unit
+
   override def toString() = s"Server($socketAddress, $options)"
 }
 
+/** == Build and start HTTP servers ==
+  *
+  * {{{
+  * Server.listen(8888) { request => 
+  *   Ok("Hello world!")
+  * }
+  * }}}
+  *
+  * Starting an HTTP server require a [[lol.http.Service service]] function. The service
+  * function will be run on the provided [[scala.concurrent.ExecutionContext ExecutionContext]].
+  * This function should be non-blocking, but you can also decide to go with a blocking service
+  * if you provide an appropriate ExecutionContext (just note that if the ExecutionContext is fully
+  * blocked, the HTTP server is fully blocked).
+  *
+  * The service function will be called by the server as soon as new HTTP request header has been received.
+  * The server also set up a lazy stream for the body. User code can pull from this stream and consume it
+  * if needed. Otherwise it will be drained after exchange completion (ie. when the response has been fully sent).
+  *
+  * The response value returned by the servcie function will be transfered back to the client.
+  */
 object Server {
   private val defaultErrorResponse = Response(500, Content.of("Internal server error"))
+  private val defaultErrorHandler = (e: Throwable) => {
+    e.printStackTrace()
+    defaultErrorResponse
+  }
 
+  /**
+   * Start a new HTTP server.
+   * @param port the TCP port used. If set to 0, it starts on any available port. This is the default.
+   * @param address the ip address this server listen at. __0.0.0.0__ means listening on all available address. This is the default.
+   * @param ssl if provided, the SSL configuration to use. In this case the server will listen for HTTPS requests.
+   * @param options the server options such as the number of IO thread to use.
+   * @return a server instance that you can stop later.
+   */
   def listen(
     port: Int = 0,
     address: String = "0.0.0.0",
     ssl: Option[SSL.Configuration] = None,
     options: ServerOptions = ServerOptions(),
-    onError: (Throwable => Response) = _ => defaultErrorResponse
-  )(f: Service)(implicit executor: ExecutionContext): Server = {
+    onError: (Throwable => Response) = defaultErrorHandler
+  )(service: Service)(implicit executor: ExecutionContext): Server = {
     implicit val S = Strategy.fromExecutionContext(executor)
 
     val connectionIds = new AtomicLong(0)
@@ -200,7 +248,7 @@ object Server {
                   ))
                 }
 
-                Future(try { f(request) } catch { case e: Throwable => Future.failed(e) })(executor).
+                Future(try { service(request) } catch { case e: Throwable => Future.failed(e) })(executor).
                   flatMap(identity).
                   recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }.
                   flatMap { response =>
@@ -302,7 +350,13 @@ object Server {
     try {
       val channel = bootstrap.bind(address, port).sync().channel()
       val localAddress = Try(channel.localAddress.asInstanceOf[InetSocketAddress]).getOrElse(Panic.!!!())
-      new Server(localAddress, ssl, options, () => eventLoop.shutdownGracefully())
+      val (options0, ssl0) = (options, ssl)
+      new Server {
+        val socketAddress = localAddress
+        val ssl = ssl0
+        val options = options0
+        def stop(): Unit = eventLoop.shutdownGracefully()
+      }
     }
     catch {
       case e: Throwable =>

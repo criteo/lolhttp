@@ -1,8 +1,9 @@
+val VERSION = "0.1.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo",
-  version := "0.1.0-SNAPSHOT",
-  scalaVersion := "2.11.8",
+  version := VERSION,
+  scalaVersion := "2.12.1",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
   scalacOptions ++= Seq(
     "-deprecation",
@@ -99,20 +100,70 @@ lazy val loljson =
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
 
+lazy val lolhtml =
+  (project in file("html")).
+  settings(commonSettings: _*).
+  settings(
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    ),
+    pomPostProcess := removeDependencies("org.scalatest")
+  ).
+  dependsOn(lolhttp % "compile->compile;test->test")
+
 lazy val examples =
   project.
   settings(commonSettings: _*).
   settings(
     publishArtifact := false,
     fork in Test := true,
-    connectInput in Test := true
+    connectInput in Test := true,
+    scalacOptions := Seq(
+      "-Xplugin:/Users/g.bort/lol/socco/target/scala-2.12/socco-assembly-1.0.0.jar",
+      "-P:socco:out:examples/target/html",
+      "-P:socco:package_lol.html:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
+      "-P:socco:package_lol.json:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
+      "-P:socco:package_lol.http:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
+      "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
+      "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
+    )
   ).
-  dependsOn(lolhttp, loljson)
+  dependsOn(lolhttp, loljson, lolhtml)
 
 lazy val root =
   (project in file(".")).
   settings(commonSettings: _*).
+  enablePlugins(ScalaUnidocPlugin).
   settings(
-    publishArtifact := false
+    publishArtifact := false,
+    scalacOptions in (Compile,doc) ++= Seq(
+      Seq(
+        "-sourcepath", baseDirectory.value.getAbsolutePath
+      ),
+      Opts.doc.title("lolhttp API"),
+      Opts.doc.version(VERSION),
+      Opts.doc.sourceUrl("https://gitlab.criteois.com/g.bort/lolhttp/tree/master€{FILE_PATH}.scala")
+    ).flatten,
+    // Not so useful for now because of SI-9967
+    unidocAllAPIMappings in (ScalaUnidoc, unidoc) ++= {
+      val allJars = {
+        (fullClasspath in lolhttp in Compile).value ++
+        (fullClasspath in loljson in Compile).value ++
+        (fullClasspath in lolhtml in Compile).value
+      }
+      Seq(
+        allJars.
+          flatMap(x => x.metadata.get(moduleID.key).map(m => x.data -> m)).
+          collect {
+            case (jar, ModuleID("org.scala-lang", "scala-library", _, _, _, _, _, _, _, _, _)) =>
+              jar -> "https://www.scala-lang.org/api/current/"
+            case (jar, ModuleID("co.fs2", "fs2-core_2.12", _, _, _, _, _, _, _, _, _)) =>
+              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
+          }.
+          toMap.
+          mapValues(url => new java.net.URL(url))
+      )
+    },
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inProjects(lolhttp, loljson, lolhtml)
   ).
-  aggregate(lolhttp, loljson, examples)
+  aggregate(lolhttp, loljson, lolhtml, examples)

@@ -104,19 +104,19 @@ class ServerTests extends Tests {
       contentString(Get(s"$url/")) should be ("")
       contentString(Get(s"$url/lol")) should be ("lol")
 
-      await() { Client.run(Get(s"$url/"), followRedirects = true)(_.read[String]) } should be ("lol")
-      await() { Client.run(Get(s"$url/old"), followRedirects = true)(_.read[String]) } should be ("lol")
+      await() { Client.run(Get(s"$url/"), followRedirects = true)(_.readAs[String]) } should be ("lol")
+      await() { Client.run(Get(s"$url/old"), followRedirects = true)(_.readAs[String]) } should be ("lol")
     }
   }
 
   test("Upload", Slow) {
     withServer(Server.listen(options = ServerOptions(debug = None)) {
       case req @ POST at url"/" =>
-        req.readWith(_.chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
+        req.read(_.chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
           Ok(s"Received $contentSize bytes")
         }
       case req @ POST at url"/take/$size" =>
-        req.readWith(_.take(size.toInt).chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
+        req.read(_.take(size.toInt).chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
           Ok(s"Took $contentSize bytes")
         }
     }) { server =>
@@ -132,16 +132,16 @@ class ServerTests extends Tests {
       await() {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
           for {
-            a <- client.run(Post("/", oneMeg))(_.read[String])
+            a <- client.run(Post("/", oneMeg))(_.readAs[String])
             _ = a should be ("Received 1048576 bytes")
 
-            b <- client.run(Post("/take/10", oneMeg))(_.read[String])
+            b <- client.run(Post("/take/10", oneMeg))(_.readAs[String])
             _ = b should be ("Took 10 bytes")
 
-            c <- client.run(Post("/take/2048", oneMeg))(_.read[String])
+            c <- client.run(Post("/take/2048", oneMeg))(_.readAs[String])
             _ = c should be ("Took 2048 bytes")
 
-            d <- client.run(Post("/", oneMeg))(_.read[String])
+            d <- client.run(Post("/", oneMeg))(_.readAs[String])
             _ = d should be ("Received 1048576 bytes")
 
           } yield ()

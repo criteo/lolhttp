@@ -33,6 +33,13 @@ import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import internal.NettySupport._
 
+/** = Allow to configure an HTTP client =
+  *
+  * @param ioThreads the number of threads used for the IO work. Default to `min(availableProcessors, 2)`.
+  * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
+  * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
+  * @param debug if defined log the TCP traffic with the provided logger name. Default to `None`.
+  */
 case class ClientOptions(
   ioThreads: Int = Math.min(Runtime.getRuntime.availableProcessors, 2),
   tcpNoDelay: Boolean = true,
@@ -258,18 +265,38 @@ private object Connection {
   val connectionIds = new AtomicLong(0)
 }
 
-class Client(
-  val host: String,
-  val port: Int,
-  val scheme: String,
-  val ssl: SSL.Configuration,
-  val options: ClientOptions,
-  val maxConnections: Int,
-  val maxWaiters: Int
-)(implicit executor: ExecutionContext) extends Service {
+/** == An HTTP client ==
+ *
+ * {{{
+ * val eventuallyContent = client(Get("/hello")).flatMap { response =>
+ *   response.readAs[String]
+ * }
+ * }}}
+ *
+ * An HTTP client is a [[lol.http.Service service]] function. It handle HTTP requests
+ * and eventually return HTTP responses.
+ *
+ * A client opens several TCP connections to the remote server. These connections
+ * are used to send requests and are blocked until the corresponding response has been
+ * received. If no connection is available when a new request comes, it is added to a
+ * bounded queue of `maxWaiters` size. As soon as this queue is full, the client starts
+ * rejecting new requests.
+ *
+ * It is important that the user code completly consume the response content stream, so
+ * the connection is freed for the next request. That's why it is better to use the `run`
+ */
+trait Client extends Service {
+  def host: String
+  def port: Int
+  def scheme: String
+  def ssl: SSL.Configuration
+  def options: ClientOptions
+  def maxConnections: Int
+  def maxWaiters: Int
+  implicit def executor: ExecutionContext
 
-  private val eventLoop = new NioEventLoopGroup(options.ioThreads)
-  private val bootstrap = new Bootstrap().
+  private lazy val eventLoop = new NioEventLoopGroup(options.ioThreads)
+  private lazy val bootstrap = new Bootstrap().
     group(eventLoop).
     channel(classOf[NioSocketChannel]).
     remoteAddress(host, port).
@@ -289,12 +316,11 @@ class Client(
   })
 
   // -- Connection pool
-
-  private val closed = new AtomicBoolean(false)
-  private val liveConnections = new AtomicLong(0)
-  private val connections = new ArrayBlockingQueue[Connection](maxConnections)
-  private val availableConnections = new ArrayBlockingQueue[Connection](maxConnections)
-  private val waiters = new ArrayBlockingQueue[Promise[Connection]](maxWaiters)
+  private lazy val closed = new AtomicBoolean(false)
+  private lazy val liveConnections = new AtomicLong(0)
+  private lazy val connections = new ArrayBlockingQueue[Connection](maxConnections)
+  private lazy val availableConnections = new ArrayBlockingQueue[Connection](maxConnections)
+  private lazy val waiters = new ArrayBlockingQueue[Promise[Connection]](maxWaiters)
 
   def nbConnections: Int = liveConnections.intValue
 
@@ -418,15 +444,21 @@ object Client {
     options: ClientOptions = ClientOptions(),
     maxConnections: Int = 20,
     maxWaiters: Int = 100
-  )(implicit executor: ExecutionContext) = new Client(
-    host,
-    port,
-    scheme,
-    ssl,
-    options,
-    maxConnections,
-    maxWaiters
-  )
+  )(implicit executor: ExecutionContext) = {
+    val (host0, port0, scheme0, ssl0, options0, maxConnections0, maxWaiters0, executor0) = (
+      host, port, scheme, ssl, options, maxConnections, maxWaiters, executor
+    )
+    new Client {
+      val host = host0
+      val port = port0
+      val scheme = scheme0
+      val ssl = ssl0
+      val options = options0
+      val maxConnections = maxConnections0
+      val maxWaiters = maxWaiters0
+      implicit val executor = executor0
+    }
+  }
 
   def run[A](
     request: Request,

@@ -68,7 +68,7 @@ class ConnectionUpgradeTests extends Tests {
               (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
                 runLog.unsafeRunAsyncFuture()
             }
-            _ = eventually(client.nbConnections should be (0))
+            _ = eventually(client.openedConnections should be (0))
           } yield result
         }
       } should be (((1 to 1024 map (_.toString)) ++ Seq("")).toVector)

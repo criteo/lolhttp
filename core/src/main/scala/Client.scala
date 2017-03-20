@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 import internal.NettySupport._
 
 /** = Allow to configure an HTTP client =
-  *
   * @param ioThreads the number of threads used for the IO work. Default to `min(availableProcessors, 2)`.
   * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
   * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
@@ -273,26 +272,43 @@ private object Connection {
  * }
  * }}}
  *
- * An HTTP client is a [[lol.http.Service service]] function. It handle HTTP requests
- * and eventually return HTTP responses.
+ * An HTTP client is a [[lol.http.Service service]] function. It handles HTTP requests
+ * and eventually returns HTTP responses.
  *
- * A client opens several TCP connections to the remote server. These connections
+ * A client maintains several TCP connections to the remote server. These connections
  * are used to send requests and are blocked until the corresponding response has been
- * received. If no connection is available when a new request comes, it is added to a
+ * received. If no connection is available when a new request comes, it is pushed to a
  * bounded queue of `maxWaiters` size. As soon as this queue is full, the client starts
  * rejecting new requests.
  *
- * It is important that the user code completly consume the response content stream, so
+ * It is important that the user code completly consumes the response content stream, so
  * the connection is freed for the next request. That's why it is better to use the `run`
+ * operation if possible since this one automatically drains the request upon return.
  */
 trait Client extends Service {
+
+  /** @return the host this client is connected to. */
   def host: String
+  
+  /** @return the TCP port this client is connected to. */
   def port: Int
+
+  /** @return the scheme used by this client (either HTTP or HTTPS if connected in SSL). */
   def scheme: String
+
+  /** @return the SSL configuration used by the client. Must be provided if the server certificate is not recognized by default. */
   def ssl: SSL.Configuration
+
+  /** @return the client options such as the number of IO thread used. */
   def options: ClientOptions
+
+  /** @return the maximum number of TCP connections maintained with the remote server. */
   def maxConnections: Int
+
+  /** @return the maximum number of waiting requests before the client starts rejecting new ones. */
   def maxWaiters: Int
+
+  /** @return the ExecutionContext that will be used to run the user code. */
   implicit def executor: ExecutionContext
 
   private lazy val eventLoop = new NioEventLoopGroup(options.ioThreads)
@@ -322,7 +338,8 @@ trait Client extends Service {
   private lazy val availableConnections = new ArrayBlockingQueue[Connection](maxConnections)
   private lazy val waiters = new ArrayBlockingQueue[Promise[Connection]](maxWaiters)
 
-  def nbConnections: Int = liveConnections.intValue
+  /** The number of TCP connections currently opened with the remote server. */
+  def openedConnections: Int = liveConnections.intValue
 
   private def waitConnection(): Future[Connection] = {
     val p = Promise[Connection]
@@ -373,6 +390,9 @@ trait Client extends Service {
     }
   }
 
+  /** Stop the client and kill all current and waiting requests.
+    * @return a Future resolved as soon as the client is shutdown.
+    */
   def stop(): Future[Unit] = {
     closed.compareAndSet(false, true)
     waiters.asScala.foreach(_.failure(Error.ClientAlreadyClosed))
@@ -383,6 +403,10 @@ trait Client extends Service {
     }
   }
 
+  /** Send a request to the server and eventually give back the response.
+    * @param request the HTTP request to be sent to the server.
+    * @return eventually the HTTP response.
+    */
   def apply(request: Request): Future[Response] = {
     acquireConnection().flatMap { connection =>
       connection(request).map { case (response, release) =>
@@ -394,6 +418,11 @@ trait Client extends Service {
     }
   }
 
+  /** Send a request to the server and eventually give back the response.
+    * @param request the HTTP request to be sent to the server.
+    * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @return eventually the HTTP response.
+    */
   def apply(request: Request, followRedirects: Boolean): Future[Response] = {
     if(followRedirects) {
       def followRedirects0(request: Request): Future[Response] = {
@@ -418,10 +447,18 @@ trait Client extends Service {
     else apply(request)
   }
 
+  /** Send this request to the server, eventually run the given function and return the result.
+    * This operation ensures that the response content stream is fully read even if the provided
+    * user code do not consume it. The response is drained as soon as the `f` function returns.
+    * @param request the HTTP request to be sent to the server.
+    * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @param script a function that eventually receive the response and transform it to a value of type `A`.
+    * @return eventually a value of type `A`.
+    */
   def run[A](request: Request, followRedirects: Boolean = false)
-    (f: Response => Future[A] = (_:Response) => Future.successful(())): Future[A] = {
+    (script: Response => Future[A] = (_: Response) => Future.successful(())): Future[A] = {
     apply(request, followRedirects).flatMap { response =>
-      f(response).
+      script(response).
         flatMap(s => response.drain.map(_ => s)).
         recoverWith { case e =>
           response.drain.flatMap(_ => Future.failed(e))
@@ -429,11 +466,17 @@ trait Client extends Service {
     }
   }
 
-  def runAndStop[A](f: Client => Future[A]): Future[A] = {
-    f(this).andThen { case _ => this.stop() }
+  /** Run the given function and close the client.
+    * @param script a function that take a client and eventually return a value of type `A`.
+    * @return eventually a value of type `A`.
+    */
+  def runAndStop[A](script: Client => Future[A]): Future[A] = {
+    script(this).andThen { case _ => this.stop() }
   }
 }
 
+/** == Build HTTP clients ==
+ */
 object Client {
 
   def apply(
@@ -444,7 +487,7 @@ object Client {
     options: ClientOptions = ClientOptions(),
     maxConnections: Int = 20,
     maxWaiters: Int = 100
-  )(implicit executor: ExecutionContext) = {
+  )(implicit executor: ExecutionContext): Client = {
     val (host0, port0, scheme0, ssl0, options0, maxConnections0, maxWaiters0, executor0) = (
       host, port, scheme, ssl, options, maxConnections, maxWaiters, executor
     )

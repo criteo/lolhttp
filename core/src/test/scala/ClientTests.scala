@@ -90,10 +90,10 @@ class ClientTests extends Tests {
           for {
             bye <- client.run(Get("/bye"))(_.readAs[String])
             _ = bye should be ("See you")
-            _ = eventually(client.nbConnections should be (0))
+            _ = eventually(client.openedConnections should be (0))
             hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"CLOSE"))(_.readAs[String])
             _ = hello should be ("World")
-            _ = eventually(client.nbConnections should be (0))
+            _ = eventually(client.openedConnections should be (0))
             _ <- client.stop()
             _ = the [Error] thrownBy await() { client.run(Get("/hello"))() } shouldBe (Error.ClientAlreadyClosed)
           } yield ()
@@ -105,7 +105,7 @@ class ClientTests extends Tests {
           for {
             hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"Close"))(_.readAs[String])
             _ = hello should be ("World")
-            _ = eventually(client.nbConnections should be (0))
+            _ = eventually(client.openedConnections should be (0))
             _ <- client.stop()
             _ = the [Error] thrownBy await() { client.run(Get("/hello"))() } shouldBe (Error.ClientAlreadyClosed)
           } yield ()

@@ -11,6 +11,7 @@ import io.netty.buffer.{ ByteBuf }
 import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.bootstrap.{ ServerBootstrap }
 import io.netty.channel.socket.nio.{ NioServerSocketChannel }
+import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
 import io.netty.handler.ssl.{ JdkSslContext, ClientAuth }
@@ -29,14 +30,13 @@ import io.netty.handler.codec.http.{
 
 import scala.util.{ Try }
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Promise, Future }
 
 import fs2.{ Stream, Task, Strategy, Chunk, async }
 
 import internal.NettySupport._
 
 /** = Allow to configure an HTTP server =
-  *
   * @param ioThreads the number of threads used for the IO work. Default to `max(availableProcessors, 2)`.
   * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
   * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
@@ -51,20 +51,22 @@ case class ServerOptions(
 
 /** == An HTTP server == */
 trait Server {
-  /** The underlying server socket. */
+  /** @return the underlying server socket. */
   def socketAddress: InetSocketAddress
   
-  /** The SSL configuration if enabled. */
+  /** @return the SSL configuration if enabled. */
   def ssl: Option[SSL.Configuration]
 
-  /** The server options such as the number of IO thread used. */
+  /** @return the server options such as the number of IO thread used. */
   def options: ServerOptions
 
-  /** Retrieve the TCP port from the underlying server socket. */
+  /** @return the TCP port from the underlying server socket. */
   def port = socketAddress.getPort
   
-  /** Stop this server instance. Close the server socket, and interrupt all connections. */
-  def stop(): Unit
+  /** Stop this server instance. Close the server socket, and interrupt all connections. 
+    * @return a Future resolved as soon as the server is shutdown.
+    */
+  def stop(): Future[Unit]
 
   override def toString() = s"Server($socketAddress, $options)"
 }
@@ -355,7 +357,22 @@ object Server {
         val socketAddress = localAddress
         val ssl = ssl0
         val options = options0
-        def stop(): Unit = eventLoop.shutdownGracefully()
+        def stop() = {
+          val p = Promise[Unit]
+          eventLoop.shutdownGracefully().
+            asInstanceOf[NettyFuture[Unit]].
+            addListener(new GenericFutureListener[NettyFuture[Unit]] {
+              override def operationComplete(f: NettyFuture[Unit]) = {
+                if(f.isSuccess) {
+                  p.success(())
+                }
+                else {
+                  p.failure(f.cause)
+                }
+              }
+            })
+          p.future
+        }
       }
     }
     catch {

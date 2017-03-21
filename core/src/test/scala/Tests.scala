@@ -21,6 +21,9 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
   def contentString(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
     await(atMost) { Client.run(req)(_.readAs[String]) }
   }
+  def headers(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): Map[HttpString,HttpString] = {
+    await(atMost) { Client.run(req)(res => Future.successful(res.headers)) }
+  }
   def getString(content: Content, codec: String = "utf-8") = new String(getBytes(content).toArray, codec)
   def getBytes(content: Content): Vector[Byte] = content.stream.runLog.unsafeRun()
   def bytes(data: Int*): Seq[Byte] = data.map(_.toByte)

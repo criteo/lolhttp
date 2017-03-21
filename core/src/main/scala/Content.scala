@@ -1,5 +1,7 @@
 package lol.http
 
+import Headers._
+
 import scala.io.{ Codec }
 import scala.util.{ Try }
 
@@ -18,11 +20,12 @@ case class Content(
   headers: Map[HttpString,HttpString] = Map.empty
 ) {
   def as[A](implicit decoder: ContentDecoder[A]): Task[A] = decoder(this)
-  def addHeaders(newHeaders: (HttpString,HttpString) *) = copy(headers = headers ++ newHeaders.toMap)
+  def addHeaders(newHeaders: (HttpString,HttpString)*) = copy(headers = headers ++ newHeaders.toMap)
+  def removeHeaders(headerNames: HttpString*) = copy(headers = headers -- headerNames)
 }
 
 object Content {
-  val empty = Content(Stream.empty, Map(Headers.ContentLength -> h"0"))
+  val empty = Content(Stream.empty, Map(ContentLength -> h"0"))
   def of[A](a: A)(implicit encoder: ContentEncoder[A]): Content = encoder(a)
 }
 
@@ -116,8 +119,8 @@ object ContentEncoder {
     def apply(data: Array[Byte]) = Content(
       stream = Stream.chunk(Chunk.bytes(data)),
       headers = Map(
-        Headers.ContentLength -> HttpString(data.size),
-        Headers.ContentType -> h"application/octet-stream"
+        ContentLength -> HttpString(data.size),
+        ContentType -> h"application/octet-stream"
       )
     )
   }
@@ -129,8 +132,8 @@ object ContentEncoder {
       Content(
         stream = Stream.chunk(Chunk.bytes(bytes)),
         headers = Map(
-          Headers.ContentLength -> HttpString(bytes.size),
-          Headers.ContentType -> h"application/octet-stream"
+          ContentLength -> HttpString(bytes.size),
+          ContentType -> h"application/octet-stream"
         )
       )
     }
@@ -148,14 +151,14 @@ object ContentEncoder {
         data.flatMap { case (key, values) => values.map { case value =>
           s"${encode(key)}=${encode(value)}"
         }}.mkString("&")
-      }.addHeaders(Headers.ContentType -> h"application/x-www-form-urlencoded")
+      }.addHeaders(ContentType -> h"application/x-www-form-urlencoded")
     }
   }
 
   def text(codec: Codec = Codec.UTF8): ContentEncoder[CharSequence] = new ContentEncoder[CharSequence] {
     def apply(data: CharSequence) = byteBuffer(
       codec.encoder.encode(CharBuffer.wrap(data))
-    ).addHeaders(Headers.ContentType -> h"text/plain; charset=$codec")
+    ).addHeaders(ContentType -> h"text/plain; charset=$codec")
   }
   implicit val defaultText = text(Codec.UTF8)
 
@@ -184,7 +187,7 @@ object ContentEncoder {
 
       Content(
         stream,
-        headers = Map(Headers.ContentType -> h"application/octet-stream")
+        headers = Map(ContentType -> h"application/octet-stream")
       )
     }
   }
@@ -236,8 +239,8 @@ object ContentEncoder {
       Content(
         stream,
         headers = Map(
-          Headers.ContentLength -> HttpString(data.length),
-          Headers.ContentType -> HttpString(internal.guessContentType(data.getName))
+          ContentLength -> HttpString(data.length),
+          ContentType -> HttpString(internal.guessContentType(data.getName))
         )
       )
     }
@@ -247,14 +250,21 @@ object ContentEncoder {
 }
 
 case class ClasspathResource(path: String) {
-  def inputStream = Option(this.getClass.getResourceAsStream(path))
+  private val securedPath = {
+    Option(this.getClass.getResource(path)).map(_.getPath).filter(_.contains(path)).map(_ => path)
+  }
+  def inputStream = securedPath.flatMap(path => Option(this.getClass.getResourceAsStream(path)))
   def exists = inputStream.isDefined
+  def fold[A](ifMissing: => A)(f: (ClasspathResource) => A) = inputStream.fold(ifMissing)(_ => f(this))
 }
 object ClasspathResource {
   implicit def encoder(implicit executor: ExecutionContext) = new ContentEncoder[ClasspathResource] {
     def apply(data: ClasspathResource) = {
       data.inputStream.fold(Content(Stream.fail(Error.ClasspathResourceMissing))) { is =>
-        ContentEncoder.inputStream(executor)(is)
+        ContentEncoder.inputStream(executor)(is).addHeaders(
+          ContentType -> HttpString(internal.guessContentType(data.path)),
+          TransferEncoding -> h"chunked"
+        )
       }
     }
   }

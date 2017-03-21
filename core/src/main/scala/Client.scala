@@ -62,7 +62,7 @@ private[http] class Connection(
     channel.pipeline.addLast("Debug", new LoggingHandler(s"$logger.$id", LogLevel.INFO))
   }
   channel.pipeline.addLast("Http", new HttpClientCodec())
-  channel.pipeline.addLast("HttpCompress", new HttpContentDecompressor())
+  channel.pipeline.addLast("HttpDecompress", new HttpContentDecompressor())
   channel.pipeline.addLast("CatchAll", new SimpleChannelInboundHandler[Any] {
     override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = msg match {
       case last: LastHttpContent if upgraded && last.content.readableBytes == 0 =>
@@ -184,7 +184,7 @@ private[http] class Connection(
             if(nettyResponse.status.code == 101) {
               // This is not an HTTP connection anymore
               channel.pipeline.remove("ResponseHandler")
-              channel.pipeline.remove("HttpCompress")
+              channel.pipeline.remove("HttpDecompress")
               channel.pipeline.remove("Http")
               channel.pipeline.addBefore(
                 "CatchAll",

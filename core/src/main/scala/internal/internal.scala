@@ -16,7 +16,11 @@ package object internal {
     fileName.split("[.]").lastOption.collect {
       case "css"          => "text/css"
       case "htm" | "html" => "text/html"
+      case "txt"          => "text/plain"
       case "js"           => "application/javascript"
+      case "gif"          => "images/gif"
+      case "png"          => "images/png"
+      case "jpg" | "jpeg" => "images/jpeg"
     }.getOrElse("application/octet-stream")
   }
 

@@ -8,4 +8,5 @@ object Headers {
   val UserAgent = h"User-Agent"
   val Upgrade = h"Upgrade"
   val Connection = h"Connection"
+  val TransferEncoding = h"Transfer-Encoding"
 }

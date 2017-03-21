@@ -150,4 +150,20 @@ class ServerTests extends Tests {
     }
   }
 
+  test("No Content-Length") {
+    withServer(Server.listen() { _ =>
+      Ok(Content(stream = Stream.chunk(Chunk.bytes("LOL".getBytes("utf-8")))))
+    }) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          for {
+            lol <- client.run(Get("/"))(_.readAs[String])
+            _ = lol should be ("LOL")
+            _ = eventually(client.openedConnections should be (0))
+          } yield ()
+        }
+      }
+    }
+  }
+
 }

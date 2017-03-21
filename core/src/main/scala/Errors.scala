@@ -12,4 +12,5 @@ object Error {
   val TooManyWaiters = Error(5, "Client has already too many waiting requests")
   val AutoRedirectNotSupported = Error(6, "Automatic redirects is only allowed for GET requests")
   val HostHeaderMissing = Error(7, "The Host header was missing in the request")
+  val ClasspathResourceMissing = Error(8, "Classpath resource does not exist")
 }

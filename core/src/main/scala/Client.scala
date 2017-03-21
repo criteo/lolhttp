@@ -163,7 +163,8 @@ private[http] class Connection(
                         case false =>
                           Stream.fail(Error.StreamAlreadyConsumed)
                         case true =>
-                          (upstream to channel.bytesSink).run.unsafeRunAsyncFuture()
+                          (upstream to channel.bytesSink).run.unsafeRunAsyncFuture().onComplete(_.get)
+
                           content.dequeue.
                             takeWhile(_.nonEmpty).
                             flatMap(Stream.chunk).
@@ -201,10 +202,10 @@ private[http] class Connection(
                           channel.read()
                         }
                       }
-                    } yield ()).unsafeRunAsyncFuture()
+                    } yield ()).unsafeRunAsyncFuture().onComplete(_.get)
                   }
                   override def channelInactive(ctx: ChannelHandlerContext) = {
-                    content.enqueue1(Chunk.empty).unsafeRunAsyncFuture()
+                    content.enqueue1(Chunk.empty).unsafeRunAsyncFuture().onComplete(_.get)
                   }
                 }
               )
@@ -225,7 +226,7 @@ private[http] class Connection(
             channel.runInEventLoop {
               if(responseDone) {
                 // This response has been completely handled
-                channel.pipeline.remove("ResponseHandler")
+                if(channel.isActive) channel.pipeline.remove("ResponseHandler")
                 if(concurrentUses.decrementAndGet() != 0) Panic.!!!()
                 releaseConnection.set(true).unsafeRun()
 
@@ -242,7 +243,7 @@ private[http] class Connection(
               }
             }
           }
-        } yield ()).unsafeRunAsyncFuture()
+        } yield ()).unsafeRunAsyncFuture().onComplete(_.get)
       }
     })
 
@@ -289,7 +290,7 @@ trait Client extends Service {
 
   /** @return the host this client is connected to. */
   def host: String
-  
+
   /** @return the TCP port this client is connected to. */
   def port: Int
 
@@ -412,7 +413,7 @@ trait Client extends Service {
       connection(request).map { case (response, release) =>
         release.discrete.takeWhile(!_).onFinalize(Task.delay {
           releaseConnection(connection)
-        }).run.unsafeRunAsyncFuture()
+        }).run.unsafeRunAsyncFuture().onComplete(_.get)
         response
       }
     }

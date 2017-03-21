@@ -222,7 +222,7 @@ object Server {
                             channel.read()
                           })
                         }
-                      } yield ()).unsafeRunAsyncFuture()
+                      } yield ()).unsafeRunAsyncFuture().onComplete(_.get)
                     case _ =>
                       Panic.!!!()
                   })
@@ -289,10 +289,10 @@ object Server {
                                     channel.read()
                                   }
                                 }
-                              } yield ()).unsafeRunAsyncFuture()
+                              } yield ()).unsafeRunAsyncFuture().onComplete(_.get)
                             }
                             override def channelInactive(ctx: ChannelHandlerContext) = {
-                              content.enqueue1(Chunk.empty).unsafeRunAsyncFuture()
+                              content.enqueue1(Chunk.empty).unsafeRunAsyncFuture().onComplete(_.get)
                             }
                           }
                         )
@@ -323,7 +323,7 @@ object Server {
                             }).
                             run.
                             unsafeRunAsyncFuture()
-                        } yield ())
+                        } yield ()).onComplete(_.get)
                       }
                       else {
                         channel.writeMessage(nettyResponse, response.content.stream)

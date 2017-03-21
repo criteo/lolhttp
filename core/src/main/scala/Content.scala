@@ -159,7 +159,7 @@ object ContentEncoder {
   }
   implicit val defaultText = text(Codec.UTF8)
 
-  def inputStream(chunkSize: Int = 16 * 1024, blockingExecutor: ExecutionContext) = new ContentEncoder[InputStream] {
+  def inputStream(blockingExecutor: ExecutionContext, chunkSize: Int = 16 * 1024) = new ContentEncoder[InputStream] {
     def apply(data: InputStream) = {
       implicit val S = Strategy.fromExecutionContext(blockingExecutor)
       val stream = Stream.eval(Task.async[Option[Chunk[Byte]]] { cb =>
@@ -244,4 +244,18 @@ object ContentEncoder {
   }
   implicit def defaultFile(implicit executor: ExecutionContext) = file()
 
+}
+
+case class ClasspathResource(path: String) {
+  def inputStream = Option(this.getClass.getResourceAsStream(path))
+  def exists = inputStream.isDefined
+}
+object ClasspathResource {
+  implicit def encoder(implicit executor: ExecutionContext) = new ContentEncoder[ClasspathResource] {
+    def apply(data: ClasspathResource) = {
+      data.inputStream.fold(Content(Stream.fail(Error.ClasspathResourceMissing))) { is =>
+        ContentEncoder.inputStream(executor)(is)
+      }
+    }
+  }
 }

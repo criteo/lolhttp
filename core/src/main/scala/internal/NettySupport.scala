@@ -63,11 +63,12 @@ private[http] object NettySupport {
     }
 
     def writeMessage(message: HttpMessage, contentStream: Stream[Task,Byte])(implicit e: ExecutionContext): Unit = {
-      val expectedLength = Try(message.headers.get(HttpHeaderNames.CONTENT_LENGTH).toInt).toOption
+      val expectedLength: Option[Int] = Try(message.headers.get(HttpHeaderNames.CONTENT_LENGTH).toInt).toOption
       def go(data: Option[(Chunk[Byte], Stream[Task,Byte])]) = data match {
         case None =>
           channel.write(message)
           channel.writeAndFlush(new DefaultLastHttpContent())
+          if(expectedLength.isEmpty) channel.close()
         case Some((head, tail)) =>
           channel.write(message)
           if(expectedLength.exists(_ == head.size)) {
@@ -75,8 +76,11 @@ private[http] object NettySupport {
             channel.writeAndFlush(new DefaultLastHttpContent())
           }
           else {
-            channel.writeAndFlush(head.toByteBuf).toFuture.flatMap { _ =>
-              (tail to channel.httpContentSink).run.unsafeRunAsyncFuture()
+            for {
+              _ <- channel.writeAndFlush(head.toByteBuf).toFuture
+              _ <- (tail to channel.httpContentSink).run.unsafeRunAsyncFuture()
+            } yield {
+              if(expectedLength.isEmpty) channel.close()
             }
           }
       }

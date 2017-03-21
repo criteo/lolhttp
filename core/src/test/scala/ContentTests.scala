@@ -122,4 +122,22 @@ class ContentTests extends Tests {
 
     x should be (realContent.zip(0 to realContent.size map(_ => '_')).map { case (a,b) => "" + a + b }.mkString)
   }
+
+  test("Serving a static file from the classpath") {
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    withServer(Server.listen() {
+      case GET at url"/$file" =>
+        val resource = ClasspathResource(s"/$file")
+        if(resource.exists) Ok(resource) else NotFound(s"$file not found")
+    }) { server =>
+      val url = s"http://localhost:${server.port}"
+
+      status(Get(s"$url/lol.txt")) should be (200)
+      contentString(Get(s"$url/lol.txt")) should be ("LOL\n")
+
+      status(Get(s"$url/bam.png")) should be (404)
+      contentString(Get(s"$url/bam.png")) should be ("bam.png not found")
+    }
+  }
 }

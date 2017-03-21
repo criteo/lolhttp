@@ -9,7 +9,6 @@ case class Html(content: String) {
 }
 
 object Html {
-  implicit lazy val defaultEncoder = encoder(Codec.UTF8)
   def encoder(codec: Codec) = new ContentEncoder[Html] {
     def apply(html: Html) = {
       ContentEncoder.text(codec)(html.content).addHeaders(
@@ -17,6 +16,7 @@ object Html {
       )
     }
   }
+  implicit lazy val defaultEncoder = encoder(Codec.UTF8)
 }
 
 object `package` {

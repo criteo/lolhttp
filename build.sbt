@@ -1,7 +1,7 @@
 val VERSION = "0.1.0"
 
 lazy val commonSettings = Seq(
-  organization := "com.criteo",
+  organization := "com.criteo.lolhttp",
   version := VERSION,
   scalaVersion := "2.12.1",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
@@ -18,6 +18,11 @@ lazy val commonSettings = Seq(
     "-Ywarn-unused-import"
   ),
   fork in Test := true,
+
+  // Maven config
+  publishTo := Some("Criteo thirdparty" at "http://nexus.criteo.prod/content/repositories/criteo.thirdparty"),
+  credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.criteo.prod", System.getenv("MAVEN_USER"), System.getenv("MAVEN_PASSWORD")),
+
 
   // Useful to run flakey tests
   commands += Command.single("repeat") { (state, arg) =>
@@ -117,16 +122,16 @@ lazy val examples =
   settings(
     publishArtifact := false,
     fork in Test := true,
-    connectInput in Test := true,
-    scalacOptions := Seq(
-      "-Xplugin:/Users/g.bort/lol/socco/target/scala-2.12/socco-assembly-1.0.0.jar",
-      "-P:socco:out:examples/target/html",
-      "-P:socco:package_lol.html:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
-      "-P:socco:package_lol.json:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
-      "-P:socco:package_lol.http:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
-      "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
-      "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
-    )
+    connectInput in Test := true//,
+//    scalacOptions := Seq(
+//      "-Xplugin:/Users/g.bort/lol/socco/target/scala-2.12/socco-assembly-1.0.0.jar",
+//      "-P:socco:out:examples/target/html",
+//      "-P:socco:package_lol.html:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
+//      "-P:socco:package_lol.json:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
+//      "-P:socco:package_lol.http:file:///Users/g.bort/lol/lolhttp/target/scala-2.12/unidoc/",
+//      "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
+//      "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
+//    )
   ).
   dependsOn(lolhttp, loljson, lolhtml)
 

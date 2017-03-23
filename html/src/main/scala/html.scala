@@ -4,11 +4,22 @@ import lol.http._
 
 import scala.io.{ Codec }
 
+/** An HTML document.
+  * @param the actual html text.
+  */
 case class Html(content: String) {
+
+  /** The html text size. */
   lazy val size = content.size
 }
 
+/** Provides the [[lol.http.ContentEncoder ContentEncoder]] for HTML documents. */
 object Html {
+
+  /** Encoder for HTML documents.
+    * @param codec the charset to use to encode the HTML string as bytes.
+    * @return a [[lol.http.ContentEncoder ContentEncoder]] for [[Html]].
+    */
   def encoder(codec: Codec) = new ContentEncoder[Html] {
     def apply(html: Html) = {
       ContentEncoder.text(codec)(html.content).addHeaders(
@@ -16,18 +27,7 @@ object Html {
       )
     }
   }
-  implicit lazy val defaultEncoder = encoder(Codec.UTF8)
-}
 
-object `package` {
-  implicit class HtmlString(val ctx: StringContext) {
-    private def serialize(arg: Any): String = arg match {
-      case Html(x) => x
-      case Some(x) => serialize(x)
-      case None => ""
-      case x: TraversableOnce[_] => x.map(serialize).mkString
-      case x => x.toString.replaceAll("<", "&lt;")
-    }
-    def html(args: Any*) = Html(ctx.s(args.map(serialize): _*))
-  }
+  /** Default encoder for HTML document using `UTF-8` as charset. */
+  implicit lazy val defaultEncoder = encoder(Codec.UTF8)
 }

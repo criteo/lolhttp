@@ -1,12 +1,29 @@
 package lol.http
 
+/** A collection of HTTP header names. */
 object Headers {
-  val ContentType = h"Content-Type"
-  val ContentLength = h"Content-Length"
-  val Location = h"Location"
-  val Host = h"Host"
-  val UserAgent = h"User-Agent"
-  val Upgrade = h"Upgrade"
+
+  /** `Connection`. */
   val Connection = h"Connection"
+
+  /** `Content-Length`. */
+  val ContentLength = h"Content-Length"
+
+  /** `Content-Type`. */
+  val ContentType = h"Content-Type"
+
+  /** `Host`. */
+  val Host = h"Host"
+
+  /** `Location`. */
+  val Location = h"Location"
+
+  /** `Transfer-Encoding`. */
   val TransferEncoding = h"Transfer-Encoding"
+
+  /** `Upgrade`. */
+  val Upgrade = h"Upgrade"
+
+  /** `User-Agent`. */
+  val UserAgent = h"User-Agent"
 }

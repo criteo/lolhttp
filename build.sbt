@@ -145,7 +145,7 @@ lazy val root =
       Seq(
         "-sourcepath", baseDirectory.value.getAbsolutePath
       ),
-      Opts.doc.title("lolhttp API"),
+      Opts.doc.title("lolhttp"),
       Opts.doc.version(VERSION),
       Opts.doc.sourceUrl("https://gitlab.criteois.com/g.bort/lolhttp/tree/master€{FILE_PATH}.scala")
     ).flatten,

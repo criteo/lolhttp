@@ -16,15 +16,27 @@ import org.bouncycastle.operator.jcajce.{ JcaContentSignerBuilder }
 import org.bouncycastle.cert.jcajce.{ JcaX509CertificateConverter }
 import org.bouncycastle.jce.provider.{ BouncyCastleProvider }
 
+/** lol SSL. */
 object SSL {
 
   Security.addProvider(new BouncyCastleProvider)
 
+  /** An SSL configuration.
+    * @param ctx the `javax.net.ssl.SSLContext` to use.
+    */
   case class Configuration(ctx: SSLContext)
+
+  /** Provides the default SSL configuration. */
   object Configuration {
+
+    /** The default SSL configuration based on the default JVM `SSLContext`. */
     implicit val default = Configuration(SSLContext.getDefault)
   }
 
+  /** A "Trust all" configuration that will accept any certificate.
+    * You can use it as configuration for an HTTP client that need to connect to an
+    * insecure server.
+    */
   lazy val trustAll = Configuration {
     val trustAll = new X509TrustManager {
       def getAcceptedIssuers() = null
@@ -36,6 +48,9 @@ object SSL {
     ssl
   }
 
+  /** Generate an SSL configuration with a self-signed certificate.
+    * You can use it to start an HTTPS server with an insecure certificate.
+    */
   def selfSigned(hostname: String = "localhost") = {
     val password = Array.empty[Char]
     val keys = newKeyPair()

@@ -30,13 +30,14 @@ import io.netty.handler.codec.http.{
 
 import scala.util.{ Try }
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Promise, Future }
+import scala.concurrent.{ExecutionContext, Promise, Future }
+import scala.concurrent.duration._
 
 import fs2.{ Stream, Task, Strategy, Chunk, async }
 
 import internal.NettySupport._
 
-/** = Allow to configure an HTTP server =
+/** Allow to configure an HTTP server.
   * @param ioThreads the number of threads used for the IO work. Default to `max(availableProcessors, 2)`.
   * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
   * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
@@ -49,11 +50,24 @@ case class ServerOptions(
   debug: Option[String] = None
 )
 
-/** == An HTTP server == */
-trait Server {
+/** An HTTP server.
+  *
+  * {{{
+  * val eventuallyContent = server(Get("/hello")).flatMap { response =>
+  *   response.readAs[String]
+  * }
+  * }}}
+  *
+  * An HTTP server is a [[lol.http.Service service]] function. It handles HTTP requests
+  * and eventually returns HTTP responses.
+  *
+  * The server listen for HTTP connections on the [[socketAddress]] TCP socket. If [[ssl]] is defined,
+  * it supports TLS connections. Calling the [[stop]] operation asks for a graceful shutdown.
+  */
+trait Server extends Service {
   /** @return the underlying server socket. */
   def socketAddress: InetSocketAddress
-  
+
   /** @return the SSL configuration if enabled. */
   def ssl: Option[SSL.Configuration]
 
@@ -62,19 +76,24 @@ trait Server {
 
   /** @return the TCP port from the underlying server socket. */
   def port = socketAddress.getPort
-  
-  /** Stop this server instance. Close the server socket, and interrupt all connections. 
+
+  /** Stop this server instance gracefully. It ensures that no requests are handled for
+    * 'the quiet period' (usually a couple seconds) before it shuts itself down. If a request is
+    * submitted during the quiet period, it is guaranteed to be accepted and the quiet period will
+    * start over.
+    * @param quietPeriod The quiet period for the graceful shutdown.
+    * @param timeout The maximum amount of time to wait until the server is shutdown regardless of the quiet period.
     * @return a Future resolved as soon as the server is shutdown.
     */
-  def stop(): Future[Unit]
+  def stop(quietPeriod: Duration = 2 seconds, timeout: Duration = 15 seconds): Future[Unit]
 
   override def toString() = s"Server($socketAddress, $options)"
 }
 
-/** == Build and start HTTP servers ==
+/** Build and start HTTP servers.
   *
   * {{{
-  * Server.listen(8888) { request => 
+  * Server.listen(8888) { request =>
   *   Ok("Hello world!")
   * }
   * }}}
@@ -104,6 +123,7 @@ object Server {
    * @param address the ip address this server listen at. __0.0.0.0__ means listening on all available address. This is the default.
    * @param ssl if provided, the SSL configuration to use. In this case the server will listen for HTTPS requests.
    * @param options the server options such as the number of IO thread to use.
+   * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
    * @return a server instance that you can stop later.
    */
   def listen(
@@ -114,6 +134,12 @@ object Server {
     onError: (Throwable => Response) = defaultErrorHandler
   )(service: Service)(implicit executor: ExecutionContext): Server = {
     implicit val S = Strategy.fromExecutionContext(executor)
+
+    def serveRequest(request: Request) = {
+      Future(try { service(request) } catch { case e: Throwable => Future.failed(e) })(executor).
+        flatMap(identity).
+        recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }
+    }
 
     val connectionIds = new AtomicLong(0)
     val eventLoop = new NioEventLoopGroup(options.ioThreads)
@@ -250,9 +276,7 @@ object Server {
                   ))
                 }
 
-                Future(try { service(request) } catch { case e: Throwable => Future.failed(e) })(executor).
-                  flatMap(identity).
-                  recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }.
+                serveRequest(request).
                   flatMap { response =>
                     val nettyResponse = new DefaultHttpResponse(
                       NettyHttpVersion.HTTP_1_1,
@@ -357,9 +381,9 @@ object Server {
         val socketAddress = localAddress
         val ssl = ssl0
         val options = options0
-        def stop() = {
+        def stop(quietPeriod: Duration, timeout: Duration) = {
           val p = Promise[Unit]
-          eventLoop.shutdownGracefully().
+          eventLoop.shutdownGracefully(quietPeriod.toMillis, timeout.toMillis, java.util.concurrent.TimeUnit.MILLISECONDS).
             asInstanceOf[NettyFuture[Unit]].
             addListener(new GenericFutureListener[NettyFuture[Unit]] {
               override def operationComplete(f: NettyFuture[Unit]) = {
@@ -373,6 +397,7 @@ object Server {
             })
           p.future
         }
+        def apply(request: Request) = serveRequest(request)
       }
     }
     catch {

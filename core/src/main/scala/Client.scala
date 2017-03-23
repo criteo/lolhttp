@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import internal.NettySupport._
 
-/** = Allow to configure an HTTP client =
+/** Allow to configure an HTTP client.
   * @param ioThreads the number of threads used for the IO work. Default to `min(availableProcessors, 2)`.
   * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
   * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
@@ -265,7 +265,7 @@ private object Connection {
   val connectionIds = new AtomicLong(0)
 }
 
-/** == An HTTP client ==
+/** An HTTP client.
  *
  * {{{
  * val eventuallyContent = client(Get("/hello")).flatMap { response =>
@@ -273,7 +273,7 @@ private object Connection {
  * }
  * }}}
  *
- * An HTTP client is a [[lol.http.Service service]] function. It handles HTTP requests
+ * An HTTP client is a [[Service]] function. It handles HTTP requests
  * and eventually returns HTTP responses.
  *
  * A client maintains several TCP connections to the remote server. These connections
@@ -288,28 +288,28 @@ private object Connection {
  */
 trait Client extends Service {
 
-  /** @return the host this client is connected to. */
+  /** The host this client is connected to. */
   def host: String
 
-  /** @return the TCP port this client is connected to. */
+  /** The TCP port this client is connected to. */
   def port: Int
 
-  /** @return the scheme used by this client (either HTTP or HTTPS if connected in SSL). */
+  /** The scheme used by this client (either HTTP or HTTPS if connected in SSL). */
   def scheme: String
 
-  /** @return the SSL configuration used by the client. Must be provided if the server certificate is not recognized by default. */
+  /** The SSL configuration used by the client. Must be provided if the server certificate is not recognized by default. */
   def ssl: SSL.Configuration
 
-  /** @return the client options such as the number of IO thread used. */
+  /** The client options such as the number of IO thread used. */
   def options: ClientOptions
 
-  /** @return the maximum number of TCP connections maintained with the remote server. */
+  /** The maximum number of TCP connections maintained with the remote server. */
   def maxConnections: Int
 
-  /** @return the maximum number of waiting requests before the client starts rejecting new ones. */
+  /** The maximum number of waiting requests before the client starts rejecting new ones. */
   def maxWaiters: Int
 
-  /** @return the ExecutionContext that will be used to run the user code. */
+  /** The ExecutionContext that will be used to run the user code. */
   implicit def executor: ExecutionContext
 
   private lazy val eventLoop = new NioEventLoopGroup(options.ioThreads)
@@ -476,10 +476,43 @@ trait Client extends Service {
   }
 }
 
-/** == Build HTTP clients ==
- */
+/** Build HTTP clients.
+  *
+  * {{{
+  * val client = Client("github.com")
+  * val homePage = client.run(Get("/"))(_.readAs[String])
+  * client.stop()
+  * }}}
+  *
+  * Once created an HTTP client maintains several TCP connections to the remote server, and
+  * can be reused to run several requests. It is better to create a dedicated client this way if 
+  * you plan to send many requests to the same server.
+  *
+  * However there are some situations where you have a single request to run, or you have a batch
+  * of requests to send over an unknown set of servers. In this case you can use the [[run]] operation
+  * that automatically create a temporary HTTP client to run the request and trash it after the exchange
+  * completion. 
+  *
+  * {{{
+  * val homePage = Client.run(Get("http://github.com/"))(_.readAs[String])
+  * }}}
+  *
+  * Note that in this case, for each request, a new client (including the whole IO
+  * infrastructure) will to be created, and a new TCP connection will be opened to the server.
+  */
 object Client {
 
+  /** Create a new HTTP Client for the provided host/port.
+    * @param host the host to use to setup the TCP connections.
+    * @param port the port to use to setup the TCP connections.
+    * @param scheme either __http__ or __https__.
+    * @param ssl if provided the custom SSL configuration to use for this client.
+    * @param options the client options such as the number of IO thread used.
+    * @param maxConnections the maximum number of TCP connections to maintain with the remote server.
+    * @param maxWaiters the maximum number of requests waiting for an available connection.
+    * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
+    * @return an HTTP client instance.
+    */
   def apply(
     host: String,
     port: Int = 80,
@@ -504,12 +537,19 @@ object Client {
     }
   }
 
+  /** Run the provided request with a temporary client, and apply the script function to the response.
+    * @param request the request to run. It must include a proper `Host` header.
+    * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @param options the client options to use for the temporary client.
+    * @param script a function that eventually receive the response and transform it to a value of type `A`.
+    * @return eventually a value of type `A`.
+    */
   def run[A](
     request: Request,
     followRedirects: Boolean = false,
     options: ClientOptions = ClientOptions(ioThreads = 1)
   )
-  (f: Response => Future[A] = (_: Response) => Future.successful(()))
+  (script: Response => Future[A] = (_: Response) => Future.successful(()))
   (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
     request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.toString.split("[:]").toList match {
@@ -520,7 +560,7 @@ object Client {
       }
       (for {
         response <- client(request, followRedirects)
-        result <- f(response)
+        result <- script(response)
       } yield result).
       andThen { case _ => client.stop() }
     }.

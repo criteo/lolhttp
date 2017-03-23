@@ -1,0 +1,5 @@
+target/
+project/target
+.DS_Store
+stuff/
+.idea/

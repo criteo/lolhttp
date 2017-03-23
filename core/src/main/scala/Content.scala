@@ -327,9 +327,14 @@ object ContentEncoder {
     * @return an encoder for `java.lang.Charsequence`.
     */
   def text(codec: Codec = Codec.UTF8): ContentEncoder[CharSequence] = new ContentEncoder[CharSequence] {
-    def apply(data: CharSequence) = byteBuffer(
-      codec.encoder.encode(CharBuffer.wrap(data))
-    ).addHeaders(ContentType -> h"text/plain; charset=$codec")
+    def apply(data: CharSequence) = {
+      val charBuffer = Option(data)
+        .map(CharBuffer.wrap)
+        .getOrElse(CharBuffer.allocate(0))
+      byteBuffer(
+        codec.encoder.encode(charBuffer)
+      ).addHeaders(ContentType -> h"text/plain; charset=$codec")
+    }
   }
 
   /** Default text encoder, using `UTF-8` as charset. */

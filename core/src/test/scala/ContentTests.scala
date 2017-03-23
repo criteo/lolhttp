@@ -20,6 +20,10 @@ class ContentTests extends Tests {
     val textContent3 = Content.of("Héhé")
     textContent3.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=UTF-16"))
     getBytes(textContent3) should contain theSameElementsInOrderAs "Héhé".getBytes("utf-16")
+
+    val nullTextContent = Content.of(null)(ContentEncoder.text(Codec.UTF8))
+    nullTextContent.headers.get(Headers.ContentType) should be (Some(h"text/plain; charset=UTF-8"))
+    getBytes(nullTextContent) should have size 0
   }
 
   test("Text decoding", Pure) {

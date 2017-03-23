@@ -1,5 +1,6 @@
 git checkout master
 sbt unidoc
+sbt examples/compile
 git checkout gh-pages
 mkdir doc
 rm -rf doc/api

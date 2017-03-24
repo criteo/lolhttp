@@ -275,16 +275,16 @@ HTTP reverse proxy.</p></p></div>
               </section>
             
               <section class="">
-                <div class="comment "><p>Let&#39;s proxy <a href="http://github.com">github.com</a> 😼.</p></p></div>
+                <div class="comment "><p>Let&#39;s proxy <a href="https://www.wikipedia.org">www.wikipedia.org</a> 😼.</p></p></div>
                 <div class="code "><span class="keyword">object</span> <span class="identifier">ReverseProxy</span> {
   <span class="keyword">def</span> <span class="identifier">main</span>(<span class="identifier">args</span>: <span class="identifier">Array</span>[<span class="identifier">String</span>]): <span class="identifier">Unit</span> = {
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>We need an HTTP client connected to github. The connection is
+                <div class="comment "><p>We need an HTTP client connected to wikipedia.org. The connection is
 done in HTTPS, so we need to specify the port and scheme.</p></p></div>
-                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">githubClient</a></span> = <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Client$.html#apply(host:String,port:Int,scheme:String,ssl:lol.http.SSL.Configuration,options:lol.http.ClientOptions,maxConnections:Int,maxWaiters:Int)(implicitexecutor:scala.concurrent.ExecutionContext)lol.http.Client" data-tooltip="<span>lol.http.Client.apply(host: String, port: Int, scheme: String, ssl: lol.http.SSL.Configuration, options: lol.http.ClientOptions, maxConnections: Int, maxWaiters: Int)(implicit executor: scala.concurrent.ExecutionContext): lol.http.Client</span>">Client</a></span>(<span class="string">"github.com"</span>, <span class="number">443</span>, <span class="string">"https"</span>)
+                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">wikipediaClient</a></span> = <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Client$.html#apply(host:String,port:Int,scheme:String,ssl:lol.http.SSL.Configuration,options:lol.http.ClientOptions,maxConnections:Int,maxWaiters:Int)(implicitexecutor:scala.concurrent.ExecutionContext)lol.http.Client" data-tooltip="<span>lol.http.Client.apply(host: String, port: Int, scheme: String, ssl: lol.http.SSL.Configuration, options: lol.http.ClientOptions, maxConnections: Int, maxWaiters: Int)(implicit executor: scala.concurrent.ExecutionContext): lol.http.Client</span>">Client</a></span>(<span class="string">"en.wikipedia.org"</span>, <span class="number">443</span>, <span class="string">"https"</span>)
     &nbsp;</div>
               </section>
             
@@ -296,10 +296,10 @@ done in HTTPS, so we need to specify the port and scheme.</p></p></div>
             
               <section class="">
                 <div class="comment "><p>If the request is a <strong>GET /</strong>, we redirect the
-browser to <strong>/explore</strong>. That&#39;s the <em>only</em> feature of
+browser to teh Criteo page. That&#39;s the <em>only</em> feature of
 our reverse proxy!</p></p></div>
                 <div class="code ">      <span class="keyword">case</span> <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/package$.html#GET=>lol.http.HttpMethod" data-tooltip="<span>lol.http.GET: lol.http.HttpMethod</span>">GET</a></span> <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/at$.html" data-tooltip="<span>lol.http.at</span>">at</a></span> <span class="number">url</span>"<span class="string">/"</span> =>
-        <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/package$.html#Redirect(url:String,permanent:Boolean)lol.http.Response" data-tooltip="<span>lol.http.Redirect(url: String, permanent: Boolean): lol.http.Response</span>">Redirect</a></span>(<span class="string">"/explore"</span>)
+        <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/package$.html#Redirect(url:String,permanent:Boolean)lol.http.Response" data-tooltip="<span>lol.http.Redirect(url: String, permanent: Boolean): lol.http.Response</span>">Redirect</a></span>(<span class="string">"/wiki/Criteo"</span>)
 &nbsp;</div>
               </section>
             
@@ -308,17 +308,17 @@ our reverse proxy!</p></p></div>
 created, so it is sent to github, and the response is written
 back to the browser.</p></p></div>
                 <div class="code ">      <span class="keyword">case</span> <span class="identifier">request</span> =>
-        <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Client.html#apply(request:lol.http.Request)scala.concurrent.Future[lol.http.Response]" data-tooltip="<span>lol.http.Client.apply(request: lol.http.Request): scala.concurrent.Future[lol.http.Response]</span>">githubClient</a></span> {&nbsp;</div>
+        <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Client.html#apply(request:lol.http.Request)scala.concurrent.Future[lol.http.Response]" data-tooltip="<span>lol.http.Client.apply(request: lol.http.Request): scala.concurrent.Future[lol.http.Response]</span>">wikipediaClient</a></span> {&nbsp;</div>
               </section>
             
               <section class="">
                 <div class="comment "><p>We need to change the <code>Host</code> header, so the github server will
 accept the request.</p></p></div>
-                <div class="code ">          <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">request</a></span>.<span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*)lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Headers$.html" data-tooltip="<span>lol.http.Headers</span>">Headers</a></span>.<span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Headers$.html#Host=>lol.http.HttpString" data-tooltip="<span>lol.http.Headers.Host: lol.http.HttpString</span>">Host</a></span> <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/HttpString.html" data-tooltip="<span>lol.http.HttpString</span>">-></a></span> <span class="number">h</span>"<span class="string">github.com"</span>)
+                <div class="code ">          <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">request</a></span>.<span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*)lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Headers$.html" data-tooltip="<span>lol.http.Headers</span>">Headers</a></span>.<span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/Headers$.html#Host=>lol.http.HttpString" data-tooltip="<span>lol.http.Headers.Host: lol.http.HttpString</span>">Host</a></span> <span class="identifier"><a target="doc" href="http://g.bort.gitlab.preprod.crto.in/lolhttp/api//lol/http/HttpString.html" data-tooltip="<span>lol.http.HttpString</span>">-></a></span> <span class="number">h</span>"<span class="string">en.wikipedia.org"</span>)
         }
     }
       
-    <span class="identifier">println</span>(<span class="string">"Proxying github on http://localhost:8888..."</span>)
+    <span class="identifier">println</span>(<span class="string">"Proxying wikipedia on http://localhost:8888..."</span>)
   }
 }&nbsp;</div>
               </section>

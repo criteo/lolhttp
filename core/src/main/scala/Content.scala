@@ -453,6 +453,8 @@ object ContentEncoder {
   * A common use case is to serve static resources (html, js, images files) from the classpath.
   * [[ClasspathResource]] values can be directly encoded as [[Content]] and used to feed an HTTP response.
   *
+  * Trying to write a missing resource on an HTTP response will close the connection.
+  *
   * Also, this provide a basic security by requiring the path to be asbolutely defined. No directory navigation
   * is allowed. For example `ClasspathResource("/public/../public/index.html")` will resolve to a missing resource.
   */

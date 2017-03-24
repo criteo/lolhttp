@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.{
   DefaultHttpContent,
   DefaultLastHttpContent }
 
-import scala.util.{ Try }
+import scala.util.{ Try, Failure }
 import scala.concurrent.{
   Future,
   Promise,
@@ -76,23 +76,26 @@ private[http] object NettySupport {
             channel.writeAndFlush(new DefaultLastHttpContent())
           }
           else {
-            for {
+            (for {
               _ <- channel.writeAndFlush(head.toByteBuf).toFuture
               _ <- (tail to channel.httpContentSink).run.unsafeRunAsyncFuture()
             } yield {
               if(expectedLength.isEmpty) channel.close()
-            }
+            }).
+            andThen { case Failure(_) => channel.close() }
           }
       }
-      contentStream.uncons.runLast.map(_.flatten).unsafeRunSync() match {
-        case Right(data) =>
+      contentStream.uncons.runLast.map(_.flatten).unsafeAttemptRunSync() match {
+        case Right(Right(data)) =>
           go(data)
+        case Right(Left(e)) =>
+          channel.close()
         case Left(continuation) =>
           continuation {
             case Right(data) =>
               go(data)
             case Left(e) =>
-              throw e
+              channel.close()
           }
       }
     }

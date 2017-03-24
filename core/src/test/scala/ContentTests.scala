@@ -31,7 +31,7 @@ class ContentTests extends Tests {
     val textContent = Content.of(text)
 
     textContent.as[String].unsafeRun() should be (text)
-    textContent.as(ContentDecoder.text(codec = Codec.ISO8859)).unsafeRun() should not be (text)
+    textContent.as(ContentDecoder.text(defaultCodec = Codec.ISO8859)).unsafeRun() should not be (text)
     textContent.as(ContentDecoder.text(maxSize = 21)).unsafeRun() should be (text.take(21))
 
     // A truncated byte buffer is not necessarely a valid utf-8 sequence
@@ -137,6 +137,8 @@ class ContentTests extends Tests {
     ClasspathResource("/lol/http/internal/../Server.class").exists should be (false)
 
     withServer(Server.listen() {
+      case GET at "/broken" =>
+        Ok(ClasspathResource("/oops"))
       case GET at url"/$file" =>
         val resource = ClasspathResource(s"/$file")
         if(resource.exists) Ok(resource) else NotFound(s"$file not found")
@@ -150,6 +152,8 @@ class ContentTests extends Tests {
 
       status(Get(s"$url/bam.png")) should be (404)
       contentString(Get(s"$url/bam.png")) should be ("bam.png not found")
+
+      the [Error] thrownBy contentString(Get(s"$url/broken")) shouldBe (Error.ConnectionClosed)
     }
   }
 }

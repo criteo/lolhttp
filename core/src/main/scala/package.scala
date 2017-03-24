@@ -51,13 +51,13 @@ package object http {
   val DELETE = HttpMethod("DELETE")
 
   /** A 200 Ok [[Response]]. */
-  val Ok = Response(200)
+  lazy val Ok = Response(200)
 
   /** A 201 Created [[Response]]. */
-  val Created = Response(201)
+  lazy val Created = Response(201)
 
   /** A 500 Internal server error [[Response]]. */
-  val InternalServerError = Response(500)
+  lazy val InternalServerError = Response(500)
 
   /** Create 30x HTTP redirects.
     * @param url will be used as `Location` header value.
@@ -69,10 +69,10 @@ package object http {
   }
 
   /** A 404 Not found [[Response]]. */
-  val NotFound = Response(404)
+  lazy val NotFound = Response(404)
 
   /** A 400 Bad request [[Response]]. */
-  val BadRequest = Response(400)
+  lazy val BadRequest = Response(400)
 
   /** Create a 101 Switching protocol [[Response]].
     * @param protocol the new protocol the server accepts to switch to.

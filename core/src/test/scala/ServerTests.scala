@@ -30,7 +30,7 @@ class ServerTests extends Tests {
         addHeaders(h"X-Lol" -> h"xxx").
         addHeaders(h"X-Ohh" -> h"Ahh").
         addHeaders(Map(h"X-Paf" -> h"Pif")).
-        removeHeader(h"X-Ohh")
+        removeHeaders(h"X-Ohh")
     }) { server =>
       val url = s"http://localhost:${server.port}/"
 

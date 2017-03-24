@@ -87,7 +87,7 @@ trait Server extends Service {
     */
   def stop(quietPeriod: Duration = 2 seconds, timeout: Duration = 15 seconds): Future[Unit]
 
-  override def toString() = s"Server($socketAddress, $options)"
+  override def toString() = s"Server(socketAddress=$socketAddress, ssl=$ssl, options=$options)"
 }
 
 /** Build and start HTTP servers.

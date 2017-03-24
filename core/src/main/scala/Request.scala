@@ -119,7 +119,7 @@ object HttpMethod {
   * }
   * }}}
   *
-  * A useful request extractor that splits a request in both HTTP method and URL.
+  * Matches [[Request]] values by splitting them in a (HTTP method, URL) pair.
   */
 object at {
   def unapply[A](req: Request): Option[(HttpMethod, String)] = Some(req.method -> req.url)

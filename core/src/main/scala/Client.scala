@@ -52,7 +52,7 @@ private[http] class Connection(
 )(implicit executor: ExecutionContext) {
   implicit val S = Strategy.fromExecutionContext(executor)
 
-  private var upgraded = false
+  private var upgrading: Option[() => Unit] = None
 
   // used for internal sanity check
   val id = Connection.connectionIds.incrementAndGet()
@@ -64,12 +64,7 @@ private[http] class Connection(
   channel.pipeline.addLast("Http", new HttpClientCodec())
   channel.pipeline.addLast("HttpDecompress", new HttpContentDecompressor())
   channel.pipeline.addLast("CatchAll", new SimpleChannelInboundHandler[Any] {
-    override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = msg match {
-      case last: LastHttpContent if upgraded && last.content.readableBytes == 0 =>
-        // Expected because we upgraded the connection
-      case msg =>
-        Panic.!!!(s"Missed $msg")
-    }
+    override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = Panic.!!!(s"Missed $msg")
     override def exceptionCaught(ctx: ChannelHandlerContext, e: Throwable) = {
       ctx.close()
       e match {
@@ -81,7 +76,7 @@ private[http] class Connection(
 
   val closed: Future[Unit] = channel.closeFuture.toFuture.map(_ => ())
   def close(): Future[Unit] = channel.close().toFuture.map(_ => ())
-  def isOpen: Boolean = channel.isOpen
+  def isOpen: Boolean = channel.isActive
 
   def apply(request: Request): Future[(Response, async.immutable.Signal[Task,Boolean])] = {
     if(concurrentUses.incrementAndGet() != 1) Panic.!!!()
@@ -120,6 +115,7 @@ private[http] class Connection(
           case nettyResponse: HttpResponse =>
             if(eventuallyResponse.isCompleted) Panic.!!!()
             if(buffer.nonEmpty) Panic.!!!()
+            if(upgrading.nonEmpty) Panic.!!!()
             eventuallyResponse.success {
               Response(
                 status = nettyResponse.status.code,
@@ -182,38 +178,41 @@ private[http] class Connection(
               )
             }
             if(nettyResponse.status.code == 101) {
-              // This is not an HTTP connection anymore
-              channel.pipeline.remove("ResponseHandler")
-              channel.pipeline.remove("HttpDecompress")
-              channel.pipeline.remove("Http")
-              channel.pipeline.addBefore(
-                "CatchAll",
-                "UpgradedConnectionHandler",
-                new SimpleChannelInboundHandler[ByteBuf] {
-                  override def channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) = {
-                    buffer = Chunk.concat(Seq(buffer, msg.toChunk))
-                  }
-                  override def channelReadComplete(ctx: ChannelHandlerContext) = {
-                    (for {
-                      _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
-                      _ <- Task.fromFuture {
-                        channel.runInEventLoop {
-                          buffer = Chunk.empty
-                          channel.read()
+              upgrading = Some(() => {
+                // This is not an HTTP connection anymore
+                channel.pipeline.remove("ResponseHandler")
+                channel.pipeline.remove("HttpDecompress")
+                channel.pipeline.remove("Http")
+                channel.pipeline.addBefore(
+                  "CatchAll",
+                  "UpgradedConnectionHandler",
+                  new SimpleChannelInboundHandler[ByteBuf] {
+                    override def channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) = {
+                      buffer = Chunk.concat(Seq(buffer, msg.toChunk))
+                    }
+                    override def channelReadComplete(ctx: ChannelHandlerContext) = {
+                      (for {
+                        _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
+                        _ <- Task.fromFuture {
+                          channel.runInEventLoop {
+                            buffer = Chunk.empty
+                            channel.read()
+                          }
                         }
-                      }
-                    } yield ()).unsafeRunAsyncFuture().onComplete(_.get)
+                      } yield ()).unsafeRunAsyncFuture().onComplete(_.get)
+                    }
+                    override def channelInactive(ctx: ChannelHandlerContext) = {
+                      content.enqueue1(Chunk.empty).unsafeRunAsyncFuture().onComplete(_.get)
+                    }
                   }
-                  override def channelInactive(ctx: ChannelHandlerContext) = {
-                    content.enqueue1(Chunk.empty).unsafeRunAsyncFuture().onComplete(_.get)
-                  }
-                }
-              )
-              upgraded = true
+                )
+              })
             }
           case part: HttpContent =>
             buffer = Chunk.concat(Seq(buffer, part.content.toChunk))
-            if(part.isInstanceOf[LastHttpContent]) responseDone = true
+            if(part.isInstanceOf[LastHttpContent]) {
+              upgrading.fold(responseDone = true)(_.apply())
+            }
           case _ =>
             Panic.!!!()
         }
@@ -229,6 +228,7 @@ private[http] class Connection(
                 if(channel.isActive) channel.pipeline.remove("ResponseHandler")
                 if(concurrentUses.decrementAndGet() != 0) Panic.!!!()
                 releaseConnection.set(true).unsafeRun()
+                channel.config.setAutoRead(true)
 
                 // Close the connection if requested by the protocol
                 val response = eventuallyResponse.future.value.flatMap(_.toOption).getOrElse(Panic.!!!())
@@ -247,6 +247,7 @@ private[http] class Connection(
       }
     })
 
+    channel.config.setAutoRead(false)
     (for {
       _ <- channel.writeAndFlush(nettyRequest).toFuture
       _ <- (request.content.stream to channel.httpContentSink).run.unsafeRunAsyncFuture()
@@ -324,7 +325,6 @@ trait Client extends Service {
         channel.config.setReceiveBufferSize(size)
         channel.config.setSendBufferSize(size)
       }
-      channel.config.setAutoRead(false)
       Option(scheme).filter(_ == "https").foreach { _ =>
         val sslCtx = new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)
         channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
@@ -341,6 +341,9 @@ trait Client extends Service {
 
   /** The number of TCP connections currently opened with the remote server. */
   def openedConnections: Int = liveConnections.intValue
+
+  /** Check if this client is already closed (ie. it does not accept any more requests). */
+  def isClosed: Boolean = closed.get
 
   private def waitConnection(): Future[Connection] = {
     val p = Promise[Connection]
@@ -474,6 +477,11 @@ trait Client extends Service {
   def runAndStop[A](script: Client => Future[A]): Future[A] = {
     script(this).andThen { case _ => this.stop() }
   }
+
+  override def toString = {
+    s"Client(host=$host, port=$port, ssl=$ssl, options=$options, maxConnections=$maxConnections, " +
+    s"maxWaiters=$maxWaiters, openedConnections=$openedConnections, isClosed=$isClosed)"
+  }
 }
 
 /** Build HTTP clients.
@@ -519,7 +527,7 @@ object Client {
     scheme: String = "http",
     ssl: SSL.Configuration = SSL.Configuration.default,
     options: ClientOptions = ClientOptions(),
-    maxConnections: Int = 20,
+    maxConnections: Int = 10,
     maxWaiters: Int = 100
   )(implicit executor: ExecutionContext): Client = {
     val (host0, port0, scheme0, ssl0, options0, maxConnections0, maxWaiters0, executor0) = (

@@ -3,8 +3,7 @@ sbt unidoc
 sbt examples/compile
 git checkout gh-pages
 mkdir doc
-rm -rf doc/api
-rm -rf doc/examples
+rm -rf api
 cp -rf target/scala-2.12/unidoc api
 cp -rf examples/target/html examples0
 rm -rf examples

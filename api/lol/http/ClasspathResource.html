@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.1.0 - lol.http.ClasspathResource</title>
-          <meta name="description" content="lolhttp 0.1.0 - lol.http.ClasspathResource" />
-          <meta name="keywords" content="lolhttp 0.1.0 lol.http.ClasspathResource" />
+          <title>lolhttp 0.2.0 - lol.http.ClasspathResource</title>
+          <meta name="description" content="lolhttp 0.2.0 - lol.http.ClasspathResource" />
+          <meta name="keywords" content="lolhttp 0.2.0 lol.http.ClasspathResource" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.1.0</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.2.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -257,7 +257,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
 
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A resource than can be read from the classpath.</p><pre>Ok(ClasspathResource(<span class="lit">"/public/index.html"</span>))</pre><p>A common use case is to serve static resources (html, js, images files) from the classpath.
-<a href="" class="extype" name="lol.http.ClasspathResource">ClasspathResource</a> values can be directly encoded as <a href="Content.html" class="extype" name="lol.http.Content">Content</a> and used to feed an HTTP response.</p><p>Also, this provide a basic security by requiring the path to be asbolutely defined. No directory navigation
+<a href="" class="extype" name="lol.http.ClasspathResource">ClasspathResource</a> values can be directly encoded as <a href="Content.html" class="extype" name="lol.http.Content">Content</a> and used to feed an HTTP response.</p><p>Trying to write a missing resource on an HTTP response will close the connection.</p><p>Also, this provide a basic security by requiring the path to be asbolutely defined. No directory navigation
 is allowed. For example <code>ClasspathResource(&quot;/public/../public/index.html&quot;)</code> will resolve to a missing resource.
 </p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://gitlab.criteois.com/g.bort/lolhttp/tree/master/core/src/main/scala/Content.scala" target="_blank">Content.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">

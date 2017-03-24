@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.1.0 - lol.http</title>
-          <meta name="description" content="lolhttp 0.1.0 - lol.http" />
-          <meta name="keywords" content="lolhttp 0.1.0 lol.http" />
+          <title>lolhttp 0.2.0 - lol.http</title>
+          <meta name="description" content="lolhttp 0.2.0 - lol.http" />
+          <meta name="keywords" content="lolhttp 0.2.0 lol.http" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.1.0</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.2.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -391,7 +391,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
       </span>
       
       <p class="shortcomment cmt">A resource than can be read from the classpath.</p><div class="fullcomment"><div class="comment cmt"><p>A resource than can be read from the classpath.</p><pre>Ok(ClasspathResource(<span class="lit">"/public/index.html"</span>))</pre><p>A common use case is to serve static resources (html, js, images files) from the classpath.
-<a href="ClasspathResource.html" class="extype" name="lol.http.ClasspathResource">ClasspathResource</a> values can be directly encoded as <a href="Content.html" class="extype" name="lol.http.Content">Content</a> and used to feed an HTTP response.</p><p>Also, this provide a basic security by requiring the path to be asbolutely defined. No directory navigation
+<a href="ClasspathResource.html" class="extype" name="lol.http.ClasspathResource">ClasspathResource</a> values can be directly encoded as <a href="Content.html" class="extype" name="lol.http.Content">Content</a> and used to feed an HTTP response.</p><p>Trying to write a missing resource on an HTTP response will close the connection.</p><p>Also, this provide a basic security by requiring the path to be asbolutely defined. No directory navigation
 is allowed. For example <code>ClasspathResource(&quot;/public/../public/index.html&quot;)</code> will resolve to a missing resource.
 </p></div></div>
     </li><li name="lol.http.Client" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
@@ -742,7 +742,7 @@ header <span class="kw">match</span> {
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
         <span class="name">BadRequest</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
@@ -758,7 +758,7 @@ header <span class="kw">match</span> {
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
         <span class="name">Created</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
@@ -870,7 +870,7 @@ header <span class="kw">match</span> {
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
         <span class="name">InternalServerError</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
@@ -886,7 +886,7 @@ header <span class="kw">match</span> {
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
         <span class="name">NotFound</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
@@ -902,7 +902,7 @@ header <span class="kw">match</span> {
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
         <span class="name">Ok</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>

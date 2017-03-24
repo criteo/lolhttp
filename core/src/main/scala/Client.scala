@@ -89,6 +89,7 @@ private[http] class Connection(
 
     var buffer: Chunk[Byte] = Chunk.empty
     var responseDone = false
+    var finalized = false
 
     val eventuallyResponse = Promise[Response]
     // if the connection is closed before we received the Http response
@@ -218,24 +219,29 @@ private[http] class Connection(
         }
       }
       override def channelReadComplete(ctx: ChannelHandlerContext) = {
-        (for {
+        if(!finalized) (for {
           _ <- if(buffer.nonEmpty) content.enqueue1(buffer) else Task.now(())
           _ <- if(responseDone) content.enqueue1(Chunk.empty) else Task.now(())
           _ <- Task.fromFuture {
             channel.runInEventLoop {
               if(responseDone) {
-                // This response has been completely handled
-                if(channel.isActive) channel.pipeline.remove("ResponseHandler")
+                val response = eventuallyResponse.future.value.flatMap(_.toOption).getOrElse(Panic.!!!())
+                if(response.headers.get(Headers.Connection).exists(_ == h"Close") || request.headers.get(Headers.Connection).exists(_ == h"Close")) {
+                  // Close the connection if requested by the protocol
+                  channel.close()
+                }
+                else {
+                  // Prepare the connection for the next request
+                  Try(channel.pipeline.remove("ResponseHandler")) match {
+                    case Failure(_) =>
+                      channel.close()
+                    case _ =>
+                      channel.config.setAutoRead(true)
+                  }
+                }
                 if(concurrentUses.decrementAndGet() != 0) Panic.!!!()
                 releaseConnection.set(true).unsafeRun()
-                channel.config.setAutoRead(true)
-
-                // Close the connection if requested by the protocol
-                val response = eventuallyResponse.future.value.flatMap(_.toOption).getOrElse(Panic.!!!())
-                if(
-                  response.headers.get(Headers.Connection).exists(_ == "Close") ||
-                  request.headers.get(Headers.Connection).exists(_ == "Close")
-                ) channel.close()
+                finalized = true
               }
               else {
                 buffer = Chunk.empty

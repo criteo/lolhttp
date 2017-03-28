@@ -8,12 +8,12 @@ Servers and clients are service functions. A service takes an HTTP request and e
 
 ## Usage
 
-The library is cross-built for __Scala 2.11__ and __Scala 2.12__. The core module to use is `"com.criteo.lolhttp" %% "lolhttp" % "0.2.2"`.
+The library is cross-built for __Scala 2.11__ and __Scala 2.12__. The core module to use is `"org.criteo.lolhttp" %% "lolhttp" % "0.2.2"`.
 
 There are also 2 optional companion libraries:
 
-- `"com.criteo.lolhttp" %% "loljson" % "0.2.2"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
-- `"com.criteo.lolhttp" %% "lolhtml" % "0.2.2"`, provides minimal HTML templating.
+- `"org.criteo.lolhttp" %% "loljson" % "0.2.2"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
+- `"org.criteo.lolhttp" %% "lolhtml" % "0.2.2"`, provides minimal HTML templating.
 
 ## Documentation
 

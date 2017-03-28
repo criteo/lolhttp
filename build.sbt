@@ -1,7 +1,7 @@
 val VERSION = "0.2.2"
 
 lazy val commonSettings = Seq(
-  organization := "com.criteo.lolhttp",
+  organization := "org.criteo.lolhttp",
   version := VERSION,
   scalaVersion := "2.12.1",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),

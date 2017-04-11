@@ -140,9 +140,7 @@ package object http {
     request(url).copy(method = PUT, content = encoder(content))
   }
 
-  /** Some string interpolation.
-    *
-    * The `url` interpolation is mainly useful in pattern matching to match and extract
+  /** The `url` interpolation is mainly useful in pattern matching to match and extract
     * dynamic parameters in URL templates. You can use it to build URL string too, but in
     * this case it acts as the standard `s` interpolation.
     *
@@ -150,11 +148,40 @@ package object http {
     * val userProfile = url"/users/\$userId"
     * userProfile match {
     *   case url"/users/\$userId" => println("user id" -> userId)
+    *   case url"/images/\$image..." => println("image path" -> image)
+    *   case url"/search?keyword=\$keyword&sort=\$sort" => println("keyword" -> keyword)
     *   case _ => println("wrong url")
     * }
     * }}}
     *
-    * The `h` interpolation creates [[HttpString]] values. You can use it as a matcher too.
+    * The matcher allow to extract dynamic parts from both the URL path and queryString. For the
+    * path only a fragment or a fragment part can be extracted (no `/` will be matched):
+    *
+    * {{{
+    * url"/users/\$id/items" = "/users/12/items" // will match with id="12"
+    * url"/users/id-\$id/items" = "/users/id-12/items" // will match with id="12"
+    * }}}
+    *
+    * If you want to capture several fragments, you can use the `...` syntax:
+    *
+    * {{{
+    * url"/files/\$file..." = "/files/images/lol.png" // will match with file="images/lol.png"
+    * }}}
+    *
+    * You can also match and extract from the queryString. The parameter order is not important and
+    * parameters not specified in the pattern will be ignored:
+    *
+    * {{{
+    * url"/?page=\$page&sort=\$sort" = "/?sort=asc&page=3&offset=2" // will match with page="3", sort="asc"
+    * url"/?section=home" = "/?section=home&update=now" // will match
+    * url"/?section=home&update=\$date" = "/?section=contact&update=now" // won't match
+    * }}}
+    */
+  implicit class UrlMatcher(ctx: StringContext) {
+    val url = internal.Url.Matcher(ctx)
+  }
+
+  /** The `h` interpolation creates [[HttpString]] values. You can use it as a matcher too.
     *
     * {{{
     * val header = h"LOCATION"
@@ -163,16 +190,8 @@ package object http {
     *   case _ => println("wrong header")
     * }
     * }}}
-    *
     */
-  implicit class StringInterpolations(ctx: StringContext) {
-    object url {
-      def apply(args: Any*): String = ctx.s(args:_*)
-      def unapplySeq(req: Request): Option[Seq[String]] = unapplySeq(req.url)
-      def unapplySeq(url: String): Option[Seq[String]] = {
-        ctx.parts.mkString("([^/]*)").replace("?", "[?]").r.unapplySeq(url)
-      }
-    }
+  implicit class LiteralHttpString(ctx: StringContext) {
     object h {
       def apply(args: Any*): HttpString = HttpString(ctx.s(args:_*))
       def unapplySeq(hString: HttpString): Option[Seq[Unit]] = {

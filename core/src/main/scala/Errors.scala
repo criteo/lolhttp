@@ -47,4 +47,7 @@ object Error {
 
   /** The classpath resource was missing so it is not possible to encode it. */
   val ClasspathResourceMissing = Error(8, "Classpath resource does not exist")
+
+  /** The url matcher pattern is invalid. */
+  def InvalidUrlMatcher(msg: String) = Error(9, s"Invalid url matcher pattern: $msg")
 }

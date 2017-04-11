@@ -18,7 +18,7 @@ object ServingFiles {
       // endpoint. We do not need to check if the `ClasspathResource` actually
       // exists because we know statically that it exists.
       case GET at url"/favicon" =>
-        Ok(ClasspathResource("/public/icon.gif"))
+        Ok(ClasspathResource("/public/images/icon.gif"))
 
       // Here we dynamically extract the resource name to serve from the request URL.
       // We use __fold__ to handle the case where the resource does not exist. We have
@@ -29,7 +29,7 @@ object ServingFiles {
       // of the __/public__ directory.
       //
       // Also, note how it is possible to use a `ClasspathResource` as content for a response.
-      case GET at url"/assets/$file" =>
+      case GET at url"/assets/$file..." =>
         ClasspathResource(s"/public/$file").fold(NotFound)(r => Ok(r))
 
       case GET at url"/" =>
@@ -39,10 +39,10 @@ object ServingFiles {
           </head>
           <body>
             <h1>The following image comes from the classpath:</h1>
-            <img src="/assets/lol.gif">
+            <img src="/assets/images/lol.gif">
 
             <h2>This one is missing:</h2>
-            <img src="/assets/boo.gif">
+            <img src="/assets/images/boo.gif">
 
             <h2>You can open this file:</h2>
             <a href="/assets/lol.txt">/assets/lol.txt</a>

@@ -8,7 +8,6 @@ import scala.util.{ Try }
 import scala.concurrent.{ blocking, ExecutionContext }
 
 import java.io.{ File, InputStream }
-import java.net.{ URLDecoder, URLEncoder }
 import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.channels.{ AsynchronousFileChannel, CompletionHandler }
 import java.nio.file.{ StandardOpenOption }
@@ -178,34 +177,9 @@ object ContentDecoder {
     * @return a content decoder for `Map[String,Seq[String]]`.
     */
   def urlEncoded(maxSize: Int = MaxSize, codec: Codec = UsAscii): ContentDecoder[Map[String,Seq[String]]] = new ContentDecoder[Map[String,Seq[String]]] {
-    val ENTITY = """[&][#](\d+)[;]""".r
-    def apply(content: Content) = text(maxSize, codec)(content).map { text =>
-      def decode1(str: String) = URLDecoder.decode(str, "iso8859-1")
-      val pairs = text.split("[&]").toList.
-        map {
-          case "" => ("", "")
-          case string if string.head == '=' => ("", string)
-          case string if string.last == '=' => (string, "")
-          case string if string.indexOf("=") == -1 => (string, string)
-          case string =>
-            val name :: rest = string.split("[=]").toList
-            (name, rest.mkString("="))
-        }.
-        map { case (name, value) =>
-          (decode1(name), decode1(value))
-        }
-      val charset = pairs.find(_._1 == "_charset_").map(_._2).getOrElse("utf-8")
-      def decode2(str: String) = ENTITY.replaceAllIn(
-        new String(str.getBytes("iso8859-1"), charset),
-        _.group(1).toInt.asInstanceOf[Char].toString
-      )
-      val decodedPairs = pairs.map { case (name, value) =>
-        (decode2(name), decode2(value))
-      }
-      decodedPairs.groupBy(_._1).map {
-        case (name, x) => (name, x.map(_._2).toSeq)
-      }
-    }
+    def apply(content: Content) = text(maxSize, codec)(content).map(internal.Url.parseQueryString).map(_.groupBy(_._1).map {
+      case (name, x) => (name, x.map(_._2).toSeq)
+    })
   }
 
   /** Default `url-encoded-form-data` decoder configured with `maxSize` equals to [[MaxSize]]. */
@@ -309,16 +283,8 @@ object ContentEncoder {
     */
   implicit val urlEncoded = new ContentEncoder[Map[String,Seq[String]]] {
     def apply(data: Map[String,Seq[String]]) = {
-      val charset = Codec(data.get("_charset_").flatMap(_.headOption).getOrElse("utf-8"))
-      val (isUnicode, encoder) = (charset.name.startsWith("utf-"), charset.encoder)
-      def encode(str: String) = URLEncoder.encode(if(isUnicode) str else str.flatMap { c =>
-        if(encoder.canEncode(c)) c.toString else s"&#${c.toInt};"
-      }, charset.name)
-      text(Codec("us-ascii")) {
-        data.flatMap { case (key, values) => values.map { case value =>
-          s"${encode(key)}=${encode(value)}"
-        }}.mkString("&")
-      }.addHeaders(ContentType -> h"application/x-www-form-urlencoded")
+      text(Codec("us-ascii"))(internal.Url.toQueryString(data)).
+        addHeaders(ContentType -> h"application/x-www-form-urlencoded")
     }
   }
 

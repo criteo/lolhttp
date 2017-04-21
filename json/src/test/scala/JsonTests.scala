@@ -10,7 +10,7 @@ import io.circe.generic.auto._
 import scala.concurrent.{ Future, ExecutionContext }
 import ExecutionContext.Implicits.global
 
-class JsonTests extends   Tests {
+class JsonTests extends Tests {
 
   val someJson: Json = parse(
     """

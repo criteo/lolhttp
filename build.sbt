@@ -1,4 +1,4 @@
-val VERSION = "0.3.0"
+val VERSION = "0.3.1"
 
 lazy val commonSettings = Seq(
   organization := "org.criteo.lolhttp",
@@ -134,7 +134,7 @@ lazy val examples =
       )
     else Nil)
   ).
-  dependsOn(lolhttp, loljson, lolhtml)
+  dependsOn(lolhttp % "compile->compile;test->test", loljson, lolhtml)
 
 lazy val root =
   (project in file(".")).

@@ -1,12 +1,13 @@
 package lol.http
 
-import fs2.{ Stream }
+import fs2.{ Stream, Strategy }
 import fs2.text.{ lines, utf8Decode, utf8Encode }
 
 import scala.concurrent.{ ExecutionContext }
 import ExecutionContext.Implicits.global
 
 class ConnectionUpgradeTests extends Tests {
+  implicit val S = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
 
   val App: Service = {
     case GET at "/" =>
@@ -64,7 +65,7 @@ class ConnectionUpgradeTests extends Tests {
         Client("localhost", server.port).runAndStop { client =>
           for {
             result <- client.run(Get(url).addHeaders(Headers.Upgrade -> h"Push")) { response =>
-              Thread.sleep(250)
+              Thread.sleep(1000)
               (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
                 runLog.unsafeRunAsyncFuture()
             }

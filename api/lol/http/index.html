@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.2.2 - lol.http</title>
-          <meta name="description" content="lolhttp 0.2.2 - lol.http" />
-          <meta name="keywords" content="lolhttp 0.2.2 lol.http" />
+          <title>lolhttp 0.3.1 - lol.http</title>
+          <meta name="description" content="lolhttp 0.3.1 - lol.http" />
+          <meta name="keywords" content="lolhttp 0.3.1 lol.http" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.2.2</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.3.1</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -211,6 +211,12 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                           HttpString
                         </a>
                       </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values."></a>
+                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">
+                          LiteralHttpString
+                        </a>
+                      </li><li class="current-entities indented2">
                         <a class="object" href="Panic$.html" title="Allows to panic."></a>
                         <a class="class" href="Panic.html" title="Panics are errors that should not occur or should not be handled."></a>
                         <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">
@@ -248,9 +254,11 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                         </a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="package$$StringInterpolations.html" title="Some string interpolation."></a>
-                        <a href="package$$StringInterpolations.html" title="Some string interpolation.">
-                          StringInterpolations
+                        <a class="class" href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
+dynamic parameters in URL templates."></a>
+                        <a href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
+dynamic parameters in URL templates.">
+                          UrlMatcher
                         </a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
@@ -562,6 +570,28 @@ a stream of bytes and the set of required HTTP headers like <code>Content-Length
       <p class="shortcomment cmt">An case insensitive string.</p><div class="fullcomment"><div class="comment cmt"><p>An case insensitive string.</p><pre><span class="kw">val</span> contentType: HttpString = h<span class="lit">"text/plain"</span></pre><p>HTTP strings are case insensitive. The <code>h</code> string interpolation allows to create <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>
 easily.
 </p></div><dl class="paramcmts block"><dt class="param">str</dt><dd class="cmt"><p>the underlying string.</p></dd></dl></div>
+    </li><li name="lol.http.LiteralHttpString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="LiteralHttpStringextendsAnyRef"></a><a id="LiteralHttpString:LiteralHttpString"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#LiteralHttpStringextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="The h interpolation creates HttpString values." href="package$$LiteralHttpString.html">
+              <span class="name">LiteralHttpString</span>
+            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">The <code>h</code> interpolation creates <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> values.</p><div class="fullcomment"><div class="comment cmt"><p>The <code>h</code> interpolation creates <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> values. You can use it as a matcher too.</p><pre><span class="kw">val</span> header = h<span class="lit">"LOCATION"</span>
+header <span class="kw">match</span> {
+  <span class="kw">case</span> h<span class="lit">"Location"</span> <span class="kw">=&gt;</span> println(<span class="lit">"this is the Location header"</span>)
+  <span class="kw">case</span> _ <span class="kw">=&gt;</span> println(<span class="lit">"wrong header"</span>)
+}</pre></div></div>
     </li><li name="lol.http.Panic" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="PanicextendsRuntimeExceptionwithProductwithSerializable"></a><a id="Panic:Panic"></a>
       <span class="permalink">
@@ -697,10 +727,10 @@ it supports TLS connections. Calling the <a href="Server.html#stop(quietPeriod:s
       </span>
       
       <p class="shortcomment cmt">A service is a function from <a href="Request.html" class="extype" name="lol.http.Request">Request</a> to eventually a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p>
-    </li><li name="lol.http.StringInterpolations" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="StringInterpolationsextendsAnyRef"></a><a id="StringInterpolations:StringInterpolations"></a>
+    </li><li name="lol.http.UrlMatcher" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="UrlMatcherextendsAnyRef"></a><a id="UrlMatcher:UrlMatcher"></a>
       <span class="permalink">
-      <a href="../../lol/http/index.html#StringInterpolationsextendsAnyRef" title="Permalink">
+      <a href="../../lol/http/index.html#UrlMatcherextendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -709,22 +739,27 @@ it supports TLS connections. Calling the <a href="Server.html#stop(quietPeriod:s
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="Some string interpolation." href="package$$StringInterpolations.html">
-              <span class="name">StringInterpolations</span>
+        <a title="The url interpolation is mainly useful in pattern matching to match and extract
+dynamic parameters in URL templates." href="package$$UrlMatcher.html">
+              <span class="name">UrlMatcher</span>
             </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
       </span>
       
-      <p class="shortcomment cmt">Some string interpolation.</p><div class="fullcomment"><div class="comment cmt"><p>Some string interpolation.</p><p>The <code>url</code> interpolation is mainly useful in pattern matching to match and extract
+      <p class="shortcomment cmt">The <code>url</code> interpolation is mainly useful in pattern matching to match and extract
+dynamic parameters in URL templates.</p><div class="fullcomment"><div class="comment cmt"><p>The <code>url</code> interpolation is mainly useful in pattern matching to match and extract
 dynamic parameters in URL templates. You can use it to build URL string too, but in
 this case it acts as the standard <code>s</code> interpolation.</p><pre><span class="kw">val</span> userProfile = url<span class="lit">"/users/$userId"</span>
 userProfile <span class="kw">match</span> {
   <span class="kw">case</span> url<span class="lit">"/users/$userId"</span> <span class="kw">=&gt;</span> println(<span class="lit">"user id"</span> -&gt; userId)
+  <span class="kw">case</span> url<span class="lit">"/images/$image..."</span> <span class="kw">=&gt;</span> println(<span class="lit">"image path"</span> -&gt; image)
+  <span class="kw">case</span> url<span class="lit">"/search?keyword=$keyword&sort=$sort"</span> <span class="kw">=&gt;</span> println(<span class="lit">"keyword"</span> -&gt; keyword)
   <span class="kw">case</span> _ <span class="kw">=&gt;</span> println(<span class="lit">"wrong url"</span>)
-}</pre><p>The <code>h</code> interpolation creates <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> values. You can use it as a matcher too.</p><pre><span class="kw">val</span> header = h<span class="lit">"LOCATION"</span>
-header <span class="kw">match</span> {
-  <span class="kw">case</span> h<span class="lit">"Location"</span> <span class="kw">=&gt;</span> println(<span class="lit">"this is the Location header"</span>)
-  <span class="kw">case</span> _ <span class="kw">=&gt;</span> println(<span class="lit">"wrong header"</span>)
-}</pre></div></div>
+}</pre><p>The matcher allow to extract dynamic parts from both the URL path and queryString. For the
+path only a fragment or a fragment part can be extracted (no <code>/</code> will be matched):</p><pre>url<span class="lit">"/users/$id/items"</span> = <span class="lit">"/users/12/items"</span> <span class="cmt">// will match with id="12"</span>
+url<span class="lit">"/users/id-$id/items"</span> = <span class="lit">"/users/id-12/items"</span> <span class="cmt">// will match with id="12"</span></pre><p>If you want to capture several fragments, you can use the <code>...</code> syntax:</p><pre>url<span class="lit">"/files/$file..."</span> = <span class="lit">"/files/images/lol.png"</span> <span class="cmt">// will match with file="images/lol.png"</span></pre><p>You can also match and extract from the queryString. The parameter order is not important and
+parameters not specified in the pattern will be ignored:</p><pre>url<span class="lit">"/?page=$page&sort=$sort"</span> = <span class="lit">"/?sort=asc&page=3&offset=2"</span> <span class="cmt">// will match with page="3", sort="asc"</span>
+url<span class="lit">"/?section=home"</span> = <span class="lit">"/?section=home&update=now"</span> <span class="cmt">// will match</span>
+url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/?section=contact&update=now"</span> <span class="cmt">// won't match</span></pre></div></div>
     </li></ol>
             </div>
 

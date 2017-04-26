@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.2.2 - lol.json.JsonContent</title>
-          <meta name="description" content="lolhttp 0.2.2 - lol.json.JsonContent" />
-          <meta name="keywords" content="lolhttp 0.2.2 lol.json.JsonContent" />
+          <title>lolhttp 0.3.1 - lol.json.JsonContent</title>
+          <meta name="description" content="lolhttp 0.3.1 - lol.json.JsonContent" />
+          <meta name="keywords" content="lolhttp 0.3.1 lol.json.JsonContent" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.2.2</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.3.1</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -308,7 +308,7 @@ for <code>io.circe.Json</code> values.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">decoder</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="../index.html">ContentDecoder.MaxSize</a></span></span></span>, <span name="codec">codec: <span class="extype" name="scala.io.Codec">Codec</span> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
+        <span class="name">decoder</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="../index.html">ContentDecoder.MaxSize</a></span></span></span>, <span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Creates JSON decoders.</p><div class="fullcomment"><div class="comment cmt"><p>Creates JSON decoders.</p></div><dl class="paramcmts block"><dt class="param">maxSize</dt><dd class="cmt"><p>the maximum amout of byte to read in memory.</p></dd><dt class="param">codec</dt><dd class="cmt"><p>the charset to use to read the JSON text. Default to <code>UTF-8</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>a <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a> for <code>io.circe.JSON</code>.</p></dd></dl></div>
@@ -324,7 +324,7 @@ for <code>io.circe.Json</code> values.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">encoder</span><span class="params">(<span name="codec">codec: <span class="extype" name="scala.io.Codec">Codec</span> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
+        <span class="name">encoder</span><span class="params">(<span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Creates JSON encoders.</p><div class="fullcomment"><div class="comment cmt"><p>Creates JSON encoders.</p></div><dl class="paramcmts block"><dt class="param">codec</dt><dd class="cmt"><p>the charset to use to read the JSON text. Default to <code>UTF-8</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>a <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> for <code>io.circe.JSON</code>.</p></dd></dl></div>

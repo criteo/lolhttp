@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.2.2 - lol.http.ContentDecoder</title>
-          <meta name="description" content="lolhttp 0.2.2 - lol.http.ContentDecoder" />
-          <meta name="keywords" content="lolhttp 0.2.2 lol.http.ContentDecoder" />
+          <title>lolhttp 0.3.1 - lol.http.ContentDecoder</title>
+          <meta name="description" content="lolhttp 0.3.1 - lol.http.ContentDecoder" />
+          <meta name="keywords" content="lolhttp 0.3.1 lol.http.ContentDecoder" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.2.2</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.3.1</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -179,6 +179,12 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                           HttpString
                         </a>
                       </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values."></a>
+                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">
+                          LiteralHttpString
+                        </a>
+                      </li><li class="current-entities indented2">
                         <a class="object" href="Panic$.html" title="Allows to panic."></a>
                         <a class="class" href="Panic.html" title="Panics are errors that should not occur or should not be handled."></a>
                         <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">
@@ -216,9 +222,11 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                         </a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="package$$StringInterpolations.html" title="Some string interpolation."></a>
-                        <a href="package$$StringInterpolations.html" title="Some string interpolation.">
-                          StringInterpolations
+                        <a class="class" href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
+dynamic parameters in URL templates."></a>
+                        <a href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
+dynamic parameters in URL templates.">
+                          UrlMatcher
                         </a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
@@ -697,7 +705,7 @@ system property.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">text</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="#MaxSize:Int">MaxSize</a></span></span></span>, <span name="defaultCodec">defaultCodec: <span class="extype" name="scala.io.Codec">Codec</span> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+        <span class="name">text</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="#MaxSize:Int">MaxSize</a></span></span></span>, <span name="defaultCodec">defaultCodec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Create text content decoders.</p><div class="fullcomment"><div class="comment cmt"><p>Create text content decoders. They read the byte stream in memory and return them as a <code>String</code>.
@@ -731,7 +739,7 @@ provided default codec.</p></div><dl class="paramcmts block"><dt class="param">m
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">urlEncoded</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="#MaxSize:Int">MaxSize</a></span></span></span>, <span name="codec">codec: <span class="extype" name="scala.io.Codec">Codec</span> = <span class="symbol">UsAscii</span></span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]]]</span>
+        <span class="name">urlEncoded</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="#MaxSize:Int">MaxSize</a></span></span></span>, <span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">UsAscii</span></span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]]]</span>
       </span>
       
       <p class="shortcomment cmt">Create content decoder for <code>url-encoded-form-data</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Create content decoder for <code>url-encoded-form-data</code>. The content is converted to a <code>Map[String,Seq[String]]</code>.
@@ -748,7 +756,7 @@ See <a href="https://www.w3.org/TR/html5/forms.html#url-encoded-form-data" targe
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">urlEncoded0</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="#MaxSize:Int">MaxSize</a></span></span></span>, <span name="codec">codec: <span class="extype" name="scala.io.Codec">Codec</span> = <span class="symbol">UsAscii</span></span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]]</span>
+        <span class="name">urlEncoded0</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="#MaxSize:Int">MaxSize</a></span></span></span>, <span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">UsAscii</span></span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]]</span>
       </span>
       
       <p class="shortcomment cmt">Same as <a href="#urlEncoded(maxSize:Int,codec:scala.io.Codec):lol.http.ContentDecoder[Map[String,Seq[String]]]" class="extmbr" name="lol.http.ContentDecoder#urlEncoded">urlEncoded</a> but keeps only one value per key, therefore producing a <code>Map[String,String]</code> value.</p>

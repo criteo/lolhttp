@@ -1,6 +1,6 @@
 git checkout master
 sbt unidoc
-sbt examples/compile
+sbt examples/compile -DgenerateExamples
 git checkout gh-pages
 mkdir doc
 rm -rf api
@@ -9,5 +9,5 @@ cp -rf examples/target/html examples0
 rm -rf examples
 cp -rf examples0 examples
 rm -rf examples0
-git commit -a -m "New website"
-git push gitlab-preprod gh-pages
+git commit -a -m "Update documentation"
+git push origin gh-pages

@@ -16,7 +16,6 @@ import io.netty.handler.codec.http.{
   LastHttpContent,
   HttpMessage,
   HttpResponse,
-  HttpHeaderNames,
   DefaultHttpContent,
   DefaultLastHttpContent,
   HttpClientCodec,
@@ -27,7 +26,6 @@ import io.netty.handler.codec.http.{
   HttpRequest,
   HttpUtil }
 
-import scala.util.{ Try }
 import scala.concurrent.{ Future, Promise }
 import scala.collection.mutable.{ ListBuffer }
 import collection.JavaConverters._
@@ -312,67 +310,9 @@ private[http] object NettySupport {
     // Write an HTTP message along with its content to the channel.
     def write(message: HttpMessage, contentStream: Stream[Task,Byte]): Task[Unit] = for {
       _ <- if(writeFirst) permits.decrement else permits.increment
-      _ <- {
-        // First let's see if the Content-Length header is defined,
-        // if not and the message is an HTTP response we will close the
-        // connection at the end.
-        val expectedLength: Option[Int] = Try(message.headers.get(HttpHeaderNames.CONTENT_LENGTH).toInt).toOption
-
-        // Here we get the first chunk and the rest of the stream.
-        def go(data: Option[(Chunk[Byte], Stream[Task,Byte])]): Task[Unit] = data match {
-          // There is no first chunk. Let's write the message
-          // and there is no more content to write!
-          case None =>
-            Task.delay {
-              channel.write(message)
-              channel.writeAndFlush(new DefaultLastHttpContent())
-            }
-          // Here we have a first chunk to send. Let's write the message and the
-          // first chunk synchronously. Then we compare the chunk size with the
-          // expected Content-Length. If there are more bytes to send, then let's
-          // send the rest of the stream asynchronously.
-          case Some((head, tail)) =>
-            for {
-              _ <- Task.delay {
-                channel.write(message)
-                channel.writeAndFlush(head.toByteBuf)
-              }
-              _ <- {
-                if(expectedLength.exists(_ == head.size)) {
-                  Task.delay(channel.writeAndFlush(new DefaultLastHttpContent()))
-                }
-                else {
-                  (tail to channel.httpContentSink).run
-                }
-              }
-            } yield ()
-        }
-        // Here, for performance reason, we attempt to read the first chunk synchronously.
-        // In situations where to content message is fully available in memory it allows
-        // to efficiently write the request/response content at once.
-        Task.delay(()).flatMap { _ =>
-          contentStream.uncons.runLast.map(_.flatten).unsafeAttemptRunSync match {
-            case Right(Right(data)) =>
-              go(data)
-            case Right(Left(e)) =>
-              Task.delay(channel.close()).flatMap(_ => Task.fail(e))
-            case Left(continuation) =>
-              Task.async[Unit](cb =>
-                continuation {
-                  case Right(data) =>
-                    go(data).unsafeRunAsync(cb)
-                  case Left(e) =>
-                    channel.close()
-                    cb(Left(e))
-                }
-              )
-          }
-        }.
-        // If needed we close the connection
-        flatMap(_ => Task.delay {
-          if(message.isInstanceOf[HttpResponse] && expectedLength.isEmpty) channel.close()
-        })
-      }
+      _ <- Task.delay(channel.writeAndFlush(message))
+      _ <- (contentStream to channel.httpContentSink).run
+      _ <- Task.delay(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
     } yield ()
 
     // Upgrade the connection to a plain TCP connection: we deregister

@@ -13,7 +13,7 @@ import ExecutionContext.Implicits.global
 class StressTests extends Tests {
   val bigJsonDocument = parse(s"""[${1 to 2048 mkString(",")}]""").right.get
 
-  test("Using a new connection for each request", Slow) {
+  test("Using a new connection for each request", Unsafe) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       (1 to 20).foreach { _ =>
         await() {
@@ -29,7 +29,7 @@ class StressTests extends Tests {
     }
   }
 
-  test("Reusing a connection pool", Slow) {
+  test("Reusing a connection pool", Unsafe) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       val client = Client("localhost", port = server.port)
       (1 to 20).foreach { _ =>
@@ -45,7 +45,7 @@ class StressTests extends Tests {
     }
   }
 
-  test("Reusing a single connection", Slow) {
+  test("Reusing a single connection", Unsafe) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       val client = Client("localhost", port = server.port, maxConnections = 1)
       (1 to 20).foreach { _ =>

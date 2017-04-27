@@ -17,7 +17,10 @@ lazy val commonSettings = Seq(
     "-Xfuture",
     "-Ywarn-unused-import"
   ),
+
+  // Tests
   fork in Test := true,
+  testOptions in Test += Tests.Argument("-l", "Unsafe"),
 
   // Maven config
   publishTo := Some("Criteo thirdparty" at "http://nexus.criteo.prod/content/repositories/criteo.thirdparty"),
@@ -30,7 +33,25 @@ lazy val commonSettings = Seq(
 
   // Run example in another JVM, and quit on key press
   commands += Command.single("example") { (state, arg) =>
-    s"examples/test:runMain TestExample $arg" :: state
+    s"examples/test:runMain lol.http.examples.ExamplesTests $arg" :: state
+  },
+
+  // Run unsafe examples tests
+  commands += Command.command("testExamples") { (state) =>
+    val extracted = Project.extract(state)
+    import extracted._
+    val Some(testClassPath) = classDirectory in (examples, Test) get structure.data
+    s"""examples/test:runMain org.scalatest.tools.Runner -R $testClassPath -o -s lol.http.examples.ExamplesTests""" ::
+    state
+  },
+
+  // Run stress tests
+  commands += Command.command("stressTests") { (state) =>
+    val extracted = Project.extract(state)
+    import extracted._
+    val Some(testClassPath) = classDirectory in (examples, Test) get structure.data
+    s"""examples/test:runMain org.scalatest.tools.Runner -R $testClassPath -o -s lol.http.examples.StressTests""" ::
+    state
   }
 )
 
@@ -55,10 +76,10 @@ lazy val lolhttp =
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.9.2",
+      "co.fs2" %% "fs2-core" % "0.9.5",
       "io.netty" % "netty-codec-http2" % "4.1.9.Final",
-      "org.bouncycastle" % "bcpkix-jdk15on" % "1.55",
-      "org.bouncycastle" % "bcprov-jdk15on" % "1.55",
+      "org.bouncycastle" % "bcpkix-jdk15on" % "1.56",
+      "org.bouncycastle" % "bcprov-jdk15on" % "1.56",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     ),
 
@@ -97,8 +118,8 @@ lazy val loljson =
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser"
-    ).map(_ % "0.6.0") ++ Seq(
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    ).map(_ % "0.7.1") ++ Seq(
+      "org.scalatest" %% "scalatest" % "3.0.3" % "test"
     ),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
@@ -109,13 +130,13 @@ lazy val lolhtml =
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.3" % "test"
     ),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
 
-lazy val examples =
+lazy val examples: Project =
   project.
   settings(commonSettings: _*).
   settings(
@@ -164,7 +185,7 @@ lazy val root =
             case (jar, ModuleID("org.scala-lang", "scala-library", _, _, _, _, _, _, _, _, _)) =>
               jar -> "https://www.scala-lang.org/api/current/"
             case (jar, ModuleID("co.fs2", "fs2-core_2.12", _, _, _, _, _, _, _, _, _)) =>
-              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
+              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/"
           }.
           toMap.
           mapValues(url => new java.net.URL(url))

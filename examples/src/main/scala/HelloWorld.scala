@@ -16,12 +16,13 @@ object HelloWorld {
     // Here we start an HTTP server on the port _8888_.
     // We pass a [`(Request) => Future[Response]`]() function to
     // handle the requests.
-    Server.listen(8888) { req => 
+    Server.listen(8888) { req =>
 
       // For each request, we just return a synchronous
       // 200 OK response, with a _text/plain_ content.
-      Ok("Hello world!") 
+      Ok("Hello world!")
     }
 
+    println("Listening on http://localhost:8888...")
   }
 }

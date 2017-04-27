@@ -12,6 +12,7 @@ import scala.concurrent.duration._
 abstract class Tests extends FunSuite with Matchers with OptionValues with Inside with Inspectors {
   val Pure = Tag("Pure")
   val Slow = Tag("Slow")
+  val Unsafe = Tag("Unsafe")
   def await[A](atMost: Duration = 30 seconds)(a: Future[A]): A = Await.result(a, atMost)
   def withServer(server: Server)(test: Server => Unit) = try { test(server) } finally { server.stop() }
   def success[A](a: A) = Future.successful(a)

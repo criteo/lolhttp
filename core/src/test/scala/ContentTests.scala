@@ -153,7 +153,7 @@ class ContentTests extends Tests {
       status(Get(s"$url/bam.png")) should be (404)
       contentString(Get(s"$url/bam.png")) should be ("bam.png not found")
 
-      the [Error] thrownBy contentString(Get(s"$url/broken")) shouldBe (Error.ConnectionClosed)
+      contentString(Get(s"$url/broken")) shouldBe empty
     }
   }
 }

@@ -97,8 +97,8 @@ trait ContentDecoder[+A] {
   * This provides content decoder functions for the common scala types, and implicit decoder
   * configured with a set of sensible default.
   *
-  * The implicitly provided decoders are chosen by the compiler and cannot be explicitly configured. In 
-  * particular they are automatically configured with a [[MaxSize]] limit that specify the maximum amount 
+  * The implicitly provided decoders are chosen by the compiler and cannot be explicitly configured. In
+  * particular they are automatically configured with a [[MaxSize]] limit that specify the maximum amount
   * of bytes they are authorized to read in memory.
   *
   * It means that for example, this code:
@@ -160,7 +160,7 @@ object ContentDecoder {
     * @param maxSize the maximum amount of bytes that can read in memory.
     * @param defaultCodec the default codec to use to decode the bytes as text if not specified in the `Content-Type` HTTP header.
     * @return a content decoder for `Array[Byte]`.
-    */  
+    */
   def text(maxSize: Int = MaxSize, defaultCodec: Codec = Codec.UTF8): ContentDecoder[String] = new ContentDecoder[String] {
     def apply(content: Content) = binary(maxSize)(content).map { bytes =>
       defaultCodec.decoder.decode(ByteBuffer.wrap(bytes)).toString

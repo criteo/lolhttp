@@ -122,7 +122,7 @@ class ClientTests extends Tests {
           Future.firstCompletedOf(
             List(
               client(Get("/")).map(_ => "OK"),
-              timeout(250 milliseconds, "TIMEOUT")
+              timeout(1 second, "TIMEOUT")
             )
           ).recover { case _ => "REJECTED" }
         }

@@ -9,5 +9,6 @@ cp -rf examples/target/html examples0
 rm -rf examples
 cp -rf examples0 examples
 rm -rf examples0
-git commit -a -m "Update documentation"
+git add api examples
+git commit -m "Update documentation"
 git push origin gh-pages

@@ -266,7 +266,7 @@ dynamic parameters in URL templates.">
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Library of built-in content encoders.</p><p>This provides content encoder functions for the common scala types, and implicit encoder
 configured with a set of sensible default.</p><p>The implicitly provided encoders are chosen by the compiler and cannot be explicitly configured.</p><p>For example, this code:</p><pre><span class="kw">val</span> response = Ok(<span class="lit">"Hello, world!"</span>)</pre><p>will generate an HTTP response body by encoding the provided string using the UTF-8 charset.</p><p>If you want to configure the content encoder, you can just pass it yourself instead of relying on
-implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span class="lit">"Hello, world!"</span>)(text(codec = Codec(<span class="lit">"us-ascii"</span>)))</pre></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://gitlab.criteois.com/g.bort/lolhttp/tree/master/core/src/main/scala/Content.scala" target="_blank">Content.scala</a></dd></dl><div class="toggleContainer block">
+implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span class="lit">"Hello, world!"</span>)(text(codec = Codec(<span class="lit">"us-ascii"</span>)))</pre></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Content.scala" target="_blank">Content.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>

@@ -273,7 +273,7 @@ of requests to send over an unknown set of servers. In this case you can use the
 that automatically create a temporary HTTP client to run the request and trash it after the exchange
 completion.</p><pre><span class="kw">val</span> homePage = Client.run(Get(<span class="lit">"http://github.com/"</span>))(_.readAs[<span class="std">String</span>])</pre><p>Note that in this case, for each request, a new client (including the whole IO
 infrastructure) will to be created, and a new TCP connection will be opened to the server.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://gitlab.criteois.com/g.bort/lolhttp/tree/master/core/src/main/scala/Client.scala" target="_blank">Client.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Client.scala" target="_blank">Client.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>

@@ -273,7 +273,7 @@ if you provide an appropriate ExecutionContext (just note that if the ExecutionC
 blocked, the HTTP server is fully blocked).</p><p>The service function will be called by the server as soon as new HTTP request header has been received.
 The server also set up a lazy stream for the body. User code can pull from this stream and consume it
 if needed. Otherwise it will be drained after exchange completion (ie. when the response has been fully sent).</p><p>The response value returned by the servcie function will be transfered back to the client.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://gitlab.criteois.com/g.bort/lolhttp/tree/master/core/src/main/scala/Server.scala" target="_blank">Server.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Server.scala" target="_blank">Server.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>

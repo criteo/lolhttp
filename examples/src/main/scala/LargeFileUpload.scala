@@ -16,10 +16,10 @@ import ExecutionContext.Implicits.global
 object LargeFileUpload {
   def main(args: Array[String]): Unit = {
 
-    // First, we start an HTTP server. We use a partial function 
-    // for our service implementation to allow us to pattern match 
+    // First, we start an HTTP server. We use a partial function
+    // for our service implementation to allow us to pattern match
     // the incoming request.
-    Server.listen(8888, options = ServerOptions(debug = None)) {//Some("lol"))) {
+    Server.listen(8888) {
 
       // In case of a __GET /__ request, we return a simple HTML form allowing
       // to upload a file.

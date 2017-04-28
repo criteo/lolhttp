@@ -1,0 +1,18 @@
+language: scala
+script: sbt +test
+jdk:
+- oraclejdk8
+env:
+  global:
+    secure: t2zkHqh+eGl1ksn9ombzNlP3K4bzBBd3g3sbOps6OrX7athkMWAQJYwaWRM7b6qbexYAzvIVrUR6Me0o8GMLFNJZLgNKVHqUcAQ2MA8M2939Nx6MHr27Kwu4OY2VjAXfmKkYAFu0msdLMaKtBuIH67geBLBgcgH3B2SX874s55owIB5vkDk1Iu9tiNi9bUtqNrNiMKXVXyVosspZoIRs1kKLnosiRjzuiFfo9ZIA6KtEfUsnC9aGDWLwuINqy3HCLlCwlZYZwldO4Ji2KrnR1PyJ1KdykJWO9+q4UzEG21GRdhzZrtfYdKMIwZ/sRRuWuDaeQ5t6oba/SPqKd7syXlK/FVDjo8yo0hkj8zx1+Kuy7ocC1pbqnpW/eh65zWalr52PvYnrE5q0dlgpSdiXu9ivyyLcYQht658L/gh4YykaV9WeLphfhG5hdSr/wmNXq9jPd08yf/yljQSV6aq1OpJr8mYb75dZChxVLEI1oYYOiND26EKF6WU+rvTmir2AgfluBajwibBXyNIQm+cD4ipCnP54x2fqcCAYGQVgR1YfzzPCXhIrf5QGwcLeeUK+pdfTxj65kCNRHSwY1XUnkOEERNnbthioQZLDLyZIgSPPmoMeQBnr7G3dLDAL9dgHWdTe4LJFA8u9aqYQf2T6+S3RZH7vklr0p5j5wyJZvlM=
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_62cbf3187829_key -iv $encrypted_62cbf3187829_iv
+  -in .travis/keys.tar.enc -out .travis/keys.tar -d
+- tar xvf .travis/keys.tar
+deploy:
+  provider: script
+  script: sbt +publishSigned sonatypeReleaseAll
+  skip_cleanup: true
+  on:
+    tags: true
+    branch: master

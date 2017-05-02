@@ -14,7 +14,7 @@ object ReverseProxy {
     // We need an HTTP client connected to wikipedia.org. The connection is
     // done in HTTPS, so we need to specify the port and scheme.
     val wikipediaClient = Client("en.wikipedia.org", 443, "https")
-    
+
     // Now we start an HTTP server.
     Server.listen(8888) {
 
@@ -34,7 +34,7 @@ object ReverseProxy {
           request.addHeaders(Headers.Host -> h"en.wikipedia.org")
         }
     }
-      
+
     println("Proxying wikipedia on http://localhost:8888...")
   }
 }

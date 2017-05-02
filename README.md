@@ -6,7 +6,7 @@ A scala HTTP server & client library.
 
 ## About
 
-Servers and clients are service functions. A service takes an HTTP request and eventually returns an HTTP response. Requests and responses are a set of HTTP headers along with a content body. The content body is a lazy stream of bytes based on [fs2](https://github.com/functional-streams-for-scala/fs2), making it easy to handle streaming scenarios if needed. Yet, the library provides content encoders and decoders for the common scala types. All concepts are shared between servers and clients, making it simple to compose them. SSL is supported on both sides.
+Servers and clients are service functions. A service takes an HTTP request and eventually returns an HTTP response. Requests and responses are a set of HTTP headers along with a content body. The content body is a lazy stream of bytes based on [fs2](https://github.com/functional-streams-for-scala/fs2), making it easy to handle streaming scenarios if needed. For additional convenience, the library provides content encoders and decoders for the common scala types. All concepts are shared between servers and clients, making it simple to compose them. SSL is supported on both sides.
 
 ## Usage
 
@@ -21,9 +21,9 @@ There are also 2 optional companion libraries:
 
 ## Documentation
 
-The [API documentation](https://criteo.github.io/lolhttp/api/lol/index.html) is the main reference.
+The [API documentation](https://criteo.github.io/lolhttp/api/lol/index.html) is the main reference. If you need to access the underlying content stream, you should first have a look a the [fs2 documentation](https://github.com/functional-streams-for-scala/fs2) to understand the basics.
 
-You can also follow this hands-on introduction using annotated example programs:
+For those who prefer documentation by example, you can also follow these hands-on introductions:
 
 - [Hello world!](https://criteo.github.io/lolhttp/examples/HelloWorld.scala.html)
 - [Serving files from classpath](https://criteo.github.io/lolhttp/examples/ServingFiles.scala.html)

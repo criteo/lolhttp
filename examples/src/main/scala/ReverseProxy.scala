@@ -25,11 +25,11 @@ object ReverseProxy {
         Redirect("/wiki/Criteo")
 
       // In any other case, we pass the request to the client we just
-      // created, so it is sent to github, and the response is written
+      // created, so it is sent to wikipedia, and the response is written
       // back to the browser.
       case request =>
         wikipediaClient {
-          // We need to change the `Host` header, so the github server will
+          // We need to change the `Host` header, so the wikipedia server will
           // accept the request.
           request.addHeaders(Headers.Host -> h"en.wikipedia.org")
         }

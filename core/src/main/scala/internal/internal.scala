@@ -2,6 +2,11 @@ package lol.http
 
 package object internal {
 
+  // Sometimes we don't want to pollute the API by asking an executionContext, so
+  // we will use this one internally. It will be only used for internal non-blocking operations when
+  // no user code is involved.
+  val nonBlockingInternalExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+
   def extract(url: String): (String, String, Int, String, Option[String]) = {
     val url0 = new java.net.URL(url)
     val path = if(url0.getPath.isEmpty) "/" else url0.getPath

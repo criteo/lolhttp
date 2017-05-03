@@ -45,11 +45,45 @@ case class Response(
     */
   def readAs[A](implicit decoder: ContentDecoder[A]): Future[A] = content.as[A].unsafeRunAsyncFuture
 
+  /** Consume the content attached to this response if the status is in the Success 2xx range. Otherwise,
+    * it consumes the response as String and report the error as a failed future.
+    * @param decoder the [[ContentDecoder]] to use to read the content.
+    * @return eventually a value of type `A` or a failure if the status code was not 2xx.
+    */
+  def readSuccessAs[A](implicit decoder: ContentDecoder[A]): Future[A] = {
+    implicit val e = internal.nonBlockingInternalExecutionContext
+    filterSuccess.flatMap(_ => readAs[A])
+  }
+
   /** Consume the content attached to this response by evaluating the provided effect function.
     * @param effect the function to use to consume the stream.
     * @return eventually a value of type `A`.
     */
   def read[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = effect(content.stream).unsafeRunAsyncFuture
+
+  /** Consume the content attached to this response by evaluating the provided effect function the status is in
+    * the Success 2xx range. Otherwise, it consumes the response as String and report the error as a failed future.
+    * @param effect the function to use to consume the stream.
+    * @return eventually a value of type `A` or a failure if the status code was not 2xx.
+    */
+  def readSuccess[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = {
+    implicit val e = internal.nonBlockingInternalExecutionContext
+    filterSuccess.flatMap(_ => read(effect))
+  }
+
+  private def filterSuccess(implicit e: ExecutionContext): Future[Unit] =
+    if(status >= 200 && status < 300) {
+      Future.successful(())
+    }
+    else {
+      readAs[String].
+        flatMap { content =>
+          Future.failed(Error.UnexpectedStatus(s"Expect success response, but got $status:\n$content"))
+        }.
+        recover { case e: Throwable if e == Error.StreamAlreadyConsumed =>
+          Future.failed(Error.UnexpectedStatus(s"Expect success response, but got $status"))
+        }
+    }
 
   /** Drain the content attached to this response. It is safe to call this operation even if the stream has
     * already been consumed.
@@ -58,6 +92,14 @@ case class Response(
     case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
     case e: Throwable => Stream.fail(e)
   }.drain.run)
+
+  /** Return a successful empty future if the response status is in the Success 2xx range.
+    * Otherwise, it consumes the response as String and report the error as a failed future.
+    */
+  def assertSuccess: Future[Unit] = {
+    implicit val e = internal.nonBlockingInternalExecutionContext
+    filterSuccess
+  }
 
   /** Add some headers to this response.
     * @param headers the new headers to add.

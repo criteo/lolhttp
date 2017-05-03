@@ -96,16 +96,16 @@ class ServerTests extends Tests {
     }) { server =>
       val url = s"http://localhost:${server.port}"
 
-      status(Get(s"$url/")) should be (307)
-      status(Get(s"$url/old")) should be (308)
-      status(Get(s"$url/lol")) should be (200)
-      status(Get(s"$url/wat")) should be (404)
+      status(Get(s"$url/"), followRedirects = false) should be (307)
+      status(Get(s"$url/old"), followRedirects = false) should be (308)
+      status(Get(s"$url/lol"), followRedirects = false) should be (200)
+      status(Get(s"$url/wat"), followRedirects = false) should be (404)
 
-      contentString(Get(s"$url/")) should be ("")
-      contentString(Get(s"$url/lol")) should be ("lol")
+      contentString(Get(s"$url/"), followRedirects = false) should be ("")
+      contentString(Get(s"$url/lol"), followRedirects = false) should be ("lol")
 
-      await() { Client.run(Get(s"$url/"), followRedirects = true)(_.readAs[String]) } should be ("lol")
-      await() { Client.run(Get(s"$url/old"), followRedirects = true)(_.readAs[String]) } should be ("lol")
+      contentString(Get(s"$url/"), followRedirects = true) should be ("lol")
+      contentString(Get(s"$url/lol"), followRedirects = true) should be ("lol")
     }
   }
 
@@ -120,7 +120,6 @@ class ServerTests extends Tests {
           Ok(s"Took $contentSize bytes")
         }
     }) { server =>
-      val url = s"http://localhost:${server.port}"
       def oneMeg = Content(
         Stream.eval(Task.delay(Chunk.bytes(("A" * 1024).getBytes("us-ascii")))).
           repeat.

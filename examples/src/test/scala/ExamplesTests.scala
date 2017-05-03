@@ -24,8 +24,10 @@ object ExamplesTests {
 }
 
 import lol.http._
+import lol.json._
 
 import fs2._
+import io.circe._
 
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -141,6 +143,36 @@ class ExamplesTests extends Tests  {
     finally {
       forked.destroy
     }
+  }
+
+  test("JsonWebService", Unsafe) {
+    val forked = runExample("JsonWebService")
+    val client = Client("localhost", 8888)
+    try {
+      eventually(await() { client.run(Get("/"))(_.readSuccessAs[String]) }, timeout = 30 seconds) should include ("Nothing to do")
+      await() { client.run(Get("/api/todos"))(_.readSuccessAs(json[Seq[Json]])) } should be (empty)
+      await() { client.run(Post("/api/todos", Json.obj("text" -> Json.fromString("Yo"))))(_.assertSuccess) } should be (())
+      await() { client.run(Get("/"))(_.readSuccessAs[String]) } should include ("A ton of things to do")
+      await() { client.run(Get("/"))(_.readSuccessAs[String]) } should include ("Yo")
+      await() { client.run(Get("/api/todos"))(_.readSuccessAs(json[Seq[Json]])) }.size should be (1)
+      await() { client.run(Get("/api/todos?done=false"))(_.readSuccessAs(json[Seq[Json]])) }.size should be (1)
+      await() { client.run(Get("/api/todos?done=true"))(_.readSuccessAs(json[Seq[Json]])) }.size should be (0)
+      await() { client.run(Post("/api/todos/1", Json.obj("done" -> Json.fromBoolean(true))))(_.assertSuccess) } should be (())
+      await() { client.run(Get("/api/todos?done=false"))(_.readSuccessAs(json[Seq[Json]])) }.size should be (0)
+      await() { client.run(Get("/api/todos?done=true"))(_.readSuccessAs(json[Seq[Json]])) }.size should be (1)
+      await() { client.run(Delete("/api/todos/1"))(_.assertSuccess) } should be (())
+      await() { client.run(Get("/api/todos"))(_.readSuccessAs(json[Seq[Json]])) } should be (empty)
+      await() { client.run(Get("/"))(_.readSuccessAs[String]) } should include ("Nothing to do")
+    }
+    finally {
+      client.stop()
+      forked.destroy
+    }
+  }
+
+  test("GithubClient", Unsafe) {
+    val forked = runExample("GithubClient")
+    forked.waitFor should be (0)
   }
 
 }

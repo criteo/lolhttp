@@ -19,7 +19,7 @@ object JsonContent {
     * @return a [[lol.http.ContentEncoder ContentEncoder]] for `io.circe.JSON`.
     */
   def encoder(codec: Codec = Codec.UTF8): ContentEncoder[Json] = new ContentEncoder[Json] {
-    def apply(data: Json) = ContentEncoder.text()(data.toString).addHeaders(
+    def apply(data: Json) = ContentEncoder.text()(data.noSpaces).addHeaders(
       Headers.ContentType -> h"application/json; charset=$codec"
     )
   }

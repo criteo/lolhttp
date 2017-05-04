@@ -187,6 +187,13 @@ a {
   color: inherit;
 }
 
+hr {
+  border: none;
+  border-bottom: 4px solid #efeff3;
+  margin-top: 11px;
+  margin-bottom: 46px;
+}
+
 .comment {
   font-family: 'Georgia', Serif;
   flex: 1;
@@ -257,7 +264,8 @@ a {
 #footer {
   height: 10px;
   flex: 1;
-}</style>
+}
+</style>
           
           <section id="header">
             <div class="comment"><h1>Reverse proxy</h1></div>
@@ -314,7 +322,7 @@ back to the browser.</p></p></div>
               <section class="">
                 <div class="comment "><p>We need to change the <code>Host</code> header, so the wikipedia server will
 accept the request.</p></p></div>
-                <div class="code ">          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">request</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*)lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Headers$.html" data-tooltip="<span>lol.http.Headers</span>">Headers</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Headers$.html#Host=>lol.http.HttpString" data-tooltip="<span>lol.http.Headers.Host: lol.http.HttpString</span>">Host</a></span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/HttpString.html" data-tooltip="<span>lol.http.HttpString</span>">-></a></span> <span class="number">h</span>"<span class="string">en.wikipedia.org"</span>)
+                <div class="code ">          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">request</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*)lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Headers$.html" data-tooltip="<span>lol.http.Headers</span>">Headers</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Headers$.html#Host=>lol.http.HttpString" data-tooltip="<span>lol.http.Headers.Host: lol.http.HttpString</span>">Host</a></span> <span class="identifier">-></span> <span class="number">h</span>"<span class="string">en.wikipedia.org"</span>)
         }
     }
 

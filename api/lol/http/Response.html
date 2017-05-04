@@ -472,6 +472,24 @@ return you will get the downstream.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="lol.http.Response#assertSuccess" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="assertSuccess:scala.concurrent.Future[Unit]"></a><a id="assertSuccess:Future[Unit]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/Response.html#assertSuccess:scala.concurrent.Future[Unit]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">assertSuccess</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Return a successful empty future if the response status is in the Success 2xx range.</p><div class="fullcomment"><div class="comment cmt"><p>Return a successful empty future if the response status is in the Success 2xx range.
+Otherwise, it consumes the response as String and report the error as a failed future.
+</p></div></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
@@ -886,6 +904,41 @@ already been consumed.
       </span>
       
       <p class="shortcomment cmt">Consume the content attached to this response and eventually produces a value of type <code>A</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Consume the content attached to this response and eventually produces a value of type <code>A</code>.</p></div><dl class="paramcmts block"><dt class="param">decoder</dt><dd class="cmt"><p>the <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a> to use to read the content.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
+    </li><li name="lol.http.Response#readSuccess" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readSuccess[A](effect:fs2.Stream[fs2.Task,Byte]=&gt;fs2.Task[A]):scala.concurrent.Future[A]"></a><a id="readSuccess[A]((Stream[Task,Byte])⇒Task[A]):Future[A]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/Response.html#readSuccess[A](effect:fs2.Stream[fs2.Task,Byte]=&gt;fs2.Task[A]):scala.concurrent.Future[A]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">readSuccess</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="effect">effect: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>[<span class="extype" name="lol.http.Response.readSuccess.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Response.readSuccess.A">A</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Consume the content attached to this response by evaluating the provided effect function the status is in
+the Success 2xx range.</p><div class="fullcomment"><div class="comment cmt"><p>Consume the content attached to this response by evaluating the provided effect function the status is in
+the Success 2xx range. Otherwise, it consumes the response as String and report the error as a failed future.</p></div><dl class="paramcmts block"><dt class="param">effect</dt><dd class="cmt"><p>the function to use to consume the stream.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code> or a failure if the status code was not 2xx.</p></dd></dl></div>
+    </li><li name="lol.http.Response#readSuccessAs" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readSuccessAs[A](implicitdecoder:lol.http.ContentDecoder[A]):scala.concurrent.Future[A]"></a><a id="readSuccessAs[A](ContentDecoder[A]):Future[A]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/Response.html#readSuccessAs[A](implicitdecoder:lol.http.ContentDecoder[A]):scala.concurrent.Future[A]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">readSuccessAs</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="decoder">decoder: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="lol.http.Response.readSuccessAs.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Response.readSuccessAs.A">A</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Consume the content attached to this response if the status is in the Success 2xx range.</p><div class="fullcomment"><div class="comment cmt"><p>Consume the content attached to this response if the status is in the Success 2xx range. Otherwise,
+it consumes the response as String and report the error as a failed future.</p></div><dl class="paramcmts block"><dt class="param">decoder</dt><dd class="cmt"><p>the <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a> to use to read the content.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code> or a failure if the status code was not 2xx.</p></dd></dl></div>
     </li><li name="lol.http.Response#ready" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ready(atMost:scala.concurrent.duration.Duration)(implicitpermit:scala.concurrent.CanAwait):Response.this.type"></a><a id="ready(Duration)(CanAwait):Response.this.type"></a>
       <span class="permalink">

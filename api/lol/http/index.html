@@ -428,7 +428,8 @@ received. If no connection is available when a new request comes, it is pushed t
 bounded queue of <code>maxWaiters</code> size. As soon as this queue is full, the client starts
 rejecting new requests.</p><p>It is important that the user code completly consumes the response content stream, so
 the connection is freed for the next request. That's why it is better to use the <code>run</code>
-operation if possible since this one automatically drains the request upon return.
+operation if possible since this one automatically drains the request upon return.</p><p>If the request to execute does not specify an Host header, it will be automatically added
+and set to the value of the client <code>host</code>.
 </p></div></div>
     </li><li name="lol.http.ClientOptions" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ClientOptionsextendsProductwithSerializable"></a><a id="ClientOptions:ClientOptions"></a>

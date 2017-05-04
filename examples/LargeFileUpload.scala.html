@@ -187,6 +187,13 @@ a {
   color: inherit;
 }
 
+hr {
+  border: none;
+  border-bottom: 4px solid #efeff3;
+  margin-top: 11px;
+  margin-bottom: 46px;
+}
+
 .comment {
   font-family: 'Georgia', Serif;
   flex: 1;
@@ -257,7 +264,8 @@ a {
 #footer {
   height: 10px;
   flex: 1;
-}</style>
+}
+</style>
           
           <section id="header">
             <div class="comment"><h1>Large file upload</h1></div>
@@ -276,8 +284,12 @@ manipulate the incoming stream.</p></p></div>
 
 <span class="keyword">import</span> <span class="identifier">scala</span>.<span class="identifier"><a target="doc" href="http://www.scala-lang.org/api/current//scala/concurrent/index.html" data-tooltip="<span>scala.concurrent</span>">concurrent</a></span>._
 <span class="keyword">import</span> <span class="identifier"><a target="doc" href="http://www.scala-lang.org/api/current//scala/concurrent/ExecutionContext$.html" data-tooltip="<span>scala.concurrent.ExecutionContext</span>">ExecutionContext</a></span>.<span class="identifier"><a target="doc" href="http://www.scala-lang.org/api/current//scala/concurrent/ExecutionContext$$Implicits$.html" data-tooltip="<span>scala.concurrent.ExecutionContext.Implicits</span>">Implicits</a></span>.<span class="identifier">global</span>
-
-<span class="keyword">object</span> <span class="identifier">LargeFileUpload</span> {
+&nbsp;</div>
+              </section>
+            
+              <section class="">
+                <div class="comment "><hr></p></div>
+                <div class="code "><span class="keyword">object</span> <span class="identifier">LargeFileUpload</span> {
   <span class="keyword">def</span> <span class="identifier">main</span>(<span class="identifier">args</span>: <span class="identifier">Array</span>[<span class="identifier">String</span>]): <span class="identifier">Unit</span> = {
 &nbsp;</div>
               </section>

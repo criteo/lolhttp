@@ -147,7 +147,8 @@ lazy val loljson =
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser"
+      "io.circe" %% "circe-parser",
+      "io.circe" %% "circe-optics"
     ).map(_ % "0.7.1") ++ Seq(
       "org.scalatest" %% "scalatest" % "3.0.3" % "test"
     ),
@@ -177,13 +178,14 @@ lazy val examples: Project =
   settings(
     Option(System.getProperty("generateExamples")).map(_ => Seq(
       autoCompilerPlugins := true,
-      addCompilerPlugin("com.criteo.socco" %% "socco-plugin" % "0.1.1"),
+      addCompilerPlugin("com.criteo.socco" %% "socco-plugin" % "0.1.5"),
       scalacOptions := Seq(
         "-P:socco:out:examples/target/html",
         "-P:socco:package_lol.html:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_lol.json:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_lol.http:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
+        "-P:socco:package_io.circe:http://circe.github.io/circe/api/",
         "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
       )
     )).getOrElse(Nil): _*

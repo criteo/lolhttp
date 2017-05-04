@@ -50,4 +50,7 @@ object Error {
 
   /** The url matcher pattern is invalid. */
   def InvalidUrlMatcher(msg: String) = Error(9, s"Invalid url matcher pattern: $msg")
+
+  /** The status code was unexpected. */
+  def UnexpectedStatus(msg: String) = Error(10, msg)
 }

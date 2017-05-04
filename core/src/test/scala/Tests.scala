@@ -16,11 +16,11 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
   def await[A](atMost: Duration = 30 seconds)(a: Future[A]): A = Await.result(a, atMost)
   def withServer(server: Server)(test: Server => Unit) = try { test(server) } finally { server.stop() }
   def success[A](a: A) = Future.successful(a)
-  def status(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): Int = {
-    await(atMost) { Client.run(req)(res => success(res.status)) }
+  def status(req: Request, atMost: Duration = 5 seconds, followRedirects: Boolean = true)(implicit e: ExecutionContext, ssl: SSL.Configuration): Int = {
+    await(atMost) { Client.run(req, followRedirects = followRedirects)(res => success(res.status)) }
   }
-  def contentString(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
-    await(atMost) { Client.run(req)(_.readAs[String]) }
+  def contentString(req: Request, atMost: Duration = 5 seconds, followRedirects: Boolean = true)(implicit e: ExecutionContext, ssl: SSL.Configuration): String = {
+    await(atMost) { Client.run(req, followRedirects = followRedirects)(_.readAs[String]) }
   }
   def headers(req: Request, atMost: Duration = 5 seconds)(implicit e: ExecutionContext, ssl: SSL.Configuration): Map[HttpString,HttpString] = {
     await(atMost) { Client.run(req)(res => Future.successful(res.headers)) }

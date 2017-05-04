@@ -3,8 +3,6 @@ package lol.http.examples
 import lol.http._
 import lol.json._
 
-import io.circe._
-import io.circe.syntax._
 import io.circe.parser._
 
 import scala.concurrent._

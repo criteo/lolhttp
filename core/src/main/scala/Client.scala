@@ -57,6 +57,9 @@ case class ClientOptions(
  * It is important that the user code completly consumes the response content stream, so
  * the connection is freed for the next request. That's why it is better to use the `run`
  * operation if possible since this one automatically drains the request upon return.
+ *
+ * If the request to execute does not specify an Host header, it will be automatically added
+ * and set to the value of the client `host`.
  */
 trait Client extends Service {
 
@@ -185,6 +188,10 @@ trait Client extends Service {
       (request.content.headers ++ request.headers).foreach { case (key,value) =>
         nettyRequest.headers.set(key.toString, value.toString)
       }
+      // Automatically add the Host header if not specified in the incoming request.
+      if(!request.headers.contains(h"Host")) {
+        nettyRequest.headers.set("Host", this.host)
+      }
 
       (for {
         // write the request
@@ -258,46 +265,41 @@ trait Client extends Service {
     * @return eventually the HTTP response.
     */
   def apply(request: Request, followRedirects: Boolean): Future[Response] = {
-    if(followRedirects) {
-      def followRedirects0(request: Request): Future[Response] = {
+    apply(request).flatMap { response =>
+      if(response.isRedirect && followRedirects) {
         request match {
-          case GET at _ => {
-            apply(request).flatMap { response =>
-              if(response.isRedirect) {
-                response.drain.flatMap { _ =>
-                  response.headers.get(Headers.Location).map { location =>
-                    followRedirects0(request.copy(url = location.toString)(Content.empty))
-                  }.getOrElse(Future.successful(response))
-                }
-              }
-              else Future.successful(response)
+          case GET at _ =>
+            response.drain.flatMap { _ =>
+              response.headers.get(Headers.Location).map { location =>
+                apply(request.copy(url = location.toString)(Content.empty), followRedirects = true)
+              }.getOrElse(Future.successful(response))
             }
-          }
-          case _ => Future.failed(Error.AutoRedirectNotSupported)
+          case _ =>
+            Future.failed(Error.AutoRedirectNotSupported)
         }
       }
-      followRedirects0(request)
+      else Future.successful(response)
     }
-    else apply(request)
   }
 
   /** Send this request to the server, eventually run the given function and return the result.
     * This operation ensures that the response content stream is fully read even if the provided
     * user code do not consume it. The response is drained as soon as the `f` function returns.
     * @param request the HTTP request to be sent to the server.
-    * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
     * @param script a function that eventually receive the response and transform it to a value of type `A`.
     * @return eventually a value of type `A`.
     */
-  def run[A](request: Request, followRedirects: Boolean = false)
+  def run[A](request: Request, followRedirects: Boolean = true)
     (script: Response => Future[A] = (_: Response) => Future.successful(())): Future[A] = {
-    apply(request, followRedirects).flatMap { response =>
-      script(response).
-        flatMap(s => response.drain.map(_ => s)).
-        recoverWith { case e =>
-          response.drain.flatMap(_ => Future.failed(e))
-        }
-    }
+    apply(request, followRedirects).
+      flatMap { response =>
+        script(response).
+          flatMap(s => response.drain.map(_ => s)).
+          recoverWith { case e =>
+            response.drain.flatMap(_ => Future.failed(e))
+          }
+      }
   }
 
   /** Run the given function and close the client.
@@ -377,14 +379,14 @@ object Client {
 
   /** Run the provided request with a temporary client, and apply the script function to the response.
     * @param request the request to run. It must include a proper `Host` header.
-    * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
     * @param options the client options to use for the temporary client.
     * @param script a function that eventually receive the response and transform it to a value of type `A`.
     * @return eventually a value of type `A`.
     */
   def run[A](
     request: Request,
-    followRedirects: Boolean = false,
+    followRedirects: Boolean = true,
     options: ClientOptions = ClientOptions(ioThreads = 1)
   )
   (script: Response => Future[A] = (_: Response) => Future.successful(()))

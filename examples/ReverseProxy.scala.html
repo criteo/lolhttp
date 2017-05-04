@@ -305,14 +305,14 @@ our reverse proxy!</p></p></div>
             
               <section class="">
                 <div class="comment "><p>In any other case, we pass the request to the client we just
-created, so it is sent to github, and the response is written
+created, so it is sent to wikipedia, and the response is written
 back to the browser.</p></p></div>
                 <div class="code ">      <span class="keyword">case</span> <span class="identifier">request</span> =>
         <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html#apply(request:lol.http.Request)scala.concurrent.Future[lol.http.Response]" data-tooltip="<span>lol.http.Client.apply(request: lol.http.Request): scala.concurrent.Future[lol.http.Response]</span>">wikipediaClient</a></span> {&nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>We need to change the <code>Host</code> header, so the wikipedia servers will
+                <div class="comment "><p>We need to change the <code>Host</code> header, so the wikipedia server will
 accept the request.</p></p></div>
                 <div class="code ">          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">request</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*)lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Headers$.html" data-tooltip="<span>lol.http.Headers</span>">Headers</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Headers$.html#Host=>lol.http.HttpString" data-tooltip="<span>lol.http.Headers.Host: lol.http.HttpString</span>">Host</a></span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/HttpString.html" data-tooltip="<span>lol.http.HttpString</span>">-></a></span> <span class="number">h</span>"<span class="string">en.wikipedia.org"</span>)
         }

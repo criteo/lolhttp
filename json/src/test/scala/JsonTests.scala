@@ -27,11 +27,11 @@ class JsonTests extends Tests {
   test("JSON encoding") {
     val jsonContent = Content.of(someJson)
     jsonContent.headers.get(Headers.ContentType) should be (Some(h"application/json; charset=UTF-8"))
-    jsonContent.headers.get(Headers.ContentLength) should be (Some(HttpString(someJson.toString.size)))
+    jsonContent.headers.get(Headers.ContentLength) should be (Some(HttpString(someJson.noSpaces.size)))
 
     val caseClassContent = Content.of(Blah("bar", 123, Seq(4, 5, 6)).asJson)
     caseClassContent.headers.get(Headers.ContentType) should be (Some(h"application/json; charset=UTF-8"))
-    caseClassContent.headers.get(Headers.ContentLength) should be (Some(HttpString(someJson.toString.size)))
+    caseClassContent.headers.get(Headers.ContentLength) should be (Some(HttpString(someJson.noSpaces.size)))
   }
 
   test("JSON decoding") {

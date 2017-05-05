@@ -12,12 +12,12 @@ Servers and clients are service functions. A service takes an HTTP request and e
 
 The library is cross-built for __Scala 2.11__ and __Scala 2.12__.
 
-The core module to use is `"com.criteo.lolhttp" %% "lolhttp" % "0.3.2"`.
+The core module to use is `"com.criteo.lolhttp" %% "lolhttp" % "0.3.3"`.
 
 There are also 2 optional companion libraries:
 
-- `"com.criteo.lolhttp" %% "loljson" % "0.3.2"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
-- `"com.criteo.lolhttp" %% "lolhtml" % "0.3.2"`, provides minimal HTML templating.
+- `"com.criteo.lolhttp" %% "loljson" % "0.3.3"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
+- `"com.criteo.lolhttp" %% "lolhtml" % "0.3.3"`, provides minimal HTML templating.
 
 ## Documentation
 
@@ -27,6 +27,8 @@ For those who prefer documentation by example, you can also follow these hands-o
 
 - [Hello world!](https://criteo.github.io/lolhttp/examples/HelloWorld.scala.html)
 - [Serving files from classpath](https://criteo.github.io/lolhttp/examples/ServingFiles.scala.html)
+- [A Github API client](https://criteo.github.io/lolhttp/examples/GithubClient.scala.html)
+- [A JSON web service](https://criteo.github.io/lolhttp/examples/JsonWebService.scala.html)
 - [Reading large request streams](https://criteo.github.io/lolhttp/examples/LargeFileUpload.scala.html)
 - [A simple reverse proxy](https://criteo.github.io/lolhttp/examples/ReverseProxy.scala.html)
 

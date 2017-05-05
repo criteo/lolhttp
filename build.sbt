@@ -19,7 +19,7 @@ lazy val commonSettings = Seq(
   ),
 
   // Tests
-  fork in Test := true,
+  fork in Test := Option(System.getProperty("fork")).isDefined,
   testOptions in Test += Tests.Argument("-l", "Unsafe"),
 
   // Useful to run flakey tests
@@ -178,7 +178,7 @@ lazy val examples: Project =
   settings(
     Option(System.getProperty("generateExamples")).map(_ => Seq(
       autoCompilerPlugins := true,
-      addCompilerPlugin("com.criteo.socco" %% "socco-plugin" % "0.1.5"),
+      addCompilerPlugin("com.criteo.socco" %% "socco-plugin" % "0.1.6"),
       scalacOptions := Seq(
         "-P:socco:out:examples/target/html",
         "-P:socco:package_lol.html:https://criteo.github.io/lolhttp/api/",

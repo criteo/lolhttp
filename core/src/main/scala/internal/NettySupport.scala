@@ -187,7 +187,6 @@ private[http] object NettySupport {
             (for {
               _ <- messages.enqueue1(Some(message -> true))
               _ <- Task.delay(skipContent = false)
-              _ <- content.enqueue1(Some(Chunk.empty))
               _ <- Task.delay(channel.config.setAutoRead(false))
             } yield ())
           }
@@ -224,15 +223,13 @@ private[http] object NettySupport {
           buffer = Chunk.concat(Seq(buffer, chunk.content.toChunk))
       }
 
-      // No more data available on the socket. If we have some buffered data
-      // enqueue it to the content queue and clear the buffer.
+      // No more data available on the socket. Enqueue the buffered
+      // data to the content queue and clear the buffer.
       override def channelReadComplete(ctx: ChannelHandlerContext) = {
-        if(buffer.nonEmpty) {
-          (for {
-            _ <- content.enqueue1(Some(buffer))
-            _ <- Task.delay(buffer = Chunk.empty)
-          } yield ()).unsafeRun()
-        }
+        (for {
+          _ <- content.enqueue1(Some(buffer))
+          _ <- Task.delay(buffer = Chunk.empty)
+        } yield ()).unsafeRun()
       }
     })
 

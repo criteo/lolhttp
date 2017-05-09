@@ -203,12 +203,10 @@ object Server {
                 }
               }
               // Next!
-              else {
-                go()
-              }
+              else go()
             )
           } yield ()
-          go().unsafeRunAsync { case _ => channel.close() }
+          go().unsafeRunAsync { case _ => if(channel.isOpen) channel.close() }
         }
       })
     options.debug.foreach { logger =>

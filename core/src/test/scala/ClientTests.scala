@@ -201,4 +201,38 @@ class ClientTests extends Tests {
 
     }
   }
+
+  test("Connection errors", Slow) {
+    val requests = 16
+    val client = Client("doesnotexist", maxWaiters = requests, connectionTimeout = 1 second)
+    def send(id: Int) = {
+      val req = Get("/")
+      client.run(req) { _ =>
+        Future.successful(1)
+      } recoverWith {
+        case t: Throwable =>
+          Future.successful(0)
+      }
+    }
+
+    try {
+      await() { send(1) } should be (0)
+
+      await() { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      eventually(client.openedConnections should be (0))
+      eventually(client.waitingConnections should be (0))
+
+      await() { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      eventually(client.openedConnections should be (0))
+      eventually(client.waitingConnections should be (0))
+
+      await() { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      eventually(client.openedConnections should be (0))
+      eventually(client.waitingConnections should be (0))
+    }
+    finally {
+      client.stop()
+    }
+
+  }
 }

@@ -3,6 +3,7 @@ package lol.http
 import scala.util.{ Try, Success, Failure }
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.duration.{ FiniteDuration }
 
 import io.netty.channel.{ ChannelInitializer }
 import io.netty.bootstrap.{ Bootstrap }
@@ -23,6 +24,7 @@ import java.util.concurrent.{ ArrayBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import internal.NettySupport._
+import internal.{ withTimeout, KillableFuture }
 
 /** Allow to configure an HTTP client.
   * @param ioThreads the number of threads used for the IO work. Default to `min(availableProcessors, 2)`.
@@ -178,108 +180,127 @@ trait Client extends Service {
     * @return eventually the HTTP response.
     */
   def apply(request: Request): Future[Response] = {
-    acquireConnection().flatMap { connection =>
-      // Create the correponding netty message
-      val nettyRequest = new DefaultHttpRequest(
-        NettyHttpVersion.HTTP_1_1,
-        new NettyHttpMethod(request.method.toString),
-        s"${request.path}${request.queryString.map(q => s"?$q").getOrElse("")}"
-      )
-      (request.content.headers ++ request.headers).foreach { case (key,value) =>
-        nettyRequest.headers.set(key.toString, value.toString)
-      }
-      // Automatically add the Host header if not specified in the incoming request.
-      if(!request.headers.contains(h"Host")) {
-        nettyRequest.headers.set("Host", this.host)
-      }
+    @volatile var underlyingConnection: Option[HttpConnection] = None
+    KillableFuture(
+      acquireConnection().flatMap { connection =>
+        underlyingConnection = Some(connection)
 
-      (for {
-        // write the request
-        _ <- connection.write(nettyRequest, request.content.stream)
-        // read the response
-        message <- connection.read()
-        (nettyResponse, contentStream) = (message._1.asInstanceOf[HttpResponse], message._2)
-        // track the number of readers
-        readers <- async.semaphore[Task](1)
-        upgradedReaders <- async.semaphore[Task](1)
-      } yield {
-        val response: Response = Response(
-          status = nettyResponse.status.code,
-          headers = nettyResponse.headers.asScala.map { h =>
-            (HttpString(h.getKey), HttpString(h.getValue))
-          }.toMap,
-          content =
-            Content(
-              stream =
-                Stream.
-                  // The content stream can be read only once
-                  eval(readers.tryDecrement).flatMap {
-                    case false =>
-                      Stream.fail(Error.StreamAlreadyConsumed)
-                    case true =>
-                      contentStream.onFinalize(Task.delay {
-                        if(HttpUtil.isKeepAlive(nettyRequest) && HttpUtil.isKeepAlive(nettyResponse)) {
-                          releaseConnection(connection)
-                        }
-                        else {
-                          connection.close.unsafeRun()
-                        }
-                      })
-                  }
-                // XXX: Content headers
-            ),
-          upgradeConnection = nettyResponse.status.code match {
-            case 101 => (upstream) =>
-              Stream.eval(readers.tryDecrement).
-                flatMap {
-                  case false => Stream.emit(())
-                  // If user code did not read the response content yet,
-                  // we need to drain the content stream before upgrading
-                  // the connection.
-                  case true => Stream.eval(contentStream.drain.run)
-                }.
-                flatMap { _ =>
-                  Stream.eval(upgradedReaders.tryDecrement).
-                    flatMap {
+        // Create the correponding netty message
+        val nettyRequest = new DefaultHttpRequest(
+          NettyHttpVersion.HTTP_1_1,
+          new NettyHttpMethod(request.method.toString),
+          s"${request.path}${request.queryString.map(q => s"?$q").getOrElse("")}"
+        )
+        (request.content.headers ++ request.headers).foreach { case (key,value) =>
+          nettyRequest.headers.set(key.toString, value.toString)
+        }
+        // Automatically add the Host header if not specified in the incoming request.
+        if(!request.headers.contains(h"Host")) {
+          nettyRequest.headers.set("Host", this.host)
+        }
+
+        (for {
+          // write the request
+          _ <- connection.write(nettyRequest, request.content.stream)
+          // read the response
+          message <- connection.read()
+          (nettyResponse, contentStream) = (message._1.asInstanceOf[HttpResponse], message._2)
+          // track the number of readers
+          readers <- async.semaphore[Task](1)
+          upgradedReaders <- async.semaphore[Task](1)
+        } yield {
+          val response: Response = Response(
+            status = nettyResponse.status.code,
+            headers = nettyResponse.headers.asScala.map { h =>
+              (HttpString(h.getKey), HttpString(h.getValue))
+            }.toMap,
+            content =
+              Content(
+                stream =
+                  Stream.
+                    // The content stream can be read only once
+                    eval(readers.tryDecrement).flatMap {
                       case false =>
                         Stream.fail(Error.StreamAlreadyConsumed)
                       case true =>
-                        Stream.eval(connection.upgrade()).flatMap { downstream =>
-                          downstream.
-                            merge((upstream to connection.writeBytes).drain).
-                            onFinalize(connection.close)
-                        }
+                        contentStream.onFinalize(Task.delay {
+                          if(HttpUtil.isKeepAlive(nettyRequest) && HttpUtil.isKeepAlive(nettyResponse)) {
+                            releaseConnection(connection)
+                          }
+                          else {
+                            connection.close.unsafeRun()
+                          }
+                        })
                     }
-                }
-            case _ => _ => Stream.fail(Error.UpgradeRefused)
-          }
-        )
-        response
-      }).unsafeRunAsyncFuture()
-    }
+                  // XXX: Content headers
+              ),
+            upgradeConnection = nettyResponse.status.code match {
+              case 101 => (upstream) =>
+                Stream.eval(readers.tryDecrement).
+                  flatMap {
+                    case false => Stream.emit(())
+                    // If user code did not read the response content yet,
+                    // we need to drain the content stream before upgrading
+                    // the connection.
+                    case true => Stream.eval(contentStream.drain.run)
+                  }.
+                  flatMap { _ =>
+                    Stream.eval(upgradedReaders.tryDecrement).
+                      flatMap {
+                        case false =>
+                          Stream.fail(Error.StreamAlreadyConsumed)
+                        case true =>
+                          Stream.eval(connection.upgrade()).flatMap { downstream =>
+                            downstream.
+                              merge((upstream to connection.writeBytes).drain).
+                              onFinalize(connection.close)
+                          }
+                      }
+                  }
+              case _ => _ => Stream.fail(Error.UpgradeRefused)
+            }
+          )
+          response
+        }).unsafeRunAsyncFuture()
+      },
+      () => underlyingConnection.foreach(_.close.unsafeRun())
+    )
   }
 
   /** Send a request to the server and eventually give back the response.
     * @param request the HTTP request to be sent to the server.
     * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @param timeout maximum amount of time allowed to retrieve the response.
     * @return eventually the HTTP response.
     */
-  def apply(request: Request, followRedirects: Boolean): Future[Response] = {
-    apply(request).flatMap { response =>
-      if(response.isRedirect && followRedirects) {
-        request match {
-          case GET at _ =>
-            response.drain.flatMap { _ =>
-              response.headers.get(Headers.Location).map { location =>
-                apply(request.copy(url = location.toString)(Content.empty), followRedirects = true)
-              }.getOrElse(Future.successful(response))
-            }
+  def apply(request: Request, followRedirects: Boolean, timeout: FiniteDuration = FiniteDuration(30, "seconds")): Future[Response] = {
+    val eventuallyResponse = apply(request)
+    withTimeout(
+      eventuallyResponse.flatMap { response =>
+        if(response.isRedirect && followRedirects) {
+          request match {
+            case GET at _ =>
+              response.drain.flatMap { _ =>
+                response.headers.get(Headers.Location).map { location =>
+                  apply(request.copy(url = location.toString)(Content.empty), followRedirects = true)
+                }.getOrElse(Future.successful(response))
+              }
+            case _ =>
+              Future.failed(Error.AutoRedirectNotSupported)
+          }
+        }
+        else Future.successful(response)
+      },
+      timeout,
+      () => {
+        eventuallyResponse match {
+          case KillableFuture(_, cancel) =>
+            cancel()
           case _ =>
-            Future.failed(Error.AutoRedirectNotSupported)
+            Panic.!!!()
         }
       }
-      else Future.successful(response)
-    }
+    )
   }
 
   /** Send this request to the server, eventually run the given function and return the result.
@@ -287,27 +308,31 @@ trait Client extends Service {
     * user code do not consume it. The response is drained as soon as the `f` function returns.
     * @param request the HTTP request to be sent to the server.
     * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
-    * @param script a function that eventually receive the response and transform it to a value of type `A`.
+    * @param timeout maximum amount of time allowed to retrieve the response and extract the return value.
+    * @param thunk a function that eventually receive the response and transform it to a value of type `A`.
     * @return eventually a value of type `A`.
     */
-  def run[A](request: Request, followRedirects: Boolean = true)
-    (script: Response => Future[A] = (_: Response) => Future.successful(())): Future[A] = {
-    apply(request, followRedirects).
-      flatMap { response =>
-        script(response).
-          flatMap(s => response.drain.map(_ => s)).
-          recoverWith { case e =>
-            response.drain.flatMap(_ => Future.failed(e))
-          }
-      }
+  def run[A](request: Request, followRedirects: Boolean = true, timeout: FiniteDuration = FiniteDuration(30, "seconds"))
+    (thunk: Response => Future[A] = (_: Response) => Future.successful(())): Future[A] = {
+    withTimeout(
+      apply(request, followRedirects, timeout).
+        flatMap { response =>
+          thunk(response).
+            flatMap(s => response.drain.map(_ => s)).
+            recoverWith { case e =>
+              response.drain.flatMap(_ => Future.failed(e))
+            }
+        },
+      timeout
+    )
   }
 
   /** Run the given function and close the client.
-    * @param script a function that take a client and eventually return a value of type `A`.
+    * @param thunk a function that take a client and eventually return a value of type `A`.
     * @return eventually a value of type `A`.
     */
-  def runAndStop[A](script: Client => Future[A]): Future[A] = {
-    script(this).andThen { case _ => this.stop() }
+  def runAndStop[A](thunk: Client => Future[A]): Future[A] = {
+    thunk(this).andThen { case _ => this.stop() }
   }
 
   override def toString = {
@@ -377,19 +402,21 @@ object Client {
     }
   }
 
-  /** Run the provided request with a temporary client, and apply the script function to the response.
+  /** Run the provided request with a temporary client, and apply the thunk function to the response.
     * @param request the request to run. It must include a proper `Host` header.
     * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
+    * @param timeout maximum amount of time allowed to retrieve the response and extract the return value.
     * @param options the client options to use for the temporary client.
-    * @param script a function that eventually receive the response and transform it to a value of type `A`.
+    * @param thunk a function that eventually receive the response and transform it to a value of type `A`.
     * @return eventually a value of type `A`.
     */
   def run[A](
     request: Request,
     followRedirects: Boolean = true,
+    timeout: FiniteDuration = FiniteDuration(30, "seconds"),
     options: ClientOptions = ClientOptions(ioThreads = 1)
   )
-  (script: Response => Future[A] = (_: Response) => Future.successful(()))
+  (thunk: Response => Future[A] = (_: Response) => Future.successful(()))
   (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
     request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.toString.split("[:]").toList match {
@@ -398,11 +425,14 @@ object Client {
         case _ =>
           Client(hostHeader.toString, if(request.scheme == "http") 80 else 443, request.scheme, ssl, options)
       }
-      (for {
-        response <- client(request, followRedirects)
-        result <- script(response)
-      } yield result).
-      andThen { case _ => client.stop() }
+      withTimeout(
+        (for {
+          response <- client(request, followRedirects, timeout)
+          result <- thunk(response)
+        } yield result).
+        andThen { case _ => client.stop() },
+        timeout
+      )
     }.
     getOrElse(Future.failed(Error.HostHeaderMissing))
   }

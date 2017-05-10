@@ -183,4 +183,22 @@ class ClientTests extends Tests {
 
     }
   }
+
+  test("Timeouts", Slow) {
+    withServer(Server.listen() { _ => internal.timeout(Ok, 5 seconds) }) { server =>
+      val client = Client("localhost", server.port)
+
+      try {
+        the [Error] thrownBy await() {
+          client.run(Get("/"), timeout = 1 second)(res => Future.successful(res.status))
+        } should be (Error.Timeout(1 second))
+
+        eventually(client.openedConnections should be (0), timeout = 5 seconds)
+      }
+      finally {
+        client.stop()
+      }
+
+    }
+  }
 }

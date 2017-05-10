@@ -1,5 +1,7 @@
 package lol.http
 
+import scala.concurrent.duration.{ FiniteDuration }
+
 /** Panics are errors that should not occur or should not be handled.
   * @param msg the error message.
   */
@@ -53,4 +55,7 @@ object Error {
 
   /** The status code was unexpected. */
   def UnexpectedStatus(msg: String) = Error(10, msg)
+
+  /** An operaion timed out. **/
+  def Timeout(duration: FiniteDuration) = Error(11, s"Operation timed out after $duration")
 }

@@ -1,5 +1,10 @@
 package lol.http
 
+import java.util.{ Timer, TimerTask }
+
+import scala.concurrent.{ Future, Promise, ExecutionContext }
+import scala.concurrent.duration.{ FiniteDuration }
+
 package object internal {
 
   // Sometimes we don't want to pollute the API by asking an executionContext, so
@@ -27,6 +32,24 @@ package object internal {
       case "png"          => "images/png"
       case "jpg" | "jpeg" => "images/jpeg"
     }.getOrElse("application/octet-stream")
+  }
+
+  val timer = new Timer("lol.http.internal.timer")
+  def timeout[A](a: => A, duration: FiniteDuration): Future[A] = {
+    val e = Promise[A]
+    timer.schedule(new TimerTask { def run(): Unit = e.success(a) }, duration.toMillis)
+    e.future
+  }
+
+  def withTimeout[A](a: Future[A], duration: FiniteDuration, andThen: () => Unit = () => ())(implicit e: ExecutionContext): Future[A] = {
+    Future.firstCompletedOf(Seq(a.map(Right.apply), timeout(Left(()), duration))).
+      flatMap {
+        case Right(x) =>
+          Future.successful(x)
+        case Left(_) =>
+          andThen()
+          Future.failed(Error.Timeout(duration))
+      }
   }
 
 }

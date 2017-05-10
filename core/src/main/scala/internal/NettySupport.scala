@@ -51,16 +51,22 @@ private[http] object NettySupport {
     }
     def toTask(implicit S: Strategy): Task[Channel] = {
       Task.async { cb =>
-        f.addListener(new GenericFutureListener[ChannelFuture] {
-          override def operationComplete(f: ChannelFuture) = {
-            if(f.isSuccess) {
-              cb(Right(f.channel))
+        try {
+          f.addListener(new GenericFutureListener[ChannelFuture] {
+            override def operationComplete(f: ChannelFuture) = {
+              if(f.isSuccess) {
+                cb(Right(f.channel))
+              }
+              else {
+                cb(Left(f.cause))
+              }
             }
-            else {
-              cb(Left(f.cause))
-            }
-          }
-        })
+          })
+        }
+        catch {
+          case e: Throwable =>
+            cb(Left(e))
+        }
       }
     }
   }
@@ -100,11 +106,17 @@ private[http] object NettySupport {
       _.repeatPull(_.awaitOption.flatMap {
         case Some((chunk, h)) =>
           Pull.eval(
-            channel.writeAndFlush(new DefaultHttpContent(chunk.toByteBuf)).toTask
+            if(channel.isOpen)
+              channel.writeAndFlush(new DefaultHttpContent(chunk.toByteBuf)).toTask
+            else
+              Task.fail(Error.ConnectionClosed)
           ) as h
         case None =>
           Pull.eval(
-            channel.writeAndFlush(new DefaultLastHttpContent()).toTask
+            if(channel.isOpen)
+              channel.writeAndFlush(new DefaultLastHttpContent()).toTask
+            else
+              Task.fail(Error.ConnectionClosed)
           ) >> Pull.done
       })
     }
@@ -113,7 +125,10 @@ private[http] object NettySupport {
       _.repeatPull(_.awaitOption.flatMap {
         case Some((chunk, h)) =>
           Pull.eval(
-            channel.writeAndFlush(chunk.toByteBuf).toTask
+            if(channel.isOpen)
+              channel.writeAndFlush(chunk.toByteBuf).toTask
+            else
+              Task.fail(Error.ConnectionClosed)
           ) as h
         case None =>
           Pull.done
@@ -263,7 +278,7 @@ private[http] object NettySupport {
     }
 
     def isOpen: Boolean = channel.isOpen
-    def close: Task[Unit] = Task.delay(channel.close())
+    def close: Task[Unit] = Task.delay(if(channel.isOpen) channel.close())
 
     // Read one HTTP message along with its content stream. The
     // content stream must be read before the next message to be
@@ -307,7 +322,7 @@ private[http] object NettySupport {
     // Write an HTTP message along with its content to the channel.
     def write(message: HttpMessage, contentStream: Stream[Task,Byte]): Task[Unit] = for {
       _ <- if(writeFirst) permits.decrement else permits.increment
-      _ <- Task.delay(channel.writeAndFlush(message))
+      _ <- if(channel.isOpen) Task.delay(channel.writeAndFlush(message)) else Task.fail(Error.ConnectionClosed)
       _ <- (contentStream to channel.httpContentSink).run
       _ <- Task.delay(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
     } yield ()

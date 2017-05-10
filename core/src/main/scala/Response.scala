@@ -1,11 +1,9 @@
 package lol.http
 
-import fs2.{ Stream, Task }
+import fs2.{Stream, Task}
+import internal.FutureLikeResponse
 
-import scala.concurrent.{ CanAwait, Future, ExecutionContext }
-import scala.concurrent.duration.{ Duration }
-
-import scala.util.{ Success, Try }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** An HTTP response.
   *
@@ -30,7 +28,7 @@ case class Response(
   content: Content = Content.empty,
   headers: Map[HttpString,HttpString] = Map.empty,
   upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte] = _ => Stream.empty
-) extends Future[Response] {
+) extends FutureLikeResponse {
 
   /** Set the content of this response.
     * @param content the content to use for this response.
@@ -124,15 +122,4 @@ case class Response(
     case 301 | 302 | 303 | 307 | 308 => true
     case _ => false
   }
-
-  // As Future
-  def ready(atMost: Duration)(implicit permit: CanAwait) = this
-  def result(atMost: Duration)(implicit permit: CanAwait) = this
-  def isCompleted = true
-  def onComplete[U](f: Try[Response] => U)(implicit executor: ExecutionContext) = executor.execute(new Runnable {
-    override def run = f(Success(Response.this))
-  })
-  def value: Option[Try[Response]] = Some(Success(this))
-  def transform[S](f: Try[Response] => Try[S])(implicit executor: ExecutionContext) = ???
-  def transformWith[S](f: Try[Response] => Future[S])(implicit executor: ExecutionContext) = ???
 }

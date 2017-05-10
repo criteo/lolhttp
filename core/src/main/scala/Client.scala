@@ -3,7 +3,7 @@ package lol.http
 import scala.util.{ Try, Success, Failure }
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future, Promise }
-import scala.concurrent.duration.{ FiniteDuration }
+import scala.concurrent.duration._
 
 import io.netty.channel.{ ChannelInitializer }
 import io.netty.bootstrap.{ Bootstrap }
@@ -86,6 +86,9 @@ trait Client extends Service {
   /** The maximum number of waiting requests before the client starts rejecting new ones. */
   def maxWaiters: Int
 
+  /** The maximum amount of time a request will wait to obtain an HTTP connection. */
+  def connectionTimeout: FiniteDuration
+
   /** The ExecutionContext that will be used to run the user code. */
   implicit def executor: ExecutionContext
   private implicit lazy val S = Strategy.fromExecutionContext(executor)
@@ -118,13 +121,21 @@ trait Client extends Service {
 
   /** The number of TCP connections currently opened with the remote server. */
   def openedConnections: Int = liveConnections.intValue
+  private[http] def waitingConnections: Int = waiters.size
 
   /** Check if this client is already closed (ie. it does not accept any more requests). */
   def isClosed: Boolean = closed.get
 
   private def waitConnection(): Future[HttpConnection] = {
     val p = Promise[HttpConnection]
-    if(waiters.offer(p)) p.future else {
+    if(waiters.offer(p)) {
+      withTimeout(
+        p.future,
+        connectionTimeout,
+        () => waiters.remove(p)
+      )
+    }
+    else {
       Future.failed(Error.TooManyWaiters)
     }
   }
@@ -142,24 +153,27 @@ trait Client extends Service {
   }
 
   private def acquireConnection(): Future[HttpConnection] = {
-    if(closed.get) Future.failed(Error.ClientAlreadyClosed) else
-    Option(availableConnections.poll).filter(_.isOpen).map(Future.successful).getOrElse {
-      val i = liveConnections.incrementAndGet()
-      if(i <= maxConnections) {
-        bootstrap.connect().toFuture.
-          map(c => Netty.clientConnection(c.asInstanceOf[SocketChannel], options.debug)).
-          andThen {
-            case Success(c) =>
-              if(!connections.offer(c)) Panic.!!!()
-              c.closed.unsafeRunAsyncFuture().andThen { case _ => destroyConnection(c) }
-            case Failure(_) =>
-              liveConnections.decrementAndGet()
-          }
-      }
-      else {
-        waitConnection()
-      }
-    }
+    withTimeout(
+      if(closed.get) Future.failed(Error.ClientAlreadyClosed) else
+      Option(availableConnections.poll).filter(_.isOpen).map(Future.successful).getOrElse {
+        if(liveConnections.get < maxConnections) {
+          liveConnections.incrementAndGet()
+          bootstrap.connect().toFuture.
+            map(c => Netty.clientConnection(c.asInstanceOf[SocketChannel], options.debug)).
+            andThen {
+              case Success(c) =>
+                if(!connections.offer(c)) Panic.!!!()
+                c.closed.unsafeRunAsyncFuture().andThen { case _ => destroyConnection(c) }
+              case Failure(_) =>
+                liveConnections.decrementAndGet()
+            }
+        }
+        else {
+          waitConnection()
+        }
+      },
+      connectionTimeout
+    )
   }
 
   /** Stop the client and kill all current and waiting requests.
@@ -375,6 +389,7 @@ object Client {
     * @param options the client options such as the number of IO thread used.
     * @param maxConnections the maximum number of TCP connections to maintain with the remote server.
     * @param maxWaiters the maximum number of requests waiting for an available connection.
+    * @param connectionTimeout the maximum amount of time requests will wait for a connection. Default to 5 seconds.
     * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
     * @return an HTTP client instance.
     */
@@ -385,10 +400,11 @@ object Client {
     ssl: SSL.Configuration = SSL.Configuration.default,
     options: ClientOptions = ClientOptions(),
     maxConnections: Int = 10,
-    maxWaiters: Int = 100
+    maxWaiters: Int = 100,
+    connectionTimeout: FiniteDuration = 5 seconds
   )(implicit executor: ExecutionContext): Client = {
-    val (host0, port0, scheme0, ssl0, options0, maxConnections0, maxWaiters0, executor0) = (
-      host, port, scheme, ssl, options, maxConnections, maxWaiters, executor
+    val (host0, port0, scheme0, ssl0, options0, maxConnections0, maxWaiters0, connectionTimeout0, executor0) = (
+      host, port, scheme, ssl, options, maxConnections, maxWaiters, connectionTimeout, executor
     )
     new Client {
       val host = host0
@@ -398,6 +414,7 @@ object Client {
       val options = options0
       val maxConnections = maxConnections0
       val maxWaiters = maxWaiters0
+      val connectionTimeout = connectionTimeout0
       implicit val executor = executor0
     }
   }

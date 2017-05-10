@@ -34,7 +34,7 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
     timer.schedule(new TimerTask { def run() = p.success(a) }, d.toMillis)
     p.future
   }
-  def eventually[A](assertion: => A, timeout: Duration = 1 second): A = {
+  def eventually[A](assertion: => A, timeout: Duration = 5 seconds): A = {
     val start = System.currentTimeMillis
     def go(): A = Try(assertion) match {
       case Success(a) => a

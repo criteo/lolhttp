@@ -41,13 +41,13 @@ package object internal {
     e.future
   }
 
-  def withTimeout[A](a: Future[A], duration: FiniteDuration, andThen: () => Unit = () => ())(implicit e: ExecutionContext): Future[A] = {
+  def withTimeout[A](a: Future[A], duration: FiniteDuration, onTimeout: () => Unit = () => ())(implicit e: ExecutionContext): Future[A] = {
     Future.firstCompletedOf(Seq(a.map(Right.apply), timeout(Left(()), duration))).
       flatMap {
         case Right(x) =>
           Future.successful(x)
         case Left(_) =>
-          andThen()
+          onTimeout()
           Future.failed(Error.Timeout(duration))
       }
   }

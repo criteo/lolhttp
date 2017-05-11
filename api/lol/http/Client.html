@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.3.3 - lol.http.Client</title>
-          <meta name="description" content="lolhttp 0.3.3 - lol.http.Client" />
-          <meta name="keywords" content="lolhttp 0.3.3 lol.http.Client" />
+          <title>lolhttp 0.4.0 - lol.http.Client</title>
+          <meta name="description" content="lolhttp 0.4.0 - lol.http.Client" />
+          <meta name="keywords" content="lolhttp 0.4.0 lol.http.Client" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.3.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.4.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -118,6 +118,24 @@ A service function takes a <a href="Request.html" class="extype" name="lol.http.
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
 of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
 It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
+    </li><li name="lol.http.internal" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="internal"></a><a id="internal:internal"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#internal" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="internal/index.html">
+              <span class="name">internal</span>
+            </a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="lol.http">http</a></dd></dl></div>
     </li><li class="current-entities indented2">
                         <a class="object" href="ClasspathResource$.html" title="Define the implicit encoder for ClasspathResource."></a>
                         <a class="class" href="ClasspathResource.html" title="A resource than can be read from the classpath."></a>
@@ -329,7 +347,23 @@ and set to the value of the client <code>host</code>.
 
         <div class="values members">
               <h3>Abstract Value Members</h3>
-              <ol><li name="lol.http.Client#executor" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+              <ol><li name="lol.http.Client#connectionTimeout" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="connectionTimeout:scala.concurrent.duration.FiniteDuration"></a><a id="connectionTimeout:FiniteDuration"></a>
+      <span class="permalink">
+      <a href="../../lol/http/Client.html#connectionTimeout:scala.concurrent.duration.FiniteDuration" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">connectionTimeout</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">The maximum amount of time a request will wait to obtain an HTTP connection.</p>
+    </li><li name="lol.http.Client#executor" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="executor:scala.concurrent.ExecutionContext"></a><a id="executor:ExecutionContext"></a>
       <span class="permalink">
       <a href="../../lol/http/Client.html#executor:scala.concurrent.ExecutionContext" title="Permalink">
@@ -531,9 +565,9 @@ and set to the value of the client <code>host</code>.
               
         </dd></dl></div>
     </li><li name="lol.http.Client#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="apply(request:lol.http.Request,followRedirects:Boolean):scala.concurrent.Future[lol.http.Response]"></a><a id="apply(Request,Boolean):Future[Response]"></a>
+      <a id="apply(request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration):scala.concurrent.Future[lol.http.Response]"></a><a id="apply(Request,Boolean,FiniteDuration):Future[Response]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#apply(request:lol.http.Request,followRedirects:Boolean):scala.concurrent.Future[lol.http.Response]" title="Permalink">
+      <a href="../../lol/http/Client.html#apply(request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration):scala.concurrent.Future[lol.http.Response]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -542,10 +576,10 @@ and set to the value of the client <code>host</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
+        <span class="name">apply</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>, <span name="timeout">timeout: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a> = <span class="symbol">FiniteDuration(30, &quot;seconds&quot;)</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
       </span>
       
-      <p class="shortcomment cmt">Send a request to the server and eventually give back the response.</p><div class="fullcomment"><div class="comment cmt"><p>Send a request to the server and eventually give back the response.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually the HTTP response.</p></dd></dl></div>
+      <p class="shortcomment cmt">Send a request to the server and eventually give back the response.</p><div class="fullcomment"><div class="comment cmt"><p>Send a request to the server and eventually give back the response.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>maximum amount of time allowed to retrieve the response.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually the HTTP response.</p></dd></dl></div>
     </li><li name="lol.http.Client#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="apply(request:lol.http.Request):scala.concurrent.Future[lol.http.Response]"></a><a id="apply(Request):Future[Response]"></a>
       <span class="permalink">
@@ -802,9 +836,9 @@ and set to the value of the client <code>host</code>.
       
       <p class="shortcomment cmt">The number of TCP connections currently opened with the remote server.</p>
     </li><li name="lol.http.Client#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="run[A](request:lol.http.Request,followRedirects:Boolean)(script:lol.http.Response=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]"></a><a id="run[A](Request,Boolean)((Response)⇒Future[A]):Future[A]"></a>
+      <a id="run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration)(thunk:lol.http.Response=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]"></a><a id="run[A](Request,Boolean,FiniteDuration)((Response)⇒Future[A]):Future[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#run[A](request:lol.http.Request,followRedirects:Boolean)(script:lol.http.Response=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]" title="Permalink">
+      <a href="../../lol/http/Client.html#run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration)(thunk:lol.http.Response=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -813,16 +847,16 @@ and set to the value of the client <code>host</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>)</span><span class="params">(<span name="script">script: (<a href="Response.html" class="extype" name="lol.http.Response">Response</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.run.A">A</span>] = <span class="defval" name="(_: Response) =&gt; Future.successful(())">...</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.run.A">A</span>]</span>
+        <span class="name">run</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="timeout">timeout: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a> = <span class="symbol">FiniteDuration(30, &quot;seconds&quot;)</span></span>)</span><span class="params">(<span name="thunk">thunk: (<a href="Response.html" class="extype" name="lol.http.Response">Response</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.run.A">A</span>] = <span class="defval" name="(_: Response) =&gt; Future.successful(())">...</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.run.A">A</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Send this request to the server, eventually run the given function and return the result.</p><div class="fullcomment"><div class="comment cmt"><p>Send this request to the server, eventually run the given function and return the result.
 This operation ensures that the response content stream is fully read even if the provided
-user code do not consume it. The response is drained as soon as the <code>f</code> function returns.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects. Default to true.</p></dd><dt class="param">script</dt><dd class="cmt"><p>a function that eventually receive the response and transform it to a value of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
+user code do not consume it. The response is drained as soon as the <code>f</code> function returns.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects. Default to true.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>maximum amount of time allowed to retrieve the response and extract the return value.</p></dd><dt class="param">thunk</dt><dd class="cmt"><p>a function that eventually receive the response and transform it to a value of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
     </li><li name="lol.http.Client#runAndStop" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="runAndStop[A](script:lol.http.Client=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]"></a><a id="runAndStop[A]((Client)⇒Future[A]):Future[A]"></a>
+      <a id="runAndStop[A](thunk:lol.http.Client=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]"></a><a id="runAndStop[A]((Client)⇒Future[A]):Future[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#runAndStop[A](script:lol.http.Client=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]" title="Permalink">
+      <a href="../../lol/http/Client.html#runAndStop[A](thunk:lol.http.Client=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -831,10 +865,10 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runAndStop</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="script">script: (<a href="" class="extype" name="lol.http.Client">Client</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.runAndStop.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.runAndStop.A">A</span>]</span>
+        <span class="name">runAndStop</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="thunk">thunk: (<a href="" class="extype" name="lol.http.Client">Client</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.runAndStop.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.runAndStop.A">A</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Run the given function and close the client.</p><div class="fullcomment"><div class="comment cmt"><p>Run the given function and close the client.</p></div><dl class="paramcmts block"><dt class="param">script</dt><dd class="cmt"><p>a function that take a client and eventually return a value of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
+      <p class="shortcomment cmt">Run the given function and close the client.</p><div class="fullcomment"><div class="comment cmt"><p>Run the given function and close the client.</p></div><dl class="paramcmts block"><dt class="param">thunk</dt><dd class="cmt"><p>a function that take a client and eventually return a value of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
     </li><li name="lol.http.Client#stop" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stop():scala.concurrent.Future[Unit]"></a><a id="stop():Future[Unit]"></a>
       <span class="permalink">

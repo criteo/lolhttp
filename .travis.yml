@@ -11,7 +11,7 @@ before_deploy:
 - tar xvf .travis/keys.tar
 deploy:
   provider: script
-  script: sbt +publishSigned sonatypeReleaseAll
+  script: sbt +publishSigned "sonatypeReleaseAll com.criteo"
   skip_cleanup: true
   on:
     tags: true

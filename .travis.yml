@@ -22,6 +22,7 @@ before_cache:
 branches:
   only:
     - master
+    - /\d+[.]\d+[.]\d+/
 cache:
   directories:
     - $HOME/.ivy2/cache

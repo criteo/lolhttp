@@ -26,11 +26,11 @@ The [API documentation](https://criteo.github.io/lolhttp/api/lol/index.html) is 
 For those who prefer documentation by example, you can also follow these hands-on introductions:
 
 - [Hello world!](https://criteo.github.io/lolhttp/examples/HelloWorld.scala.html)
-- [Serving files from classpath](https://criteo.github.io/lolhttp/examples/ServingFiles.scala.html)
-- [A Github API client](https://criteo.github.io/lolhttp/examples/GithubClient.scala.html)
-- [A JSON web service](https://criteo.github.io/lolhttp/examples/JsonWebService.scala.html)
-- [Reading large request streams](https://criteo.github.io/lolhttp/examples/LargeFileUpload.scala.html)
-- [A simple reverse proxy](https://criteo.github.io/lolhttp/examples/ReverseProxy.scala.html)
+- [Serving files from classpath](https://criteo.github.io/lolhttp/examples/ServingFiles.scala.html).
+- [A Github API client](https://criteo.github.io/lolhttp/examples/GithubClient.scala.html).
+- [A JSON web service](https://criteo.github.io/lolhttp/examples/JsonWebService.scala.html).
+- [Reading large request streams](https://criteo.github.io/lolhttp/examples/LargeFileUpload.scala.html).
+- [A simple reverse proxy](https://criteo.github.io/lolhttp/examples/ReverseProxy.scala.html).
 
 ## License
 

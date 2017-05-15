@@ -38,9 +38,6 @@ object Error {
   /** It is not possible to upgrade the connection because the server did not allow it. */
   val UpgradeRefused = Error(4, "Connection upgrade was denied by the server")
 
-  /** An HTTP client cannot handle new request because there are already too many waiters. */
-  val TooManyWaiters = Error(5, "Client has already too many waiting requests")
-
   /** Auto-redirect is only supported for GET requests. */
   val AutoRedirectNotSupported = Error(6, "Automatic redirects is only allowed for GET requests")
 

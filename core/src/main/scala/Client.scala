@@ -20,7 +20,7 @@ import io.netty.handler.codec.http.{
 
 import fs2.{ async, Stream, Task, Strategy }
 
-import java.util.concurrent.{ ArrayBlockingQueue }
+import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import internal.NettySupport._
@@ -52,9 +52,8 @@ case class ClientOptions(
  *
  * A client maintains several TCP connections to the remote server. These connections
  * are used to send requests and are blocked until the corresponding response has been
- * received. If no connection is available when a new request comes, it is pushed to a
- * bounded queue of `maxWaiters` size. As soon as this queue is full, the client starts
- * rejecting new requests.
+ * received. If no connection is available when a new request comes, it waits for
+ * connectionTimeout time for one connection to become available.
  *
  * It is important that the user code completly consumes the response content stream, so
  * the connection is freed for the next request. That's why it is better to use the `run`
@@ -82,9 +81,6 @@ trait Client extends Service {
 
   /** The maximum number of TCP connections maintained with the remote server. */
   def maxConnections: Int
-
-  /** The maximum number of waiting requests before the client starts rejecting new ones. */
-  def maxWaiters: Int
 
   /** The maximum amount of time a request will wait to obtain an HTTP connection. */
   def connectionTimeout: FiniteDuration
@@ -117,7 +113,7 @@ trait Client extends Service {
   private lazy val liveConnections = new AtomicLong(0)
   private lazy val connections = new ArrayBlockingQueue[HttpConnection](maxConnections)
   private lazy val availableConnections = new ArrayBlockingQueue[HttpConnection](maxConnections)
-  private lazy val waiters = new ArrayBlockingQueue[Promise[HttpConnection]](maxWaiters)
+  private lazy val waiters = new LinkedBlockingQueue[Promise[HttpConnection]]()
 
   /** The number of TCP connections currently opened with the remote server. */
   def openedConnections: Int = liveConnections.intValue
@@ -128,16 +124,12 @@ trait Client extends Service {
 
   private def waitConnection(): Future[HttpConnection] = {
     val p = Promise[HttpConnection]
-    if(waiters.offer(p)) {
-      withTimeout(
-        p.future,
-        connectionTimeout,
-        () => waiters.remove(p)
-      )
-    }
-    else {
-      Future.failed(Error.TooManyWaiters)
-    }
+    waiters.offer(p)
+    withTimeout(
+      p.future,
+      connectionTimeout,
+      () => waiters.remove(p)
+    )
   }
 
   private def destroyConnection(c: HttpConnection): Unit = {
@@ -351,7 +343,7 @@ trait Client extends Service {
 
   override def toString = {
     s"Client(host=$host, port=$port, ssl=$ssl, options=$options, maxConnections=$maxConnections, " +
-    s"maxWaiters=$maxWaiters, openedConnections=$openedConnections, isClosed=$isClosed)"
+    s"openedConnections=$openedConnections, waitingConnections= $waitingConnections, isClosed=$isClosed)"
   }
 }
 
@@ -388,7 +380,6 @@ object Client {
     * @param ssl if provided the custom SSL configuration to use for this client.
     * @param options the client options such as the number of IO thread used.
     * @param maxConnections the maximum number of TCP connections to maintain with the remote server.
-    * @param maxWaiters the maximum number of requests waiting for an available connection.
     * @param connectionTimeout the maximum amount of time requests will wait for a connection. Default to 5 seconds.
     * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
     * @return an HTTP client instance.
@@ -400,11 +391,10 @@ object Client {
     ssl: SSL.Configuration = SSL.Configuration.default,
     options: ClientOptions = ClientOptions(),
     maxConnections: Int = 10,
-    maxWaiters: Int = 100,
     connectionTimeout: FiniteDuration = 5 seconds
   )(implicit executor: ExecutionContext): Client = {
-    val (host0, port0, scheme0, ssl0, options0, maxConnections0, maxWaiters0, connectionTimeout0, executor0) = (
-      host, port, scheme, ssl, options, maxConnections, maxWaiters, connectionTimeout, executor
+    val (host0, port0, scheme0, ssl0, options0, maxConnections0, connectionTimeout0, executor0) = (
+      host, port, scheme, ssl, options, maxConnections, connectionTimeout, executor
     )
     new Client {
       val host = host0
@@ -413,7 +403,6 @@ object Client {
       val ssl = ssl0
       val options = options0
       val maxConnections = maxConnections0
-      val maxWaiters = maxWaiters0
       val connectionTimeout = connectionTimeout0
       implicit val executor = executor0
     }

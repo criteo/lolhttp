@@ -119,30 +119,21 @@ class ClientTests extends Tests {
 
       def makeCalls(client: Client, x: Int) = Future.sequence {
         (1 to x).map { i =>
-          Future.firstCompletedOf(
-            List(
-              client(Get("/")).map(_ => "OK"),
-              timeout(1 second, "TIMEOUT")
-            )
-          ).recover { case _ => "REJECTED" }
+          client(Get("/")).map(_ => "OK").recover { case _ => "REJECTED"}
         }
       }
 
       await() {
-        Client("localhost", server.port, maxConnections = 2, maxWaiters = 10).runAndStop { client =>
+        Client("localhost", server.port, maxConnections = 2).runAndStop { client =>
           makeCalls(client, 2)
         }
-      } should contain theSameElementsAs List("OK", "OK")
+      } should contain theSameElementsAs (0 until 2).map(_ => "OK")
 
       await() {
-        Client("localhost", server.port, maxConnections = 2, maxWaiters = 10).runAndStop { client =>
+        Client("localhost", server.port, maxConnections = 2, connectionTimeout = 1 second).runAndStop { client =>
           makeCalls(client, 20)
         }
-      } should contain theSameElementsAs List(
-        "OK", "OK", "TIMEOUT", "TIMEOUT", "TIMEOUT", "TIMEOUT", "TIMEOUT", "TIMEOUT", "TIMEOUT",
-        "TIMEOUT", "TIMEOUT", "TIMEOUT", "REJECTED", "REJECTED", "REJECTED", "REJECTED", "REJECTED",
-        "REJECTED", "REJECTED", "REJECTED"
-      )
+      } should contain theSameElementsAs ((0 until 2).map(_ => "OK") ++ (0 until 18).map(_ => "REJECTED"))
     }
   }
 
@@ -204,7 +195,7 @@ class ClientTests extends Tests {
 
   test("Connection errors", Slow) {
     val requests = 16
-    val client = Client("doesnotexist", maxWaiters = requests, connectionTimeout = 1 second)
+    val client = Client("doesnotexist", connectionTimeout = 1 second)
     def send(id: Int) = {
       val req = Get("/")
       client.run(req) { _ =>

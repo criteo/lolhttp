@@ -85,25 +85,19 @@ private[http] object Url {
     def unapplySeq(req: Request): Option[Seq[String]] = unapplySeq(req.url)
     def unapplySeq(url: String): Option[Seq[String]] = {
       url.split("[?]").toList match {
-        case path :: rest =>
+        case path :: queryString =>
           pathPattern.unapplySeq(path).flatMap { pathParams =>
-            rest match {
-              case Nil =>
-                Some(pathParams)
-              case queryString :: Nil =>
-                Try {
-                  val params = parseQueryString(queryString).groupBy(_._1).map {
-                    case (name, x) => (name, x.map(_._2).toSeq)
-                  }
-                  pathParams ++ paramPatterns.flatMap {
-                    case (param, pattern) =>
-                      if(params(param).size != 1) sys.error("")
-                      pattern.unapplySeq(params(param).head).get
-                  }
-                }.toOption
-              case _ =>
-                None
-            }
+            Try {
+              val params = parseQueryString(queryString.mkString("?")).groupBy(_._1).map {
+                case (name, x) => (name, x.map(_._2).toSeq)
+              }
+              pathParams ++ paramPatterns.flatMap {
+                case (param, pattern) =>
+                  val values = params.get(param).getOrElse(Nil)
+                  if(values.size > 1) sys.error("")
+                  pattern.unapplySeq(values.headOption.getOrElse("")).get
+              }
+            }.toOption
           }
         case Nil =>
           Panic.!!!()

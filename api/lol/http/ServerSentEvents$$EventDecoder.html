@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.4.1 - lol.http.ContentDecoder</title>
-          <meta name="description" content="lolhttp 0.4.1 - lol.http.ContentDecoder" />
-          <meta name="keywords" content="lolhttp 0.4.1 lol.http.ContentDecoder" />
+          <title>lolhttp 0.4.1 - lol.http.ServerSentEvents.EventDecoder</title>
+          <meta name="description" content="lolhttp 0.4.1 - lol.http.ServerSentEvents.EventDecoder" />
+          <meta name="keywords" content="lolhttp 0.4.1 lol.http.ServerSentEvents.EventDecoder" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -117,128 +117,45 @@ Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <s
 A service function takes a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
 of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
-It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
-    </li><li class="current-entities indented2">
-                        <a class="object" href="ClasspathResource$.html" title="Define the implicit encoder for ClasspathResource."></a>
-                        <a class="class" href="ClasspathResource.html" title="A resource than can be read from the classpath."></a>
-                        <a href="ClasspathResource.html" title="A resource than can be read from the classpath.">
-                          ClasspathResource
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Client$.html" title="Build HTTP clients."></a>
-                        <a class="trait" href="Client.html" title="An HTTP client."></a>
-                        <a href="Client.html" title="An HTTP client.">
-                          Client
-                        </a>
-                      </li><li class="current-entities indented2">
+It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
+    </li><li name="lol.http.ServerSentEvents" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ServerSentEvents"></a><a id="ServerSentEvents:ServerSentEvents"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#ServerSentEvents" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="Support for Server Sent Events content." href="ServerSentEvents$.html">
+              <span class="name">ServerSentEvents</span>
+            </a>
+      </span>
+      
+      <p class="shortcomment cmt">Support for Server Sent Events content.</p><div class="fullcomment"><div class="comment cmt"><p>Support for Server Sent Events content. It allows a server to stream
+events to a client. Events are string (utf-8) encoded, and a proper
+<code>EventEncoder</code> or <code>EventDecoded</code> must be available for your event payload type.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="lol.http">http</a></dd></dl></div>
+    </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="class" href="ClientOptions.html" title="Allow to configure an HTTP client."></a>
-                        <a href="ClientOptions.html" title="Allow to configure an HTTP client.">
-                          ClientOptions
+                        <a class="class" href="ServerSentEvents$$Event.html" title="An event."></a>
+                        <a href="ServerSentEvents$$Event.html" title="An event.">
+                          Event
                         </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Content$.html" title="Build HTTP message content body."></a>
-                        <a class="class" href="Content.html" title="An HTTP message content body."></a>
-                        <a href="Content.html" title="An HTTP message content body.">
-                          Content
+                      </li><li class="current-entities indented3">
+                        <a class="object" href="ServerSentEvents$$EventDecoder$.html" title="Provides default EventDecoders."></a>
+                        <a class="trait" href="" title="Decode the string event payload as a value of type A."></a>
+                        <a href="" title="Decode the string event payload as a value of type A.">
+                          EventDecoder
                         </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="ContentDecoder$.html" title="Library of built-in content decoders."></a>
-                        <a class="trait" href="" title="An HTTP content decoder."></a>
-                        <a href="" title="An HTTP content decoder.">
-                          ContentDecoder
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="ContentEncoder$.html" title="Library of built-in content encoders."></a>
-                        <a class="trait" href="ContentEncoder.html" title="A HTTP content encoder."></a>
-                        <a href="ContentEncoder.html" title="A HTTP content encoder.">
-                          ContentEncoder
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Error$.html" title="All expected errors."></a>
-                        <a class="class" href="Error.html" title="Expected errors."></a>
-                        <a href="Error.html" title="Expected errors.">
-                          Error
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="Headers$.html" title="A collection of HTTP header names."></a>
-                        <a href="Headers$.html" title="A collection of HTTP header names.">
-                          Headers
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="HttpMethod$.html" title="HTTP method matcher."></a>
-                        <a class="class" href="HttpMethod.html" title="An HTTP method such as GET or POST."></a>
-                        <a href="HttpMethod.html" title="An HTTP method such as GET or POST.">
-                          HttpMethod
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="HttpString$.html" title="HttpString builders."></a>
-                        <a class="class" href="HttpString.html" title="An case insensitive string."></a>
-                        <a href="HttpString.html" title="An case insensitive string.">
-                          HttpString
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values."></a>
-                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">
-                          LiteralHttpString
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Panic$.html" title="Allows to panic."></a>
-                        <a class="class" href="Panic.html" title="Panics are errors that should not occur or should not be handled."></a>
-                        <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">
-                          Panic
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="Request.html" title="An HTTP request."></a>
-                        <a href="Request.html" title="An HTTP request.">
-                          Request
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="Response.html" title="An HTTP response."></a>
-                        <a href="Response.html" title="An HTTP response.">
-                          Response
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="SSL$.html" title="lol SSL."></a>
-                        <a href="SSL$.html" title="lol SSL.">
-                          SSL
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Server$.html" title="Build and start HTTP servers."></a>
-                        <a class="trait" href="Server.html" title="An HTTP server."></a>
-                        <a href="Server.html" title="An HTTP server.">
-                          Server
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="ServerOptions.html" title="Allow to configure an HTTP server."></a>
-                        <a href="ServerOptions.html" title="Allow to configure an HTTP server.">
-                          ServerOptions
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="ServerSentEvents$.html" title="Support for Server Sent Events content."></a>
-                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">
-                          ServerSentEvents
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates."></a>
-                        <a href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates.">
-                          UrlMatcher
-                        </a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="at$.html" title="Request extractor."></a>
-                        <a href="at$.html" title="Request extractor.">
-                          at
+                      </li><li class="current-entities indented3">
+                        <a class="object" href="ServerSentEvents$$EventEncoder$.html" title="Provides default EventEncoders."></a>
+                        <a class="trait" href="ServerSentEvents$$EventEncoder.html" title="Encode the event payload as a string (utf-8)."></a>
+                        <a href="ServerSentEvents$$EventEncoder.html" title="Encode the event payload as a string (utf-8).">
+                          EventEncoder
                         </a>
                       </li>
               </ul>
@@ -247,15 +164,15 @@ dynamic parameters in URL templates.">
           <div id="content">
             <body class="trait type">
       <div id="definition">
-        <a href="ContentDecoder$.html" title="See companion object"><div class="big-circle trait-companion-object">t</div></a>
-        <p id="owner"><a href="../index.html" class="extype" name="lol">lol</a>.<a href="index.html" class="extype" name="lol.http">http</a></p>
-        <h1><a href="ContentDecoder$.html" title="See companion object">ContentDecoder</a><span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html" title="Permalink">
+        <a href="ServerSentEvents$$EventDecoder$.html" title="See companion object"><div class="big-circle trait-companion-object">t</div></a>
+        <p id="owner"><a href="../index.html" class="extype" name="lol">lol</a>.<a href="index.html" class="extype" name="lol.http">http</a>.<a href="ServerSentEvents$.html" class="extype" name="lol.http.ServerSentEvents">ServerSentEvents</a></p>
+        <h1><a href="ServerSentEvents$$EventDecoder$.html" title="See companion object">EventDecoder</a><span class="permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
         <h3><span class="morelinks"><div>
-            Companion <a href="ContentDecoder$.html" title="See companion object">object ContentDecoder</a>
+            Companion <a href="ServerSentEvents$$EventDecoder$.html" title="See companion object">object EventDecoder</a>
           </div></span></h3>
       </div>
 
@@ -265,17 +182,12 @@ dynamic parameters in URL templates.">
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">ContentDecoder</span><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <span class="name">EventDecoder</span><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An HTTP content decoder.</p><pre><span class="kw">val</span> textContent: Content = ???
-<span class="kw">val</span> textDecoder: ContentDecoder[<span class="std">String</span>] = ContentDecoder.text(maxSize = <span class="num">1024</span>, defaultCodec = Codec.UTF8)
-<span class="kw">val</span> text: <span class="std">String</span> = textDecoder(textContent).unsafeRun()</pre><p>A content decoder is able to parse an HTTP content into a scala value of type <code>A</code>. It will look
-at the content HTTP headers if needed, and consume the content stream bytes to eventually output
-a scala value.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Content.scala" target="_blank">Content.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Decode the string event payload as a value of type A.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/ServerSentEvents.scala" target="_blank">ServerSentEvents.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -305,7 +217,7 @@ a scala value.
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="lol.http.ContentDecoder"><span>ContentDecoder</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="lol.http.ServerSentEvents.EventDecoder"><span>EventDecoder</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -329,10 +241,10 @@ a scala value.
 
         <div class="values members">
               <h3>Abstract Value Members</h3>
-              <ol><li name="lol.http.ContentDecoder#apply" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="apply(content:lol.http.Content):fs2.Task[A]"></a><a id="apply(Content):Task[A]"></a>
+              <ol><li name="lol.http.ServerSentEvents.EventDecoder#apply" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="apply(data:String):fs2.Task[A]"></a><a id="apply(String):Task[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#apply(content:lol.http.Content):fs2.Task[A]" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#apply(data:String):fs2.Task[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -341,10 +253,10 @@ a scala value.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a></span>)</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>[<span class="extype" name="lol.http.ContentDecoder.A">A</span>]</span>
+        <span class="name">apply</span><span class="params">(<span name="data">data: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>[<span class="extype" name="lol.http.ServerSentEvents.EventDecoder.A">A</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Create an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">fs2.Task</a> that consume the content stream and produce a scala value.</p><div class="fullcomment"><div class="comment cmt"><p>Create an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">fs2.Task</a> that consume the content stream and produce a scala value.</p></div><dl class="paramcmts block"><dt class="param">content</dt><dd class="cmt"><p>an HTTP content.</p></dd><dt>returns</dt><dd class="cmt"><p>an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">fs2.Task</a> that you can run to eventually retrieve the scala value.</p></dd></dl></div>
+      
     </li></ol>
             </div>
 
@@ -354,7 +266,7 @@ a scala value.
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -370,7 +282,7 @@ a scala value.
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html###():Int" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -386,7 +298,7 @@ a scala value.
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -402,7 +314,7 @@ a scala value.
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -418,7 +330,7 @@ a scala value.
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#clone():Object" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -440,7 +352,7 @@ a scala value.
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -456,7 +368,7 @@ a scala value.
     </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#equals(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#equals(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -472,7 +384,7 @@ a scala value.
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#finalize():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -494,7 +406,7 @@ a scala value.
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#getClass():Class[_]" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -510,7 +422,7 @@ a scala value.
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#hashCode():Int" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#hashCode():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -526,7 +438,7 @@ a scala value.
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -542,7 +454,7 @@ a scala value.
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -558,7 +470,7 @@ a scala value.
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#notify():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -574,7 +486,7 @@ a scala value.
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#notifyAll():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -590,7 +502,7 @@ a scala value.
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -606,7 +518,7 @@ a scala value.
     </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#toString():String" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#toString():String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -622,7 +534,7 @@ a scala value.
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#wait():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -644,7 +556,7 @@ a scala value.
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -666,7 +578,7 @@ a scala value.
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentDecoder.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$$EventDecoder.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>

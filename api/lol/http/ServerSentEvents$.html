@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.4.1 - lol.http.Client</title>
-          <meta name="description" content="lolhttp 0.4.1 - lol.http.Client" />
-          <meta name="keywords" content="lolhttp 0.4.1 lol.http.Client" />
+          <title>lolhttp 0.4.1 - lol.http.ServerSentEvents</title>
+          <meta name="description" content="lolhttp 0.4.1 - lol.http.ServerSentEvents" />
+          <meta name="keywords" content="lolhttp 0.4.1 lol.http.ServerSentEvents" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -88,7 +88,7 @@
             </a>
       </span>
       
-      <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="index.html" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="" class="extype" name="lol.http.Client">Client</a> and <a href="Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="../json/index.html" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="../html/index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
+      <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="index.html" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and <a href="Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="../json/index.html" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="../html/index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
 </li></ul></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
     </li><li name="lol.http" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="http"></a><a id="http:http"></a>
@@ -113,7 +113,7 @@
 
 Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>Provides an HTTP <a href="" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
+}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
 A service function takes a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
 of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
@@ -126,8 +126,8 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                         </a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Client$.html" title="Build HTTP clients."></a>
-                        <a class="trait" href="" title="An HTTP client."></a>
-                        <a href="" title="An HTTP client.">
+                        <a class="trait" href="Client.html" title="An HTTP client."></a>
+                        <a href="Client.html" title="An HTTP client.">
                           Client
                         </a>
                       </li><li class="current-entities indented2">
@@ -222,8 +222,8 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                         </a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="object" href="ServerSentEvents$.html" title="Support for Server Sent Events content."></a>
-                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">
+                        <a class="object" href="" title="Support for Server Sent Events content."></a>
+                        <a href="" title="Support for Server Sent Events content.">
                           ServerSentEvents
                         </a>
                       </li><li class="current-entities indented2">
@@ -245,46 +245,37 @@ dynamic parameters in URL templates.">
             </div>
           </div>
           <div id="content">
-            <body class="trait type">
+            <body class="object value">
       <div id="definition">
-        <a href="Client$.html" title="See companion object"><div class="big-circle trait-companion-object">t</div></a>
+        <div class="big-circle object">o</div>
         <p id="owner"><a href="../index.html" class="extype" name="lol">lol</a>.<a href="index.html" class="extype" name="lol.http">http</a></p>
-        <h1><a href="Client$.html" title="See companion object">Client</a><span class="permalink">
-      <a href="../../lol/http/Client.html" title="Permalink">
+        <h1>ServerSentEvents<span class="permalink">
+      <a href="../../lol/http/ServerSentEvents$.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
-        <h3><span class="morelinks"><div>
-            Companion <a href="Client$.html" title="See companion object">object Client</a>
-          </div></span></h3>
+        <h3><span class="morelinks"></span></h3>
       </div>
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">Client</span><span class="result"> extends <a href="index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a></span>
+        <span class="name">ServerSentEvents</span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An HTTP client.</p><pre><span class="kw">val</span> eventuallyContent = client(Get(<span class="lit">"/hello"</span>)).flatMap { response <span class="kw">=&gt;</span>
-  response.readAs[<span class="std">String</span>]
-}</pre><p>An HTTP client is a <a href="index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> function. It handles HTTP requests
-and eventually returns HTTP responses.</p><p>A client maintains several TCP connections to the remote server. These connections
-are used to send requests and are blocked until the corresponding response has been
-received. If no connection is available when a new request comes, it waits for
-connectionTimeout time for one connection to become available.</p><p>It is important that the user code completly consumes the response content stream, so
-the connection is freed for the next request. That's why it is better to use the <code>run</code>
-operation if possible since this one automatically drains the request upon return.</p><p>If the request to execute does not specify an Host header, it will be automatically added
-and set to the value of the client <code>host</code>.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Client.scala" target="_blank">Client.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Support for Server Sent Events content. It allows a server to stream
+events to a client. Events are string (utf-8) encoded, and a proper
+<code>EventEncoder</code> or <code>EventDecoded</code> must be available for your event payload type.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/ServerSentEvents.scala" target="_blank">ServerSentEvents.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent">(<a href="Request.html" class="extype" name="lol.http.Request">Request</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>], <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
         </div></div>
         
 
@@ -310,7 +301,7 @@ and set to the value of the client <code>host</code>.
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="lol.http.Client"><span>Client</span></li><li class="in" name="scala.Function1"><span>Function1</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="lol.http.ServerSentEvents"><span>ServerSentEvents</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -330,148 +321,74 @@ and set to the value of the client <code>host</code>.
         <div id="allMembers">
         
 
-        
-
-        <div class="values members">
-              <h3>Abstract Value Members</h3>
-              <ol><li name="lol.http.Client#connectionTimeout" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="connectionTimeout:scala.concurrent.duration.FiniteDuration"></a><a id="connectionTimeout:FiniteDuration"></a>
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="lol.http.ServerSentEvents.Event" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Event[A]extendsProductwithSerializable"></a><a id="Event[A]:Event[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#connectionTimeout:scala.concurrent.duration.FiniteDuration" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#Event[A]extendsProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">connectionTimeout</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>
+        <a title="An event." href="ServerSentEvents$$Event.html">
+              <span class="name">Event</span>
+            </a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="data">data: <span class="extype" name="lol.http.ServerSentEvents.Event.A">A</span></span>, <span name="event">event: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="id">id: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
-      <p class="shortcomment cmt">The maximum amount of time a request will wait to obtain an HTTP connection.</p>
-    </li><li name="lol.http.Client#executor" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="executor:scala.concurrent.ExecutionContext"></a><a id="executor:ExecutionContext"></a>
+      <p class="shortcomment cmt">An event.</p><div class="fullcomment"><div class="comment cmt"><p>An event.</p></div><dl class="paramcmts block"><dt class="param">data</dt><dd class="cmt"><p>the event payload.</p></dd><dt class="param">event</dt><dd class="cmt"><p>the event type (optional).</p></dd><dt class="param">id</dt><dd class="cmt"><p>the event id (optional).</p></dd></dl></div>
+    </li><li name="lol.http.ServerSentEvents.EventDecoder" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="EventDecoder[+A]extendsAnyRef"></a><a id="EventDecoder[+A]:EventDecoder[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#executor:scala.concurrent.ExecutionContext" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#EventDecoder[+A]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier">implicit abstract </span>
-        <span class="kind">def</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">executor</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>
+        <a title="Decode the string event payload as a value of type A." href="ServerSentEvents$$EventDecoder.html">
+              <span class="name">EventDecoder</span>
+            </a><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
       </span>
       
-      <p class="shortcomment cmt">The ExecutionContext that will be used to run the user code.</p>
-    </li><li name="lol.http.Client#host" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="host:String"></a>
+      <p class="shortcomment cmt">Decode the string event payload as a value of type A.</p>
+    </li><li name="lol.http.ServerSentEvents.EventEncoder" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="EventEncoder[-A]extendsAnyRef"></a><a id="EventEncoder[-A]:EventEncoder[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#host:String" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#EventEncoder[-A]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">host</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <a title="Encode the event payload as a string (utf-8)." href="ServerSentEvents$$EventEncoder.html">
+              <span class="name">EventEncoder</span>
+            </a><span class="tparams">[<span name="A">-A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
       </span>
       
-      <p class="shortcomment cmt">The host this client is connected to.</p>
-    </li><li name="lol.http.Client#maxConnections" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="maxConnections:Int"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#maxConnections:Int" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">maxConnections</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">The maximum number of TCP connections maintained with the remote server.</p>
-    </li><li name="lol.http.Client#options" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="options:lol.http.ClientOptions"></a><a id="options:ClientOptions"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#options:lol.http.ClientOptions" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">options</span><span class="result">: <a href="ClientOptions.html" class="extype" name="lol.http.ClientOptions">ClientOptions</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">The client options such as the number of IO thread used.</p>
-    </li><li name="lol.http.Client#port" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="port:Int"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#port:Int" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">port</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">The TCP port this client is connected to.</p>
-    </li><li name="lol.http.Client#scheme" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="scheme:String"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#scheme:String" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">scheme</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
-      </span>
-      
-      <p class="shortcomment cmt">The scheme used by this client (either HTTP or HTTPS if connected in SSL).</p>
-    </li><li name="lol.http.Client#ssl" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="ssl:lol.http.SSL.Configuration"></a><a id="ssl:Configuration"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#ssl:lol.http.SSL.Configuration" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ssl</span><span class="result">: <a href="SSL$$Configuration.html" class="extype" name="lol.http.SSL.Configuration">Configuration</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">The SSL configuration used by the client.</p><div class="fullcomment"><div class="comment cmt"><p>The SSL configuration used by the client. Must be provided if the server certificate is not recognized by default.</p></div></div>
+      <p class="shortcomment cmt">Encode the event payload as a string (utf-8).</p>
     </li></ol>
             </div>
 
+        
+
         <div class="values members">
-              <h3>Concrete Value Members</h3>
+              <h3>Value Members</h3>
               <ol>
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -487,7 +404,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html###():Int" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -503,7 +420,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -516,61 +433,10 @@ and set to the value of the client <code>host</code>.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.Function1#andThen" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="andThen[A](g:R=&gt;A):T1=&gt;A"></a><a id="andThen[A]((Future[Response])⇒A):(Request)⇒A"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#andThen[A](g:R=&gt;A):T1=&gt;A" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">andThen</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="g">g: (<a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]) ⇒ <span class="extype" name="scala.Function1.andThen.A">A</span></span>)</span><span class="result">: (<a href="Request.html" class="extype" name="lol.http.Request">Request</a>) ⇒ <span class="extype" name="scala.Function1.andThen.A">A</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function1</dd><dt>Annotations</dt><dd>
-                <span class="name">@unspecialized</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li name="lol.http.Client#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="apply(request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration):scala.concurrent.Future[lol.http.Response]"></a><a id="apply(Request,Boolean,FiniteDuration):Future[Response]"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#apply(request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration):scala.concurrent.Future[lol.http.Response]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>, <span name="timeout">timeout: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a> = <span class="symbol">FiniteDuration(30, &quot;seconds&quot;)</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Send a request to the server and eventually give back the response.</p><div class="fullcomment"><div class="comment cmt"><p>Send a request to the server and eventually give back the response.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>maximum amount of time allowed to retrieve the response.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually the HTTP response.</p></dd></dl></div>
-    </li><li name="lol.http.Client#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="apply(request:lol.http.Request):scala.concurrent.Future[lol.http.Response]"></a><a id="apply(Request):Future[Response]"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#apply(request:lol.http.Request):scala.concurrent.Future[lol.http.Response]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Send a request to the server and eventually give back the response.</p><div class="fullcomment"><div class="comment cmt"><p>Send a request to the server and eventually give back the response.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually the HTTP response.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="lol.http.Client">Client</a> → Function1</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -586,7 +452,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#clone():Object" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -605,29 +471,10 @@ and set to the value of the client <code>host</code>.
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scala.Function1#compose" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="compose[A](g:A=&gt;T1):A=&gt;R"></a><a id="compose[A]((A)⇒Request):(A)⇒Future[Response]"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#compose[A](g:A=&gt;T1):A=&gt;R" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">compose</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="g">g: (<span class="extype" name="scala.Function1.compose.A">A</span>) ⇒ <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>)</span><span class="result">: (<span class="extype" name="scala.Function1.compose.A">A</span>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Function1</dd><dt>Annotations</dt><dd>
-                <span class="name">@unspecialized</span><span class="args">()</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -643,7 +490,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#equals(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#equals(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -659,7 +506,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#finalize():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -681,7 +528,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#getClass():Class[_]" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -697,7 +544,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#hashCode():Int" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#hashCode():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -710,26 +557,10 @@ and set to the value of the client <code>host</code>.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="lol.http.Client#isClosed" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="isClosed:Boolean"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#isClosed:Boolean" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">isClosed</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">Check if this client is already closed (ie.</p><div class="fullcomment"><div class="comment cmt"><p>Check if this client is already closed (ie. it does not accept any more requests).</p></div></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -745,7 +576,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -761,7 +592,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#notify():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -777,7 +608,7 @@ and set to the value of the client <code>host</code>.
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#notifyAll():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -790,76 +621,10 @@ and set to the value of the client <code>host</code>.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="lol.http.Client#openedConnections" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="openedConnections:Int"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#openedConnections:Int" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">openedConnections</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">The number of TCP connections currently opened with the remote server.</p>
-    </li><li name="lol.http.Client#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration)(thunk:lol.http.Response=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]"></a><a id="run[A](Request,Boolean,FiniteDuration)((Response)⇒Future[A]):Future[A]"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration)(thunk:lol.http.Response=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">run</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="timeout">timeout: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a> = <span class="symbol">FiniteDuration(30, &quot;seconds&quot;)</span></span>)</span><span class="params">(<span name="thunk">thunk: (<a href="Response.html" class="extype" name="lol.http.Response">Response</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.run.A">A</span>] = <span class="defval" name="(_: Response) =&gt; Future.successful(())">...</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.run.A">A</span>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Send this request to the server, eventually run the given function and return the result.</p><div class="fullcomment"><div class="comment cmt"><p>Send this request to the server, eventually run the given function and return the result.
-This operation ensures that the response content stream is fully read even if the provided
-user code do not consume it. The response is drained as soon as the <code>f</code> function returns.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects. Default to true.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>maximum amount of time allowed to retrieve the response and extract the return value.</p></dd><dt class="param">thunk</dt><dd class="cmt"><p>a function that eventually receive the response and transform it to a value of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
-    </li><li name="lol.http.Client#runAndStop" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="runAndStop[A](thunk:lol.http.Client=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]"></a><a id="runAndStop[A]((Client)⇒Future[A]):Future[A]"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#runAndStop[A](thunk:lol.http.Client=&gt;scala.concurrent.Future[A]):scala.concurrent.Future[A]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">runAndStop</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="thunk">thunk: (<a href="" class="extype" name="lol.http.Client">Client</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.runAndStop.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Client.runAndStop.A">A</span>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Run the given function and close the client.</p><div class="fullcomment"><div class="comment cmt"><p>Run the given function and close the client.</p></div><dl class="paramcmts block"><dt class="param">thunk</dt><dd class="cmt"><p>a function that take a client and eventually return a value of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
-    </li><li name="lol.http.Client#stop" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="stop():scala.concurrent.Future[Unit]"></a><a id="stop():Future[Unit]"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#stop():scala.concurrent.Future[Unit]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">stop</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Stop the client and kill all current and waiting requests.</p><div class="fullcomment"><div class="comment cmt"><p>Stop the client and kill all current and waiting requests.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a Future resolved as soon as the client is shutdown.</p></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -872,10 +637,10 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="lol.http.Client#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#toString():String" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#toString():String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -887,11 +652,11 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="lol.http.Client">Client</a> → Function1 → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#wait():Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -913,7 +678,7 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -935,7 +700,7 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -954,6 +719,42 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="lol.http.ServerSentEvents.EventDecoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EventDecoder"></a><a id="EventDecoder:EventDecoder"></a>
+      <span class="permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#EventDecoder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="Provides default EventDecoders." href="ServerSentEvents$$EventDecoder$.html">
+              <span class="name">EventDecoder</span>
+            </a>
+      </span>
+      
+      <p class="shortcomment cmt">Provides default EventDecoders.</p>
+    </li><li name="lol.http.ServerSentEvents.EventEncoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EventEncoder"></a><a id="EventEncoder:EventEncoder"></a>
+      <span class="permalink">
+      <a href="../../lol/http/ServerSentEvents$.html#EventEncoder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="Provides default EventEncoders." href="ServerSentEvents$$EventEncoder$.html">
+              <span class="name">EventEncoder</span>
+            </a>
+      </span>
+      
+      <p class="shortcomment cmt">Provides default EventEncoders.</p>
     </li>
               </ol>
             </div>
@@ -964,9 +765,7 @@ user code do not consume it. The response is drained as soon as the <code>f</cod
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.Function1">
-              <h3>Inherited from (<a href="Request.html" class="extype" name="lol.http.Request">Request</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</h3>
-            </div><div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></h3>

@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.4.0 - lol.http</title>
-          <meta name="description" content="lolhttp 0.4.0 - lol.http" />
-          <meta name="keywords" content="lolhttp 0.4.0 lol.http" />
+          <title>lolhttp 0.4.1 - lol.http</title>
+          <meta name="description" content="lolhttp 0.4.1 - lol.http" />
+          <meta name="keywords" content="lolhttp 0.4.1 lol.http" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.4.0</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.4.1</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -150,24 +150,6 @@ A service function takes a <a href="Request.html" class="extype" name="lol.http.
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
 of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
 It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
-    </li><li name="lol.http.internal" visbl="pub" class="indented3 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="internal"></a><a id="internal:internal"></a>
-      <span class="permalink">
-      <a href="../../lol/http/index.html#internal" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">package</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="internal/index.html">
-              <span class="name">internal</span>
-            </a>
-      </span>
-      
-      
     </li><li class="current-entities indented2">
                         <a class="object" href="ClasspathResource$.html" title="Define the implicit encoder for ClasspathResource."></a>
                         <a class="class" href="ClasspathResource.html" title="A resource than can be read from the classpath."></a>
@@ -269,6 +251,12 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                         <a class="class" href="ServerOptions.html" title="Allow to configure an HTTP server."></a>
                         <a href="ServerOptions.html" title="Allow to configure an HTTP server.">
                           ServerOptions
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="object" href="ServerSentEvents$.html" title="Support for Server Sent Events content."></a>
+                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">
+                          ServerSentEvents
                         </a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
@@ -442,9 +430,8 @@ is allowed. For example <code>ClasspathResource(&quot;/public/../public/index.ht
 }</pre><p>An HTTP client is a <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> function. It handles HTTP requests
 and eventually returns HTTP responses.</p><p>A client maintains several TCP connections to the remote server. These connections
 are used to send requests and are blocked until the corresponding response has been
-received. If no connection is available when a new request comes, it is pushed to a
-bounded queue of <code>maxWaiters</code> size. As soon as this queue is full, the client starts
-rejecting new requests.</p><p>It is important that the user code completly consumes the response content stream, so
+received. If no connection is available when a new request comes, it waits for
+connectionTimeout time for one connection to become available.</p><p>It is important that the user code completly consumes the response content stream, so
 the connection is freed for the next request. That's why it is better to use the <code>run</code>
 operation if possible since this one automatically drains the request upon return.</p><p>If the request to execute does not specify an Host header, it will be automatically added
 and set to the value of the client <code>host</code>.
@@ -679,7 +666,7 @@ can be consumed lazily if needed.
       <span class="symbol">
         <a title="An HTTP response." href="Response.html">
               <span class="name">Response</span>
-            </a><span class="params">(<span name="status">status: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="upgradeConnection">upgradeConnection: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>] = <span class="symbol">_ =&gt; Stream.empty</span></span>)</span><span class="result"> extends <a href="internal/FutureLikeResponse.html" class="extype" name="lol.http.internal.FutureLikeResponse">FutureLikeResponse</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+            </a><span class="params">(<span name="status">status: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="upgradeConnection">upgradeConnection: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>] = <span class="symbol">_ =&gt; Stream.empty</span></span>)</span><span class="result"> extends <span class="extype" name="lol.http.internal.FutureLikeResponse">FutureLikeResponse</span> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP response.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP response.</p><p>Represent all the data available in the HTTP response headers, and the response content that
@@ -1075,6 +1062,38 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
       </span>
       
       <p class="shortcomment cmt">Create a 426 Upgrade required <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Create a 426 Upgrade required <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></div><dl class="paramcmts block"><dt class="param">protocol</dt><dd class="cmt"><p>the new protocol the server want to switch to.</p></dd></dl></div>
+    </li><li name="lol.http#sseDecoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sseDecoder[A](impliciteventDecoder:lol.http.ServerSentEvents.EventDecoder[A]):lol.http.ContentDecoder[fs2.Stream[fs2.Task,lol.http.ServerSentEvents.Event[A]]]"></a><a id="sseDecoder[A](EventDecoder[A]):ContentDecoder[Stream[Task,Event[A]]]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#sseDecoder[A](impliciteventDecoder:lol.http.ServerSentEvents.EventDecoder[A]):lol.http.ContentDecoder[fs2.Stream[fs2.Task,lol.http.ServerSentEvents.Event[A]]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sseDecoder</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="eventDecoder">eventDecoder: <a href="ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<span class="extype" name="lol.http.sseDecoder.A">A</span>]</span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="ServerSentEvents$$Event.html" class="extype" name="lol.http.ServerSentEvents.Event">Event</a>[<span class="extype" name="lol.http.sseDecoder.A">A</span>]]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Support for Server Sent Events decoding.</p>
+    </li><li name="lol.http#sseEncoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sseEncoder[A](impliciteventEncoder:lol.http.ServerSentEvents.EventEncoder[A]):lol.http.ContentEncoder[fs2.Stream[fs2.Task,lol.http.ServerSentEvents.Event[A]]]"></a><a id="sseEncoder[A](EventEncoder[A]):ContentEncoder[Stream[Task,Event[A]]]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#sseEncoder[A](impliciteventEncoder:lol.http.ServerSentEvents.EventEncoder[A]):lol.http.ContentEncoder[fs2.Stream[fs2.Task,lol.http.ServerSentEvents.Event[A]]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sseEncoder</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="eventEncoder">eventEncoder: <a href="ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<span class="extype" name="lol.http.sseEncoder.A">A</span>]</span>)</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="ServerSentEvents$$Event.html" class="extype" name="lol.http.ServerSentEvents.Event">Event</a>[<span class="extype" name="lol.http.sseEncoder.A">A</span>]]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Support for Server Sent Events encoding.</p>
     </li><li name="lol.http.ClasspathResource" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ClasspathResource"></a><a id="ClasspathResource:ClasspathResource"></a>
       <span class="permalink">
@@ -1322,6 +1341,27 @@ if you provide an appropriate ExecutionContext (just note that if the ExecutionC
 blocked, the HTTP server is fully blocked).</p><p>The service function will be called by the server as soon as new HTTP request header has been received.
 The server also set up a lazy stream for the body. User code can pull from this stream and consume it
 if needed. Otherwise it will be drained after exchange completion (ie. when the response has been fully sent).</p><p>The response value returned by the servcie function will be transfered back to the client.
+</p></div></div>
+    </li><li name="lol.http.ServerSentEvents" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ServerSentEvents"></a><a id="ServerSentEvents:ServerSentEvents"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#ServerSentEvents" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="Support for Server Sent Events content." href="ServerSentEvents$.html">
+              <span class="name">ServerSentEvents</span>
+            </a>
+      </span>
+      
+      <p class="shortcomment cmt">Support for Server Sent Events content.</p><div class="fullcomment"><div class="comment cmt"><p>Support for Server Sent Events content. It allows a server to stream
+events to a client. Events are string (utf-8) encoded, and a proper
+<code>EventEncoder</code> or <code>EventDecoded</code> must be available for your event payload type.
 </p></div></div>
     </li><li name="lol.http.at" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="at"></a><a id="at:at"></a>

@@ -6,7 +6,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext, Future}
 import scala.util.{Success, Try}
 
-trait FutureLikeResponse extends Future[Response] {
+private[http] trait FutureLikeResponse extends Future[Response] {
   self: Response =>
   def ready(atMost: Duration)(implicit permit: CanAwait) = this
 

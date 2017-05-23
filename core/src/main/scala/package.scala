@@ -18,7 +18,7 @@ import scala.concurrent.{ Future }
   *
   * Provides an HTTP [[Client]] and an HTTP [[Server]]. Both client and server are [[Service]] functions.
   * A service function takes a [[Request]] and eventually returns a [[Response]]. Requests and responses
-  * are shared between the client and the server API, making it easy to assemble them. Both are seen as a set 
+  * are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
   * of [[HttpString HTTP headers]], and a [[Content]] body.
   *
   * The content [[fs2.Stream Stream]] is based on [[fs2]] and can be lazily consumed if needed.
@@ -199,4 +199,11 @@ package object http {
       }
     }
   }
+
+  /** Support for Server Sent Events encoding. */
+  implicit def sseEncoder[A](implicit eventEncoder: ServerSentEvents.EventEncoder[A]) = ServerSentEvents.encoder(eventEncoder)
+
+  /** Support for Server Sent Events decoding. */
+  implicit def sseDecoder[A](implicit eventDecoder: ServerSentEvents.EventDecoder[A]) = ServerSentEvents.decoder(eventDecoder)
+
 }

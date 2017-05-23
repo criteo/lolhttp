@@ -21,7 +21,12 @@ object Panic {
   * @param code the error code.
   * @param msg the error message.
   */
-case class Error(code: Int, msg: String) extends RuntimeException(msg)
+case class Error(code: Int, msg: String) extends RuntimeException(msg) {
+  override def equals(other: Any) = other match {
+    case Error(otherCode, _) if otherCode == code => true
+    case _ => false
+  }
+}
 
 /** All expected errors. */
 object Error {
@@ -48,11 +53,14 @@ object Error {
   val ClasspathResourceMissing = Error(8, "Classpath resource does not exist")
 
   /** The url matcher pattern is invalid. */
-  def InvalidUrlMatcher(msg: String) = Error(9, s"Invalid url matcher pattern: $msg")
+  def InvalidUrlMatcher(msg: String = "") = Error(9, s"Invalid url matcher pattern: $msg")
 
   /** The status code was unexpected. */
-  def UnexpectedStatus(msg: String) = Error(10, msg)
+  def UnexpectedStatus(msg: String = "Unexpected status code") = Error(10, msg)
 
   /** An operaion timed out. **/
-  def Timeout(duration: FiniteDuration) = Error(11, s"Operation timed out after $duration")
+  def Timeout(duration: FiniteDuration = FiniteDuration(0, "ms")) = Error(11, s"Operation timed out after $duration")
+
+  /** The content type was unexpected. **/
+  def UnexpectedContentType(msg: String = "Unexpected content type") = Error(12, msg)
 }

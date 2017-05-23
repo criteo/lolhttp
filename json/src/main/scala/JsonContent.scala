@@ -37,4 +37,14 @@ object JsonContent {
     }
   }
 
+  /** A encoder for Server Sent Events. */
+  def sseEventEncoder: ServerSentEvents.EventEncoder[Json] = new ServerSentEvents.EventEncoder[Json] {
+    def apply(data: Json) = data.noSpaces
+  }
+
+  /** A decoder for Server Sent Events. */
+  def sseEventDecoder: ServerSentEvents.EventDecoder[Json] = new ServerSentEvents.EventDecoder[Json] {
+    def apply(data: String) = parse(data).fold(Task.fail, Task.now)
+  }
+
 }

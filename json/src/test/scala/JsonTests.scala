@@ -2,6 +2,10 @@ package lol.json
 
 import lol.http._
 
+import ServerSentEvents._
+
+import fs2.{ Task, Stream }
+
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
@@ -90,5 +94,23 @@ class JsonTests extends Tests {
       }
     }
   }
+
+  test("JSON over Server Sent Events") {
+    withServer(Server.listen() {
+      case url"/stream" =>
+        Ok(Stream(Event(Json.obj("hello" -> "world".asJson)), Event(Json.Null), Event(12.asJson)))
+    }) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          client.run(Get("/stream")) { response =>
+            response.readAs[Stream[Task,Event[Json]]].flatMap { eventStream =>
+              eventStream.runLog.map(_.toList).unsafeRunAsyncFuture
+            }
+          }
+        }
+      } should be (List(Event(Json.obj("hello" -> "world".asJson)), Event(Json.Null), Event(12.asJson)))
+    }
+  }
+
 
 }

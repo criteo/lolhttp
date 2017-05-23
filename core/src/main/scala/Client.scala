@@ -237,8 +237,10 @@ trait Client extends Service {
                             connection.close.unsafeRun()
                           }
                         })
-                    }
-                  // XXX: Content headers
+                    },
+                  headers = nettyResponse.headers.asScala.map { h =>
+                    (HttpString(h.getKey), HttpString(h.getValue))
+                  }.toMap.filter(_._1.toString.toLowerCase.startsWith("content-"))
               ),
             upgradeConnection = nettyResponse.status.code match {
               case 101 => (upstream) =>

@@ -32,6 +32,12 @@ package object json {
     **/
   implicit val defaultJsonDecoder = JsonContent.decoder()
 
+  /** JSON support for Server Sent Events. */
+  implicit val sseJsonEventEncoder = JsonContent.sseEventEncoder
+
+  /** JSON support for Server Sent Events. */
+  implicit val sseJsonEventDecoder = JsonContent.sseEventDecoder
+
   /** Creates a [[lol.http.ContentDecoder ContentDecoder]] for any type `A` given that there is an available
     * circe JSON decoder for `A`.
     * @param jsonDecoder the circe JSON decoder for type `A`.

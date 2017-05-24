@@ -1,4 +1,4 @@
-val VERSION = "0.4.1"
+val VERSION = "0.4.2"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
@@ -107,7 +107,7 @@ lazy val lolhttp =
   settings(
     libraryDependencies ++= Seq(
       "co.fs2" %% "fs2-core" % "0.9.5",
-      "io.netty" % "netty-codec-http2" % "4.1.9.Final",
+      "io.netty" % "netty-codec-http2" % "4.1.11.Final",
       "org.bouncycastle" % "bcpkix-jdk15on" % "1.56",
       "org.bouncycastle" % "bcprov-jdk15on" % "1.56",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"

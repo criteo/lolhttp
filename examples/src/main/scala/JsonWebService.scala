@@ -60,22 +60,17 @@ object JsonWebService {
   // to create, list, update and delete todos.
   lazy val Api: PartialService = {
 
-    // This matcher will only match GET Http requests specifying the done parameter
-    // in their query string.
+    // This matcher will only match GET for the `/api/todos path`. If a done parameter
+    // is present in the incoming queryString it will be bound to the `doneFilter` value.
     case GET at url"/api/todos?done=$doneFilter" =>
-      Try(doneFilter.toBoolean) match {
-        // If the done parameter value was not a boolean value, we fail with a `BadRequest`
-        // response.
-        case Failure(_) =>
-          BadRequest(Error(s"Invalid value for the done parameter: `$doneFilter'"))
+      Try(doneFilter.toBoolean).toOption match {
+        // If the done parameter value was missing or was not a boolean value we return everything.
+        case None =>
+          Ok(todos.values.toSeq.sortBy(_.id).asJson)
         // Otherwise we extract the actual list of todos and we transform it into a Json array.
-        case Success(isDone) =>
+        case Some(isDone) =>
           Ok(todos.values.toSeq.filter(_.done == isDone).sorted.asJson)
       }
-
-    // Same as before, but here we match requests without the done parameter in the query string.
-    case GET at url"/api/todos" =>
-      Ok(todos.values.toSeq.sortBy(_.id).asJson)
 
     // For this one, we actually need to get a reference of the request value, because we want
     // to consume it's json content.

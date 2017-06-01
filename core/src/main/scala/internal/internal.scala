@@ -34,7 +34,7 @@ package object internal {
     }.getOrElse("application/octet-stream")
   }
 
-  val timer = new Timer("lol.http.internal.timer", true)
+  lazy val timer = new Timer("lol.http.internal.timer", true)
   def timeout[A](a: => A, duration: FiniteDuration): Future[A] = {
     val e = Promise[A]
     timer.schedule(new TimerTask { def run(): Unit = e.success(a) }, duration.toMillis)

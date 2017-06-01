@@ -1,4 +1,4 @@
-import lol.http._
+package lol.http
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

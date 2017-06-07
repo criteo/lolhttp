@@ -370,31 +370,23 @@ to create, list, update and delete todos.</p></p></div>
               </section>
             
               <section class="">
-                <div class="comment "><p>This matcher will only match GET Http requests specifying the done parameter
-in their query string.</p></p></div>
+                <div class="comment "><p>This matcher will only match GET for the <code>/api/todos path</code>. If a done parameter
+is present in the incoming queryString it will be bound to the <code>doneFilter</code> value.</p></p></div>
                 <div class="code ">    <span class="keyword">case</span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/package$.html#GET=>lol.http.HttpMethod" data-tooltip="<span>lol.http.GET: lol.http.HttpMethod</span>">GET</a></span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/at$.html" data-tooltip="<span>lol.http.at</span>">at</a></span> <span class="number">url</span>"<span class="number">/api/todos?done=$</span><span class="identifier">doneFilter</span><span class="string">"</span> =>
-      <span class="identifier">Try</span>(<span class="identifier">doneFilter</span>.<span class="identifier">toBoolean</span>) <span class="keyword">match</span> {&nbsp;</div>
+      <span class="identifier">Try</span>(<span class="identifier">doneFilter</span>.<span class="identifier">toBoolean</span>).<span class="identifier">toOption</span> <span class="keyword">match</span> {&nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>If the done parameter value was not a boolean value, we fail with a <code>BadRequest</code>
-response.</p></p></div>
-                <div class="code ">        <span class="keyword">case</span> <span class="identifier">Failure</span>(_) =>
-          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A])lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">BadRequest</a></span>(<span class="identifier">Error</span>(<span class="number">s</span>"<span class="number">Invalid value for the done parameter: `$</span><span class="identifier">doneFilter</span><span class="string">'"</span>))&nbsp;</div>
+                <div class="comment "><p>If the done parameter value was missing or was not a boolean value we return everything.</p></p></div>
+                <div class="code ">        <span class="keyword">case</span> <span class="identifier">None</span> =>
+          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A])lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="identifier">todos</span>.<span class="identifier">values</span>.<span class="identifier">toSeq</span>.<span class="identifier">sortBy</span>(_.<span class="identifier">id</span>).<span class="identifier">asJson</span>)&nbsp;</div>
               </section>
             
               <section class="">
                 <div class="comment "><p>Otherwise we extract the actual list of todos and we transform it into a Json array.</p></p></div>
-                <div class="code ">        <span class="keyword">case</span> <span class="identifier">Success</span>(<span class="identifier">isDone</span>) =>
+                <div class="code ">        <span class="keyword">case</span> <span class="identifier">Some</span>(<span class="identifier">isDone</span>) =>
           <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A])lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="identifier">todos</span>.<span class="identifier">values</span>.<span class="identifier">toSeq</span>.<span class="identifier">filter</span>(_.<span class="identifier">done</span> <span class="identifier">==</span> <span class="identifier">isDone</span>).<span class="identifier">sorted</span>.<span class="identifier">asJson</span>)
       }
-&nbsp;</div>
-              </section>
-            
-              <section class="">
-                <div class="comment "><p>Same as before, but here we match requests without the done parameter in the query string.</p></p></div>
-                <div class="code ">    <span class="keyword">case</span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/package$.html#GET=>lol.http.HttpMethod" data-tooltip="<span>lol.http.GET: lol.http.HttpMethod</span>">GET</a></span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/at$.html" data-tooltip="<span>lol.http.at</span>">at</a></span> <span class="number">url</span>"<span class="string">/api/todos"</span> =>
-      <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A])lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="identifier">todos</span>.<span class="identifier">values</span>.<span class="identifier">toSeq</span>.<span class="identifier">sortBy</span>(_.<span class="identifier">id</span>).<span class="identifier">asJson</span>)
 &nbsp;</div>
               </section>
             

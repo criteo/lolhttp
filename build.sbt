@@ -1,10 +1,10 @@
-val VERSION = "0.4.2"
+val VERSION = "0.4.3"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
   scalaVersion := "2.12.2",
-  crossScalaVersions := Seq("2.11.8", "2.12.2"),
+  crossScalaVersions := Seq("2.11.11", "2.12.2"),
   scalacOptions ++= Seq(
     "-deprecation",
     "-encoding", "UTF-8",

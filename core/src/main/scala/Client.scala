@@ -20,6 +20,7 @@ import io.netty.handler.codec.http.{
 
 import fs2.{ async, Stream, Task, Strategy }
 
+import java.util.concurrent.{ TimeUnit }
 import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
@@ -89,24 +90,31 @@ trait Client extends Service {
   implicit def executor: ExecutionContext
   private implicit lazy val S = Strategy.fromExecutionContext(executor)
 
-  private lazy val eventLoop = new NioEventLoopGroup(options.ioThreads)
-  private lazy val bootstrap = new Bootstrap().
-    group(eventLoop).
-    channel(classOf[NioSocketChannel]).
-    remoteAddress(host, port).
-    handler(new ChannelInitializer[SocketChannel] {
-    override def initChannel(channel: SocketChannel) = {
-      channel.config.setTcpNoDelay(options.tcpNoDelay)
-      options.bufferSize.foreach { size =>
-        channel.config.setReceiveBufferSize(size)
-        channel.config.setSendBufferSize(size)
+  private class NettyClient {
+    private val eventLoop = new NioEventLoopGroup(options.ioThreads)
+    private val bootstrap = new Bootstrap().
+      group(eventLoop).
+      channel(classOf[NioSocketChannel]).
+      remoteAddress(host, port).
+      handler(new ChannelInitializer[SocketChannel] {
+      override def initChannel(channel: SocketChannel) = {
+        channel.config.setTcpNoDelay(options.tcpNoDelay)
+        options.bufferSize.foreach { size =>
+          channel.config.setReceiveBufferSize(size)
+          channel.config.setSendBufferSize(size)
+        }
+        Option(scheme).filter(_ == "https").foreach { _ =>
+          val sslCtx = new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)
+          channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
+        }
       }
-      Option(scheme).filter(_ == "https").foreach { _ =>
-        val sslCtx = new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)
-        channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
-      }
+    })
+    def connect() = bootstrap.connect().toFuture
+    def shutdown() = {
+      eventLoop.shutdownGracefully(0, 0, TimeUnit.MILLISECONDS)
     }
-  })
+  }
+  private lazy val nettyClient = new NettyClient
 
   // -- Connection pool
   private lazy val closed = new AtomicBoolean(false)
@@ -150,7 +158,7 @@ trait Client extends Service {
       Option(availableConnections.poll).filter(_.isOpen).map(Future.successful).getOrElse {
         if(liveConnections.get < maxConnections) {
           liveConnections.incrementAndGet()
-          bootstrap.connect().toFuture.
+          nettyClient.connect().
             map(c => Netty.clientConnection(c.asInstanceOf[SocketChannel], options.debug)).
             andThen {
               case Success(c) =>
@@ -177,7 +185,7 @@ trait Client extends Service {
     Future.sequence(connections.asScala.map(_.close.unsafeRunAsyncFuture)).map { _ =>
       if(liveConnections.intValue != 0) Panic.!!!()
     }.andThen { case _ =>
-      eventLoop.shutdownGracefully()
+      nettyClient.shutdown()
     }
   }
 

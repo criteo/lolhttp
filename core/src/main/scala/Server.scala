@@ -9,7 +9,6 @@ import io.netty.channel.socket.nio.{ NioServerSocketChannel }
 import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
-import io.netty.handler.ssl.{ JdkSslContext, ClientAuth }
 import io.netty.handler.codec.http.{
   DefaultHttpResponse,
   HttpRequest,
@@ -56,7 +55,7 @@ trait Server extends Service {
   def socketAddress: InetSocketAddress
 
   /** @return the SSL configuration if enabled. */
-  def ssl: Option[SSL.Configuration]
+  def ssl: Option[SSL.ServerConfiguration]
 
   /** @return the server options such as the number of IO thread used. */
   def options: ServerOptions
@@ -116,7 +115,7 @@ object Server {
   def listen(
     port: Int = 0,
     address: String = "0.0.0.0",
-    ssl: Option[SSL.Configuration] = None,
+    ssl: Option[SSL.ServerConfiguration] = None,
     options: ServerOptions = ServerOptions(),
     onError: (Throwable => Response) = defaultErrorHandler
   )(service: Service)(implicit executor: ExecutionContext): Server = {
@@ -140,8 +139,7 @@ object Server {
             channel.config.setSendBufferSize(size)
           }
           ssl.foreach { ssl =>
-            val sslCtx = new JdkSslContext(ssl.ctx, false, ClientAuth.NONE)
-            channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
+            channel.pipeline.addLast("SSL", ssl.ctx.newHandler(channel.alloc()))
           }
           val connection = Netty.serverConnection(channel, options.debug)
 

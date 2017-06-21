@@ -10,7 +10,6 @@ import io.netty.bootstrap.{ Bootstrap }
 import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.channel.socket.nio.{ NioSocketChannel }
-import io.netty.handler.ssl.{ JdkSslContext, ClientAuth }
 import io.netty.handler.codec.http.{
   HttpUtil,
   DefaultHttpRequest,
@@ -75,7 +74,7 @@ trait Client extends Service {
   def scheme: String
 
   /** The SSL configuration used by the client. Must be provided if the server certificate is not recognized by default. */
-  def ssl: SSL.Configuration
+  def ssl: SSL.ClientConfiguration
 
   /** The client options such as the number of IO thread used. */
   def options: ClientOptions
@@ -104,8 +103,7 @@ trait Client extends Service {
           channel.config.setSendBufferSize(size)
         }
         Option(scheme).filter(_ == "https").foreach { _ =>
-          val sslCtx = new JdkSslContext(ssl.ctx, true, ClientAuth.NONE)
-          channel.pipeline.addLast("SSL", sslCtx.newHandler(channel.alloc()))
+          channel.pipeline.addLast("SSL", ssl.ctx.newHandler(channel.alloc()))
         }
       }
     })
@@ -398,7 +396,7 @@ object Client {
     host: String,
     port: Int = 80,
     scheme: String = "http",
-    ssl: SSL.Configuration = SSL.Configuration.default,
+    ssl: SSL.ClientConfiguration = SSL.ClientConfiguration.default,
     options: ClientOptions = ClientOptions(),
     maxConnections: Int = 10,
     connectionTimeout: FiniteDuration = 5 seconds
@@ -433,7 +431,7 @@ object Client {
     options: ClientOptions = ClientOptions(ioThreads = 1)
   )
   (thunk: Response => Future[A] = (_: Response) => Future.successful(()))
-  (implicit executor: ExecutionContext, ssl: SSL.Configuration): Future[A] = {
+  (implicit executor: ExecutionContext, ssl: SSL.ClientConfiguration): Future[A] = {
     request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.toString.split("[:]").toList match {
         case host :: port :: Nil if Try(port.toInt).isSuccess =>

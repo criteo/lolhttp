@@ -4,7 +4,7 @@ import scala.util._
 import scala.concurrent._
 import scala.concurrent.duration._
 
-private[http] case class KillableFuture[+A](wrapped: Future[A], cancel: () => Unit) extends Future[A] {
+private[http] case class KillableFuture[+A](wrapped: Future[A], cancel: () => Unit = () => ()) extends Future[A] {
   def ready(atMost: Duration)(implicit permit: CanAwait) = { wrapped.ready(atMost); this }
   def result(atMost: Duration)(implicit permit: CanAwait): A = wrapped.result(atMost)
   def isCompleted: Boolean = wrapped.isCompleted

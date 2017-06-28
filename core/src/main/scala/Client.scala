@@ -10,16 +10,9 @@ import io.netty.bootstrap.{ Bootstrap }
 import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.channel.socket.nio.{ NioSocketChannel }
-import io.netty.handler.codec.http.{
-  HttpUtil,
-  DefaultHttpRequest,
-  HttpResponse,
-  HttpVersion => NettyHttpVersion,
-  HttpMethod => NettyHttpMethod }
 
-import fs2.{ async, Stream, Task, Strategy }
+import fs2.{ Strategy }
 
-import java.util.concurrent.{ TimeUnit }
 import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
@@ -106,7 +99,7 @@ trait Client extends Service {
     })
     def connect() = bootstrap.connect().toFuture
     def shutdown() = {
-      eventLoop.shutdownGracefully(0, 0, TimeUnit.MILLISECONDS)
+      eventLoop.shutdownGracefully()
     }
   }
   private lazy val nettyClient = new NettyClient
@@ -114,9 +107,9 @@ trait Client extends Service {
   // -- Connection pool
   private lazy val closed = new AtomicBoolean(false)
   private lazy val liveConnections = new AtomicLong(0)
-  private lazy val connections = new ArrayBlockingQueue[HttpConnection](maxConnections)
-  private lazy val availableConnections = new ArrayBlockingQueue[HttpConnection](maxConnections)
-  private lazy val waiters = new LinkedBlockingQueue[Promise[HttpConnection]]()
+  private lazy val connections = new ArrayBlockingQueue[ClientConnection](maxConnections)
+  private lazy val availableConnections = new ArrayBlockingQueue[ClientConnection](maxConnections)
+  private lazy val waiters = new LinkedBlockingQueue[Promise[ClientConnection]]()
 
   /** The number of TCP connections currently opened with the remote server. */
   def openedConnections: Int = liveConnections.intValue
@@ -125,8 +118,8 @@ trait Client extends Service {
   /** Check if this client is already closed (ie. it does not accept any more requests). */
   def isClosed: Boolean = closed.get
 
-  private def waitConnection(): KillableFuture[HttpConnection] = {
-    val p = Promise[HttpConnection]
+  private def waitConnection(): KillableFuture[ClientConnection] = {
+    val p = Promise[ClientConnection]
     waiters.offer(p)
     KillableFuture(
       p.future,
@@ -134,19 +127,19 @@ trait Client extends Service {
     )
   }
 
-  private def destroyConnection(c: HttpConnection): Unit = {
+  private def destroyConnection(c: ClientConnection): Unit = {
     availableConnections.remove(c)
     if(!connections.remove(c)) Panic.!!!()
     liveConnections.decrementAndGet()
   }
 
-  private def releaseConnection(c: HttpConnection): Unit = {
+  private def releaseConnection(c: ClientConnection): Unit = {
     if(c.isOpen) Option(waiters.poll).fold {
       if(!availableConnections.offer(c)) Panic.!!!()
     } { _.success(c) }
   }
 
-  private def acquireConnection(): KillableFuture[HttpConnection] =
+  private def acquireConnection(): KillableFuture[ClientConnection] =
     if(closed.get) KillableFuture(Future.failed(Error.ClientAlreadyClosed)) else
     Option(availableConnections.poll).filter(_.isOpen).map(c => KillableFuture(Future.successful(c))).getOrElse {
       if(liveConnections.get < maxConnections) {
@@ -198,91 +191,17 @@ trait Client extends Service {
     * @return eventually the HTTP response.
     */
   def apply(request: Request): Future[Response] = {
-    @volatile var underlyingConnection: Option[HttpConnection] = None
+    @volatile var underlyingConnection: Option[ClientConnection] = None
     val eventuallyConnection = acquireConnection()
     KillableFuture(
       eventuallyConnection.flatMap { connection =>
         underlyingConnection = Some(connection)
-
-        // Create the correponding netty message
-        val nettyRequest = new DefaultHttpRequest(
-          NettyHttpVersion.HTTP_1_1,
-          new NettyHttpMethod(request.method.toString),
-          s"${request.path}${request.queryString.map(q => s"?$q").getOrElse("")}"
-        )
-        (request.content.headers ++ request.headers).foreach { case (key,value) =>
-          nettyRequest.headers.set(key.toString, value.toString)
-        }
-        // Automatically add the Host header if not specified in the incoming request.
-        if(!request.headers.contains(h"Host")) {
-          nettyRequest.headers.set("Host", this.host)
-        }
-
+        // (automatically add the Host header if not specified in the incoming request)
+        val requestWithHost =
+          if(request.headers.contains(h"Host")) request else request.addHeaders(h"Host" -> h"${this.host}")
         (for {
-          // write the request
-          _ <- connection.write(nettyRequest, request.content.stream)
-          // read the response
-          message <- connection.read()
-          (nettyResponse, contentStream) = (message._1.asInstanceOf[HttpResponse], message._2)
-          // track the number of readers
-          readers <- async.semaphore[Task](1)
-          upgradedReaders <- async.semaphore[Task](1)
-        } yield {
-          val response: Response = Response(
-            status = nettyResponse.status.code,
-            headers = nettyResponse.headers.asScala.map { h =>
-              (HttpString(h.getKey), HttpString(h.getValue))
-            }.toMap,
-            content =
-              Content(
-                stream =
-                  Stream.
-                    // The content stream can be read only once
-                    eval(readers.tryDecrement).flatMap {
-                      case false =>
-                        Stream.fail(Error.StreamAlreadyConsumed)
-                      case true =>
-                        contentStream.onFinalize(Task.delay {
-                          if(HttpUtil.isKeepAlive(nettyRequest) && HttpUtil.isKeepAlive(nettyResponse)) {
-                            releaseConnection(connection)
-                          }
-                          else {
-                            connection.close.unsafeRun()
-                          }
-                        })
-                    },
-                  headers = nettyResponse.headers.asScala.map { h =>
-                    (HttpString(h.getKey), HttpString(h.getValue))
-                  }.toMap.filter(_._1.toString.toLowerCase.startsWith("content-"))
-              ),
-            upgradeConnection = nettyResponse.status.code match {
-              case 101 => (upstream) =>
-                Stream.eval(readers.tryDecrement).
-                  flatMap {
-                    case false => Stream.emit(())
-                    // If user code did not read the response content yet,
-                    // we need to drain the content stream before upgrading
-                    // the connection.
-                    case true => Stream.eval(contentStream.drain.run)
-                  }.
-                  flatMap { _ =>
-                    Stream.eval(upgradedReaders.tryDecrement).
-                      flatMap {
-                        case false =>
-                          Stream.fail(Error.StreamAlreadyConsumed)
-                        case true =>
-                          Stream.eval(connection.upgrade()).flatMap { downstream =>
-                            downstream.
-                              merge((upstream to connection.writeBytes).drain).
-                              onFinalize(connection.close)
-                          }
-                      }
-                  }
-              case _ => _ => Stream.fail(Error.UpgradeRefused)
-            }
-          )
-          response
-        }).unsafeRunAsyncFuture()
+          response <- connection(requestWithHost, () => releaseConnection(connection))
+        } yield response).unsafeRunAsyncFuture()
       },
       () => {
         eventuallyConnection.cancel()

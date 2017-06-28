@@ -10,19 +10,23 @@ import io.netty.handler.ssl.util.{ InsecureTrustManagerFactory, SelfSignedCertif
 object SSL {
 
   /** SSL configuration for clients.  */
-  class ClientConfiguration private[http] (private[http] val ctx: SslContext)
+  class ClientConfiguration private[http] (private[http] val ctx: SslContext, name: String) {
+    override def toString = s"ClientConfiguration($ctx, $name)"
+  }
 
   /** SSL configuration for servers.  */
-  class ServerConfiguration private[http] (private[http] val ctx: SslContext)
+  class ServerConfiguration private[http] (private[http] val ctx: SslContext, name: String) {
+    override def toString = s"ServerConfiguration($ctx, $name)"
+  }
 
   /** Provides the default client SSL configuration. */
   object ClientConfiguration {
     /** The default SSL configuration. */
-    implicit val default = new ClientConfiguration({
+    implicit lazy val default = new ClientConfiguration({
       val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
       trustManagerFactory.init(null: KeyStore)
       SslContextBuilder.forClient.trustManager(trustManagerFactory).build()
-    })
+    }, "default")
   }
 
   /** A "Trust all" client configuration that will accept any certificate.
@@ -31,7 +35,7 @@ object SSL {
     */
   lazy val trustAll = new ClientConfiguration({
     SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build()
-  })
+  }, "trustAll")
 
   /** Generate an SSL server configuration with a self-signed certificate.
     * You can use it to start an HTTPS server with an insecure certificate.
@@ -40,6 +44,6 @@ object SSL {
   def selfSigned(fqdn: String = "localhost") = new ServerConfiguration({
     val ssc = new SelfSignedCertificate(fqdn)
     SslContextBuilder.forServer(ssc.certificate, ssc.privateKey).build()
-  })
+  }, s"selfSigned for $fqdn")
 
 }

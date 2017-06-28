@@ -9,17 +9,11 @@ import io.netty.channel.socket.nio.{ NioServerSocketChannel }
 import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
-import io.netty.handler.codec.http.{
-  DefaultHttpResponse,
-  HttpRequest,
-  HttpVersion => NettyHttpVersion,
-  HttpResponseStatus }
 import scala.util.{ Try }
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Promise, Future }
 import scala.concurrent.duration._
 
-import fs2.{ Stream, Task, Strategy, async }
+import fs2.{ Task, Strategy }
 
 import internal.NettySupport._
 
@@ -127,6 +121,39 @@ object Server {
         recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }
     }
 
+    // Setup an HTTP connection on the channel, and loop over incoming requests
+    def newConnection(channel: SocketChannel): Unit = {
+      val connection = Netty.serverConnection(channel, options.debug)
+      val asyncResult: PartialFunction[Either[Throwable,Unit],Unit] = {
+        case Right(_) =>
+        case Left(e) =>
+          if(channel.isOpen) channel.close()
+      }
+
+      // Loop over incoming request
+      def go(): Task[Unit] = for {
+        message <- connection()
+        (request, responseHandler) = message
+        // Handle the request in a totally asynchronous way,
+        // allowing the loop to pick the next available request ASAP
+        // if the underlying protocol does allow it (HTTP/1.1 pipelining
+        // or HTTP/2.0)
+        _ = (for {
+          // Apply user code and retrieve the response
+          response <- Task.fromFuture(serveRequest(request))
+          // If the user code did not open the content stream
+          // we need to drain it now
+          _ <- request.content.stream.drain.run.handle {
+            case Error.StreamAlreadyConsumed => ()
+          }
+          // Write the response message
+          _ <- responseHandler(response)
+        } yield ()).unsafeRunAsync(asyncResult)
+        _ <- Task.suspend { go() }
+      } yield ()
+      go().unsafeRunAsync(asyncResult)
+    }
+
     val eventLoop = new NioEventLoopGroup(options.ioThreads)
     val bootstrap = new ServerBootstrap().
       group(eventLoop).
@@ -138,77 +165,12 @@ object Server {
             channel.config.setReceiveBufferSize(size)
             channel.config.setSendBufferSize(size)
           }
-          ssl.foreach { ssl =>
-            channel.pipeline.addLast("SSL", ssl.ctx.newHandler(channel.alloc()))
-          }
-          val connection = Netty.serverConnection(channel, options.debug)
-
-          // Loop over incoming request
-          def go(): Task[Unit] = for {
-            // Read the next request
-            message <- connection.read()
-            (nettyRequest, contentStream) = (message._1.asInstanceOf[HttpRequest], message._2)
-            // Track the number of content readers
-            readers <- async.semaphore[Task](1)
-            // Apply user code and retrieve the response
-            response <- Task.fromFuture(serveRequest(Request(
-              method = HttpMethod(nettyRequest.method.name),
-              url = nettyRequest.uri,
-              scheme = if(ssl.isDefined) "https" else "http",
-              headers = nettyRequest.headers.asScala.map { h =>
-                (HttpString(h.getKey), HttpString(h.getValue))
-              }.toMap,
-              content = Content(
-                stream =
-                  Stream.
-                    // The content stream can be read only once
-                    eval(readers.tryDecrement).flatMap {
-                      case false =>
-                        Stream.fail(Error.StreamAlreadyConsumed)
-                      case true =>
-                        contentStream
-                    }
-                  // XXX: Content headers
-                )
-            )))
-            // If the user code did not open the content stream
-            // we need to drain it now.
-            _ <- readers.tryDecrement.flatMap {
-              case false =>
-                Task.now(())
-              case true =>
-                contentStream.drain.run
-            }
-            // Write the response message (will block until the content
-            // stream is fully read)
-            _ <- {
-              val nettyResponse = new DefaultHttpResponse(
-                NettyHttpVersion.HTTP_1_1,
-                HttpResponseStatus.valueOf(response.status)
-              )
-              (response.content.headers ++ response.headers).foreach { case (key,value) =>
-                nettyResponse.headers.set(key.toString, value.toString)
-              }
-              // Write the HTTP response
-              connection.write(nettyResponse, response.content.stream)
-            }
-            _ <- Task.suspend(
-              // Switch protocol if needed
-              if(response.status == 101) {
-                connection.upgrade().flatMap { upstream =>
-                  val downstream = response.upgradeConnection(upstream)
-                  (downstream to connection.writeBytes).drain.run
-                }
-              }
-              // Next!
-              else go()
-            )
-          } yield ()
-          go().unsafeRunAsync { case _ => if(channel.isOpen) channel.close() }
+          ssl.foreach(ssl => channel.pipeline.addLast("SSL", ssl.ctx.newHandler(channel.alloc())))
+          newConnection(channel)
         }
       })
     options.debug.foreach { logger =>
-      bootstrap.handler(new LoggingHandler(s"$logger",LogLevel.INFO))
+      bootstrap.handler(new LoggingHandler(s"$logger", LogLevel.INFO))
     }
 
     try {

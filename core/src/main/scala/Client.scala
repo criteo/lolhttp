@@ -52,8 +52,8 @@ case class ClientOptions(
  *
  * A client maintains several TCP connections to the remote server. These connections
  * are used to send requests and are blocked until the corresponding response has been
- * received. If no connection is available when a new request comes, it waits for
- * connectionTimeout time for one connection to become available.
+ * received. If no connection is available when a new request comes, it waits for one
+ * connection to become available.
  *
  * It is important that the user code completly consumes the response content stream, so
  * the connection is freed for the next request. That's why it is better to use the `run`
@@ -81,9 +81,6 @@ trait Client extends Service {
 
   /** The maximum number of TCP connections maintained with the remote server. */
   def maxConnections: Int
-
-  /** The maximum amount of time a request will wait to obtain an HTTP connection. */
-  def connectionTimeout: FiniteDuration
 
   /** The ExecutionContext that will be used to run the user code. */
   implicit def executor: ExecutionContext
@@ -128,12 +125,11 @@ trait Client extends Service {
   /** Check if this client is already closed (ie. it does not accept any more requests). */
   def isClosed: Boolean = closed.get
 
-  private def waitConnection(): Future[HttpConnection] = {
+  private def waitConnection(): KillableFuture[HttpConnection] = {
     val p = Promise[HttpConnection]
     waiters.offer(p)
-    withTimeout(
+    KillableFuture(
       p.future,
-      connectionTimeout,
       () => waiters.remove(p)
     )
   }
@@ -150,36 +146,46 @@ trait Client extends Service {
     } { _.success(c) }
   }
 
-  private def acquireConnection(): Future[HttpConnection] = {
-    withTimeout(
-      if(closed.get) Future.failed(Error.ClientAlreadyClosed) else
-      Option(availableConnections.poll).filter(_.isOpen).map(Future.successful).getOrElse {
-        if(liveConnections.get < maxConnections) {
-          liveConnections.incrementAndGet()
+  private def acquireConnection(): KillableFuture[HttpConnection] =
+    if(closed.get) KillableFuture(Future.failed(Error.ClientAlreadyClosed)) else
+    Option(availableConnections.poll).filter(_.isOpen).map(c => KillableFuture(Future.successful(c))).getOrElse {
+      if(liveConnections.get < maxConnections) {
+        liveConnections.incrementAndGet()
+        KillableFuture(
           nettyClient.connect().
             map(c => Netty.clientConnection(c.asInstanceOf[SocketChannel], options.debug)).
             andThen {
               case Success(c) =>
                 if(!connections.offer(c)) Panic.!!!()
                 c.closed.unsafeRunAsyncFuture().andThen { case _ => destroyConnection(c) }
-              case Failure(_) =>
+              case Failure(e) =>
                 liveConnections.decrementAndGet()
+                // If we fail obtaining a connection for any reason, let's fail all
+                // the waiters with the same exception. This is because otherwise there
+                // is no guarantee that we will be able to obtain a connection later and
+                // thus the waiters will wait forever (up to their timeout at least); we
+                // prefer having them failing fast.
+                waiters.asScala.toList.foreach { waiter =>
+                  waiters.remove(waiter)
+                  waiter.tryFailure(e)
+                }
             }
-        }
-        else {
-          waitConnection()
-        }
-      },
-      connectionTimeout
-    )
-  }
+        )
+      }
+      else {
+        waitConnection()
+      }
+    }
 
   /** Stop the client and kill all current and waiting requests.
     * @return a Future resolved as soon as the client is shutdown.
     */
   def stop(): Future[Unit] = {
     closed.compareAndSet(false, true)
-    waiters.asScala.foreach(_.failure(Error.ClientAlreadyClosed))
+    waiters.asScala.toList.foreach { waiter =>
+      waiters.remove(waiter)
+      waiter.tryFailure(Error.ClientAlreadyClosed)
+    }
     Future.sequence(connections.asScala.map(_.close.unsafeRunAsyncFuture)).map { _ =>
       if(liveConnections.intValue != 0) Panic.!!!()
     }.andThen { case _ =>
@@ -193,8 +199,9 @@ trait Client extends Service {
     */
   def apply(request: Request): Future[Response] = {
     @volatile var underlyingConnection: Option[HttpConnection] = None
+    val eventuallyConnection = acquireConnection()
     KillableFuture(
-      acquireConnection().flatMap { connection =>
+      eventuallyConnection.flatMap { connection =>
         underlyingConnection = Some(connection)
 
         // Create the correponding netty message
@@ -277,17 +284,20 @@ trait Client extends Service {
           response
         }).unsafeRunAsyncFuture()
       },
-      () => underlyingConnection.foreach(_.close.unsafeRun())
+      () => {
+        eventuallyConnection.cancel()
+        underlyingConnection.foreach(_.close.unsafeRun())
+      }
     )
   }
 
   /** Send a request to the server and eventually give back the response.
     * @param request the HTTP request to be sent to the server.
-    * @param followRedirects if true follow the intermediate HTTP redirects.
+    * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
     * @param timeout maximum amount of time allowed to retrieve the response.
     * @return eventually the HTTP response.
     */
-  def apply(request: Request, followRedirects: Boolean, timeout: FiniteDuration = FiniteDuration(30, "seconds")): Future[Response] = {
+  def apply(request: Request, followRedirects: Boolean = true, timeout: FiniteDuration = FiniteDuration(30, "seconds")): Future[Response] = {
     val eventuallyResponse = apply(request)
     withTimeout(
       eventuallyResponse.flatMap { response =>
@@ -388,7 +398,6 @@ object Client {
     * @param ssl if provided the custom SSL configuration to use for this client.
     * @param options the client options such as the number of IO thread used.
     * @param maxConnections the maximum number of TCP connections to maintain with the remote server.
-    * @param connectionTimeout the maximum amount of time requests will wait for a connection. Default to 5 seconds.
     * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
     * @return an HTTP client instance.
     */
@@ -398,11 +407,10 @@ object Client {
     scheme: String = "http",
     ssl: SSL.ClientConfiguration = SSL.ClientConfiguration.default,
     options: ClientOptions = ClientOptions(),
-    maxConnections: Int = 10,
-    connectionTimeout: FiniteDuration = 5 seconds
+    maxConnections: Int = 10
   )(implicit executor: ExecutionContext): Client = {
-    val (host0, port0, scheme0, ssl0, options0, maxConnections0, connectionTimeout0, executor0) = (
-      host, port, scheme, ssl, options, maxConnections, connectionTimeout, executor
+    val (host0, port0, scheme0, ssl0, options0, maxConnections0, executor0) = (
+      host, port, scheme, ssl, options, maxConnections, executor
     )
     new Client {
       val host = host0
@@ -411,7 +419,6 @@ object Client {
       val ssl = ssl0
       val options = options0
       val maxConnections = maxConnections0
-      val connectionTimeout = connectionTimeout0
       implicit val executor = executor0
     }
   }

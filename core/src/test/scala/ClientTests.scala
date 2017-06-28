@@ -119,7 +119,7 @@ class ClientTests extends Tests {
 
       def makeCalls(client: Client, x: Int) = Future.sequence {
         (1 to x).map { i =>
-          client(Get("/")).map(_ => "OK").recover { case _ => "REJECTED"}
+          client(Get("/"), timeout = 1.second).map(_ => "OK").recover { case _ => "REJECTED"}
         }
       }
 
@@ -130,7 +130,7 @@ class ClientTests extends Tests {
       } should contain theSameElementsAs (0 until 2).map(_ => "OK")
 
       await() {
-        Client("localhost", server.port, maxConnections = 2, connectionTimeout = 1 second).runAndStop { client =>
+        Client("localhost", server.port, maxConnections = 2).runAndStop { client =>
           makeCalls(client, 20)
         }
       } should contain theSameElementsAs ((0 until 2).map(_ => "OK") ++ (0 until 18).map(_ => "REJECTED"))
@@ -195,7 +195,7 @@ class ClientTests extends Tests {
 
   test("Connection errors", Slow) {
     val requests = 16
-    val client = Client("doesnotexist", connectionTimeout = 1 second)
+    val client = Client("doesnotexist")
     def send(id: Int) = {
       val req = Get("/")
       client.run(req) { _ =>
@@ -207,17 +207,17 @@ class ClientTests extends Tests {
     }
 
     try {
-      await() { send(1) } should be (0)
+      await(5 seconds) { send(1) } should be (0)
 
-      await() { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      await(5 seconds) { Future.sequence((1 to requests).map(send)) }.sum should be (0)
       eventually(client.openedConnections should be (0))
       eventually(client.waitingConnections should be (0))
 
-      await() { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      await(5 seconds) { Future.sequence((1 to requests).map(send)) }.sum should be (0)
       eventually(client.openedConnections should be (0))
       eventually(client.waitingConnections should be (0))
 
-      await() { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      await(5 seconds) { Future.sequence((1 to requests).map(send)) }.sum should be (0)
       eventually(client.openedConnections should be (0))
       eventually(client.waitingConnections should be (0))
     }

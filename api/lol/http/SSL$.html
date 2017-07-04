@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.4.3 - lol.http.SSL</title>
-          <meta name="description" content="lolhttp 0.4.3 - lol.http.SSL" />
-          <meta name="keywords" content="lolhttp 0.4.3 lol.http.SSL" />
+          <title>lolhttp 0.5.0 - lol.http.SSL</title>
+          <meta name="description" content="lolhttp 0.5.0 - lol.http.SSL" />
+          <meta name="keywords" content="lolhttp 0.5.0 lol.http.SSL" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.4.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.5.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -320,24 +320,42 @@ dynamic parameters in URL templates.">
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="lol.http.SSL.Configuration" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="ConfigurationextendsProductwithSerializable"></a><a id="Configuration:Configuration"></a>
+              <ol><li name="lol.http.SSL.ClientConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ClientConfigurationextendsAnyRef"></a><a id="ClientConfiguration:ClientConfiguration"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$.html#ConfigurationextendsProductwithSerializable" title="Permalink">
+      <a href="../../lol/http/SSL$.html#ClientConfigurationextendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="An SSL configuration." href="SSL$$Configuration.html">
-              <span class="name">Configuration</span>
-            </a><span class="params">(<span name="ctx">ctx: <span class="extype" name="javax.net.ssl.SSLContext">SSLContext</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="SSL configuration for clients." href="SSL$$ClientConfiguration.html">
+              <span class="name">ClientConfiguration</span>
+            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
       </span>
       
-      <p class="shortcomment cmt">An SSL configuration.</p><div class="fullcomment"><div class="comment cmt"><p>An SSL configuration.</p></div><dl class="paramcmts block"><dt class="param">ctx</dt><dd class="cmt"><p>the <code>javax.net.ssl.SSLContext</code> to use.</p></dd></dl></div>
+      <p class="shortcomment cmt">SSL configuration for clients.</p>
+    </li><li name="lol.http.SSL.ServerConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ServerConfigurationextendsAnyRef"></a><a id="ServerConfiguration:ServerConfiguration"></a>
+      <span class="permalink">
+      <a href="../../lol/http/SSL$.html#ServerConfigurationextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="SSL configuration for servers." href="SSL$$ServerConfiguration.html">
+              <span class="name">ServerConfiguration</span>
+            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">SSL configuration for servers.</p>
     </li></ol>
             </div>
 
@@ -583,9 +601,9 @@ dynamic parameters in URL templates.">
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="lol.http.SSL#selfSigned" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="selfSigned(hostname:String):lol.http.SSL.Configuration"></a><a id="selfSigned(String):Configuration"></a>
+      <a id="selfSigned(fqdn:String):lol.http.SSL.ServerConfiguration"></a><a id="selfSigned(String):ServerConfiguration"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$.html#selfSigned(hostname:String):lol.http.SSL.Configuration" title="Permalink">
+      <a href="../../lol/http/SSL$.html#selfSigned(fqdn:String):lol.http.SSL.ServerConfiguration" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -594,12 +612,11 @@ dynamic parameters in URL templates.">
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">selfSigned</span><span class="params">(<span name="hostname">hostname: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;localhost&quot;</span></span>)</span><span class="result">: <a href="SSL$$Configuration.html" class="extype" name="lol.http.SSL.Configuration">Configuration</a></span>
+        <span class="name">selfSigned</span><span class="params">(<span name="fqdn">fqdn: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;localhost&quot;</span></span>)</span><span class="result">: <a href="SSL$$ServerConfiguration.html" class="extype" name="lol.http.SSL.ServerConfiguration">ServerConfiguration</a></span>
       </span>
       
-      <p class="shortcomment cmt">Generate an SSL configuration with a self-signed certificate.</p><div class="fullcomment"><div class="comment cmt"><p>Generate an SSL configuration with a self-signed certificate.
-You can use it to start an HTTPS server with an insecure certificate.
-</p></div></div>
+      <p class="shortcomment cmt">Generate an SSL server configuration with a self-signed certificate.</p><div class="fullcomment"><div class="comment cmt"><p>Generate an SSL server configuration with a self-signed certificate.
+You can use it to start an HTTPS server with an insecure certificate.</p></div><dl class="paramcmts block"><dt class="param">fqdn</dt><dd class="cmt"><p>the fqdn to use for the certificate (default to localhost)</p></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
@@ -633,9 +650,9 @@ You can use it to start an HTTPS server with an insecure certificate.
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="lol.http.SSL#trustAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="trustAll:lol.http.SSL.Configuration"></a><a id="trustAll:Configuration"></a>
+      <a id="trustAll:lol.http.SSL.ClientConfiguration"></a><a id="trustAll:ClientConfiguration"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$.html#trustAll:lol.http.SSL.Configuration" title="Permalink">
+      <a href="../../lol/http/SSL$.html#trustAll:lol.http.SSL.ClientConfiguration" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -644,10 +661,10 @@ You can use it to start an HTTPS server with an insecure certificate.
         <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">trustAll</span><span class="result">: <a href="SSL$$Configuration.html" class="extype" name="lol.http.SSL.Configuration">Configuration</a></span>
+        <span class="name">trustAll</span><span class="result">: <a href="SSL$$ClientConfiguration.html" class="extype" name="lol.http.SSL.ClientConfiguration">ClientConfiguration</a></span>
       </span>
       
-      <p class="shortcomment cmt">A &quot;Trust all&quot; configuration that will accept any certificate.</p><div class="fullcomment"><div class="comment cmt"><p>A &quot;Trust all&quot; configuration that will accept any certificate.
+      <p class="shortcomment cmt">A &quot;Trust all&quot; client configuration that will accept any certificate.</p><div class="fullcomment"><div class="comment cmt"><p>A &quot;Trust all&quot; client configuration that will accept any certificate.
 You can use it as configuration for an HTTP client that need to connect to an
 insecure server.
 </p></div></div>
@@ -717,10 +734,10 @@ insecure server.
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="lol.http.SSL.Configuration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Configuration"></a><a id="Configuration:Configuration"></a>
+    </li><li name="lol.http.SSL.ClientConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ClientConfiguration"></a><a id="ClientConfiguration:ClientConfiguration"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$.html#Configuration" title="Permalink">
+      <a href="../../lol/http/SSL$.html#ClientConfiguration" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -729,12 +746,12 @@ insecure server.
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Provides the default SSL configuration." href="SSL$$Configuration$.html">
-              <span class="name">Configuration</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Provides the default client SSL configuration." href="SSL$$ClientConfiguration$.html">
+              <span class="name">ClientConfiguration</span>
+            </a>
       </span>
       
-      <p class="shortcomment cmt">Provides the default SSL configuration.</p>
+      <p class="shortcomment cmt">Provides the default client SSL configuration.</p>
     </li>
               </ol>
             </div>

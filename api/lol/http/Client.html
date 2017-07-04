@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.4.3 - lol.http.Client</title>
-          <meta name="description" content="lolhttp 0.4.3 - lol.http.Client" />
-          <meta name="keywords" content="lolhttp 0.4.3 lol.http.Client" />
+          <title>lolhttp 0.5.0 - lol.http.Client</title>
+          <meta name="description" content="lolhttp 0.5.0 - lol.http.Client" />
+          <meta name="keywords" content="lolhttp 0.5.0 lol.http.Client" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.4.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.5.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -275,8 +275,8 @@ dynamic parameters in URL templates.">
 }</pre><p>An HTTP client is a <a href="index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> function. It handles HTTP requests
 and eventually returns HTTP responses.</p><p>A client maintains several TCP connections to the remote server. These connections
 are used to send requests and are blocked until the corresponding response has been
-received. If no connection is available when a new request comes, it waits for
-connectionTimeout time for one connection to become available.</p><p>It is important that the user code completly consumes the response content stream, so
+received. If no connection is available when a new request comes, it waits for one
+connection to become available.</p><p>It is important that the user code completly consumes the response content stream, so
 the connection is freed for the next request. That's why it is better to use the <code>run</code>
 operation if possible since this one automatically drains the request upon return.</p><p>If the request to execute does not specify an Host header, it will be automatically added
 and set to the value of the client <code>host</code>.
@@ -334,23 +334,7 @@ and set to the value of the client <code>host</code>.
 
         <div class="values members">
               <h3>Abstract Value Members</h3>
-              <ol><li name="lol.http.Client#connectionTimeout" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="connectionTimeout:scala.concurrent.duration.FiniteDuration"></a><a id="connectionTimeout:FiniteDuration"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Client.html#connectionTimeout:scala.concurrent.duration.FiniteDuration" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">connectionTimeout</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">The maximum amount of time a request will wait to obtain an HTTP connection.</p>
-    </li><li name="lol.http.Client#executor" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+              <ol><li name="lol.http.Client#executor" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="executor:scala.concurrent.ExecutionContext"></a><a id="executor:ExecutionContext"></a>
       <span class="permalink">
       <a href="../../lol/http/Client.html#executor:scala.concurrent.ExecutionContext" title="Permalink">
@@ -447,9 +431,9 @@ and set to the value of the client <code>host</code>.
       
       <p class="shortcomment cmt">The scheme used by this client (either HTTP or HTTPS if connected in SSL).</p>
     </li><li name="lol.http.Client#ssl" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="ssl:lol.http.SSL.Configuration"></a><a id="ssl:Configuration"></a>
+      <a id="ssl:lol.http.SSL.ClientConfiguration"></a><a id="ssl:ClientConfiguration"></a>
       <span class="permalink">
-      <a href="../../lol/http/Client.html#ssl:lol.http.SSL.Configuration" title="Permalink">
+      <a href="../../lol/http/Client.html#ssl:lol.http.SSL.ClientConfiguration" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -458,7 +442,7 @@ and set to the value of the client <code>host</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ssl</span><span class="result">: <a href="SSL$$Configuration.html" class="extype" name="lol.http.SSL.Configuration">Configuration</a></span>
+        <span class="name">ssl</span><span class="result">: <a href="SSL$$ClientConfiguration.html" class="extype" name="lol.http.SSL.ClientConfiguration">ClientConfiguration</a></span>
       </span>
       
       <p class="shortcomment cmt">The SSL configuration used by the client.</p><div class="fullcomment"><div class="comment cmt"><p>The SSL configuration used by the client. Must be provided if the server certificate is not recognized by default.</p></div></div>
@@ -547,10 +531,10 @@ and set to the value of the client <code>host</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>, <span name="timeout">timeout: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a> = <span class="symbol">FiniteDuration(30, &quot;seconds&quot;)</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
+        <span class="name">apply</span><span class="params">(<span name="request">request: <a href="Request.html" class="extype" name="lol.http.Request">Request</a></span>, <span name="followRedirects">followRedirects: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="timeout">timeout: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a> = <span class="symbol">FiniteDuration(30, &quot;seconds&quot;)</span></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
       </span>
       
-      <p class="shortcomment cmt">Send a request to the server and eventually give back the response.</p><div class="fullcomment"><div class="comment cmt"><p>Send a request to the server and eventually give back the response.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>maximum amount of time allowed to retrieve the response.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually the HTTP response.</p></dd></dl></div>
+      <p class="shortcomment cmt">Send a request to the server and eventually give back the response.</p><div class="fullcomment"><div class="comment cmt"><p>Send a request to the server and eventually give back the response.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>the HTTP request to be sent to the server.</p></dd><dt class="param">followRedirects</dt><dd class="cmt"><p>if true follow the intermediate HTTP redirects. Default to true.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>maximum amount of time allowed to retrieve the response.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually the HTTP response.</p></dd></dl></div>
     </li><li name="lol.http.Client#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="apply(request:lol.http.Request):scala.concurrent.Future[lol.http.Response]"></a><a id="apply(Request):Future[Response]"></a>
       <span class="permalink">

@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.4.3 - lol.http.SSL.Configuration</title>
-          <meta name="description" content="lolhttp 0.4.3 - lol.http.SSL.Configuration" />
-          <meta name="keywords" content="lolhttp 0.4.3 lol.http.SSL.Configuration" />
+          <title>lolhttp 0.5.0 - lol.http.SSL.ClientConfiguration</title>
+          <meta name="description" content="lolhttp 0.5.0 - lol.http.SSL.ClientConfiguration" />
+          <meta name="keywords" content="lolhttp 0.5.0 lol.http.SSL.ClientConfiguration" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.4.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.5.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -137,46 +137,52 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
       
       <p class="shortcomment cmt">lol SSL.</p><div class="fullcomment"><div class="comment cmt"><p>lol SSL.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="lol.http">http</a></dd></dl></div>
     </li><li class="current-entities indented3">
-                        <a class="object" href="SSL$$Configuration$.html" title="Provides the default SSL configuration."></a>
-                        <a class="class" href="" title="An SSL configuration."></a>
-                        <a href="" title="An SSL configuration.">
-                          Configuration
+                        <a class="object" href="" title="Provides the default client SSL configuration."></a>
+                        <a class="class" href="SSL$$ClientConfiguration.html" title="SSL configuration for clients."></a>
+                        <a href="SSL$$ClientConfiguration.html" title="SSL configuration for clients.">
+                          ClientConfiguration
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="SSL$$ServerConfiguration.html" title="SSL configuration for servers."></a>
+                        <a href="SSL$$ServerConfiguration.html" title="SSL configuration for servers.">
+                          ServerConfiguration
                         </a>
                       </li>
               </ul>
             </div>
           </div>
           <div id="content">
-            <body class="class type">
+            <body class="object value">
       <div id="definition">
-        <a href="SSL$$Configuration$.html" title="See companion object"><div class="big-circle class-companion-object">c</div></a>
+        <a href="SSL$$ClientConfiguration.html" title="See companion class"><div class="big-circle object-companion-class">o</div></a>
         <p id="owner"><a href="../index.html" class="extype" name="lol">lol</a>.<a href="index.html" class="extype" name="lol.http">http</a>.<a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a></p>
-        <h1><a href="SSL$$Configuration$.html" title="See companion object">Configuration</a><span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html" title="Permalink">
+        <h1><a href="SSL$$ClientConfiguration.html" title="See companion class">ClientConfiguration</a><span class="permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
         <h3><span class="morelinks"><div>
-            Companion <a href="SSL$$Configuration$.html" title="See companion object">object Configuration</a>
+            Companion <a href="SSL$$ClientConfiguration.html" title="See companion class">class ClientConfiguration</a>
           </div></span></h3>
       </div>
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">Configuration</span><span class="params">(<span name="ctx">ctx: <span class="extype" name="javax.net.ssl.SSLContext">SSLContext</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">ClientConfiguration</span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An SSL configuration.</p></div><dl class="paramcmts block"><dt class="param">ctx</dt><dd class="cmt"><p>the <code>javax.net.ssl.SSLContext</code> to use.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/SSL.scala" target="_blank">SSL.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Provides the default client SSL configuration.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/SSL.scala" target="_blank">SSL.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Equals" class="extype" target="_top">Equals</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
         </div></div>
         
 
@@ -202,7 +208,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="lol.http.SSL.Configuration"><span>Configuration</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="lol.http.SSL.ClientConfiguration"><span>ClientConfiguration</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -220,26 +226,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
 
       <div id="template">
         <div id="allMembers">
-        <div id="constructors" class="members">
-              <h3>Instance Constructors</h3>
-              <ol><li name="lol.http.SSL.Configuration#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(ctx:javax.net.ssl.SSLContext):lol.http.SSL.Configuration"></a><a id="&lt;init&gt;:Configuration"></a>
-      <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#&lt;init&gt;(ctx:javax.net.ssl.SSLContext):lol.http.SSL.Configuration" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Configuration</span><span class="params">(<span name="ctx">ctx: <span class="extype" name="javax.net.ssl.SSLContext">SSLContext</span></span>)</span>
-      </span>
-      
-      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">ctx</dt><dd class="cmt"><p>the <code>javax.net.ssl.SSLContext</code> to use.</p></dd></dl></div>
-    </li></ol>
-            </div>
+        
 
         
 
@@ -251,7 +238,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -267,7 +254,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html###():Int" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -283,7 +270,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -299,7 +286,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -315,7 +302,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#clone():Object" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -334,26 +321,26 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="lol.http.SSL.Configuration#ctx" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ctx:javax.net.ssl.SSLContext"></a><a id="ctx:SSLContext"></a>
+    </li><li name="lol.http.SSL.ClientConfiguration#default" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="default:lol.http.SSL.ClientConfiguration"></a><a id="default:ClientConfiguration"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#ctx:javax.net.ssl.SSLContext" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#default:lol.http.SSL.ClientConfiguration" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="modifier">implicit </span>
+        <span class="kind">lazy val</span>
       </span>
       <span class="symbol">
-        <span class="name">ctx</span><span class="result">: <span class="extype" name="javax.net.ssl.SSLContext">SSLContext</span></span>
+        <span class="name">default</span><span class="result">: <a href="SSL$$ClientConfiguration.html" class="extype" name="lol.http.SSL.ClientConfiguration">ClientConfiguration</a></span>
       </span>
       
-      
+      <p class="shortcomment cmt">The default SSL configuration.</p>
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -366,10 +353,26 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#equals(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#finalize():Unit" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -391,7 +394,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#getClass():Class[_]" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -404,10 +407,26 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <span class="permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#hashCode():Int" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -423,7 +442,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -439,7 +458,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#notify():Unit" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -455,7 +474,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#notifyAll():Unit" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -471,7 +490,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -484,10 +503,26 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <span class="permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#toString():String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#wait():Unit" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -509,7 +544,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -531,7 +566,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/SSL$$Configuration.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../lol/http/SSL$$ClientConfiguration$.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -560,15 +595,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.Serializable">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></h3>
-            </div><div class="parent" name="java.io.Serializable">
-              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
-            </div><div class="parent" name="scala.Product">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a></h3>
-            </div><div class="parent" name="scala.Equals">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Equals" class="extype" target="_top">Equals</a></h3>
-            </div><div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></h3>

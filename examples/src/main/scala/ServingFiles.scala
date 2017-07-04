@@ -48,7 +48,7 @@ object ServingFiles {
             <a href="/assets/lol.txt">/assets/lol.txt</a>
 
             <h2>But this one is protected:</h2>
-            <a href="/assets/../secure.txt">/assets/../secure.txt</a>
+            <a href="/assets/../server-pkcs8.key">/assets/../server-pkcs8.key</a>
           </body>
         """)
 

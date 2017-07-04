@@ -16,13 +16,15 @@ import fs2.{ Stream }
   * @param scheme the scheme such as `http` or `https`.
   * @param content the request content.
   * @param headers the HTTP headers.
+  * @param protocol the protocol version.
   */
 case class Request(
   method: HttpMethod,
   url: String = "/",
   scheme: String = "http",
   content: Content = Content.empty,
-  headers: Map[HttpString,HttpString] = Map.empty
+  headers: Map[HttpString,HttpString] = Map.empty,
+  protocol: String = HTTP
 ) {
 
   private lazy val (p, qs) = url.split("[?]").toList match {

@@ -31,25 +31,27 @@ class ClientTests extends Tests {
       }
     }
 
-    withServer(Server.listen()(App)) { server =>
-      await() {
-        Client("localhost", server.port).runAndStop { client =>
-          for {
-            keys <- client.run(Get("/keys"))(_.readAs[String])
-            _ = keys should be ("1,2,3")
-            oops <- client.run(Get("/blah"))(res => success(res.status))
-            _ = oops should be (404)
-            results <- Future.sequence(
-              keys.split("[,]").toList.map { key =>
-                client.run(Get(s"/data/$key"))(_.readAs[String])
-              }
-            )
-            (status, content) <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
-            _ = status should be (400)
-            _ = content should be ("Invalid key format: coco")
-          } yield results
-        }
-      } should contain theSameElementsInOrderAs data.values
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+        await() {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            for {
+              keys <- client.run(Get("/keys"))(_.readAs[String])
+              _ = keys should be ("1,2,3")
+              oops <- client.run(Get("/blah"))(res => success(res.status))
+              _ = oops should be (404)
+              results <- Future.sequence(
+                keys.split("[,]").toList.map { key =>
+                  client.run(Get(s"/data/$key"))(_.readAs[String])
+                }
+              )
+              (status, content) <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
+              _ = status should be (400)
+              _ = content should be ("Invalid key format: coco")
+            } yield results
+          }
+        } should contain theSameElementsInOrderAs data.values
+      }
     }
   }
 
@@ -68,16 +70,18 @@ class ClientTests extends Tests {
       }
     }
 
-    withServer(Server.listen()(App)) { server =>
-      await() {
-        Client("localhost", server.port).runAndStop { client =>
-          for {
-            response <- client(Get("/huge"))
-            _ = response.status should be (200)
-            length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size).unsafeToFuture()
-          } yield length
-        }
-      } should be (1024 * 1024)
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+        await() {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            for {
+              response <- client(Get("/huge"))
+              _ = response.status should be (200)
+              length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size).unsafeToFuture()
+            } yield length
+          }
+        } should be (1024 * 1024)
+      }
     }
   }
 
@@ -177,20 +181,23 @@ class ClientTests extends Tests {
   }
 
   test("Timeouts", Slow) {
-    withServer(Server.listen() { _ => internal.timeout(Ok, 5 seconds) }) { server =>
-      val client = Client("localhost", server.port)
+    val app: Service = _ => internal.timeout(Ok, 5 seconds)
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(app)) { server =>
+        val client = Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol)))
 
-      try {
-        the [Error] thrownBy await() {
-          client.run(Get("/"), timeout = 1 second)(res => Future.successful(res.status))
-        } should be (Error.Timeout(1 second))
+        try {
+          the [Error] thrownBy await() {
+            client.run(Get("/"), timeout = 1 second)(res => Future.successful(res.status))
+          } should be (Error.Timeout(1 second))
 
-        eventually(client.openedConnections should be (0), timeout = 5 seconds)
+          eventually(client.openedConnections should be (0), timeout = 5 seconds)
+        }
+        finally {
+          client.stop()
+        }
+
       }
-      finally {
-        client.stop()
-      }
-
     }
   }
 

@@ -1,10 +1,10 @@
-val VERSION = "0.6.1"
+val VERSION = "0.7.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
   scalaVersion := "2.12.2",
-  crossScalaVersions := Seq("2.11.11", "2.12.2"),
+  crossScalaVersions := Seq("2.11.11", "2.12.3"),
   scalacOptions ++= Seq(
     "-deprecation",
     "-encoding", "UTF-8",
@@ -89,7 +89,7 @@ lazy val lolhttp =
 
     libraryDependencies ++= Seq(
       "co.fs2" %% "fs2-core" % "0.10.0-M6",
-      "io.netty" % "netty-codec-http2" % "4.1.11.Final",
+      "io.netty" % "netty-codec-http2" % "4.1.16.Final",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     ),
 
@@ -117,7 +117,7 @@ lazy val lolhttp =
       val vendorised = (artifact in (Compile, assembly)).value
       vendorised
     },
-    pomPostProcess := removeDependencies("io.netty", "org.bouncycastle", "org.scalatest")
+    pomPostProcess := removeDependencies("io.netty", "org.scalatest")
   ).
   settings(addArtifact(artifact in (Compile, assembly), assembly): _*)
 
@@ -153,7 +153,19 @@ lazy val examples: Project =
     Defaults.itSettings,
 
     publishArtifact := false,
+
     fork in IntegrationTest := true,
+
+    // Running integration tests with Java 8 requires to install the right version of alpn-boot.
+    // See http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting
+    javaOptions in IntegrationTest := {
+      Option(System.getProperty("java.version")).getOrElse("") match {
+        case noAlpn if noAlpn.startsWith("1.8") =>
+          Seq(s"""-Xbootclasspath/p:${file("alpn-boot.jar").getAbsolutePath}""")
+        case _ =>
+          Nil
+      }
+    },
     connectInput in IntegrationTest := true
   ).
   settings(
@@ -167,6 +179,7 @@ lazy val examples: Project =
         "-P:socco:package_lol.http:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
         "-P:socco:package_io.circe:http://circe.github.io/circe/api/",
+        "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/",
         "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
       )
     )).getOrElse(Nil): _*
@@ -203,6 +216,10 @@ lazy val root =
               jar -> "https://www.scala-lang.org/api/current/"
             case (jar, module) if module.name == "fs2-core_2.12" =>
               jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/"
+            case (jar, module) if module.name == "cats-effect_2.12" =>
+              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/"
+            case (jar, module) if module.name.startsWith("circe") =>
+              jar -> "https://circe.github.io/circe/api/"
           }.
           toMap.
           mapValues(url => new java.net.URL(url))

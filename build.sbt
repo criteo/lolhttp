@@ -1,4 +1,4 @@
-val VERSION = "0.5.0"
+val VERSION = "0.5.1-SNAPSHOT"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",

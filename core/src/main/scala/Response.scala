@@ -1,6 +1,7 @@
 package lol.http
 
-import fs2.{Stream, Task}
+import cats.effect.IO
+import fs2.{ Stream }
 import internal.FutureLikeResponse
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,7 +28,7 @@ case class Response(
   status: Int,
   content: Content = Content.empty,
   headers: Map[HttpString,HttpString] = Map.empty,
-  upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte] = _ => Stream.empty
+  upgradeConnection: (Stream[IO,Byte]) => Stream[IO,Byte] = _ => Stream.empty
 ) extends FutureLikeResponse {
 
   /** Set the content of this response.
@@ -41,7 +42,7 @@ case class Response(
     * @param decoder the [[ContentDecoder]] to use to read the content.
     * @return eventually a value of type `A`.
     */
-  def readAs[A](implicit decoder: ContentDecoder[A]): Future[A] = content.as[A].unsafeRunAsyncFuture
+  def readAs[A](implicit decoder: ContentDecoder[A]): Future[A] = content.as[A].unsafeToFuture
 
   /** Consume the content attached to this response if the status is in the Success 2xx range. Otherwise,
     * it consumes the response as String and report the error as a failed future.
@@ -57,14 +58,14 @@ case class Response(
     * @param effect the function to use to consume the stream.
     * @return eventually a value of type `A`.
     */
-  def read[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = effect(content.stream).unsafeRunAsyncFuture
+  def read[A](effect: Stream[IO,Byte] => IO[A]): Future[A] = effect(content.stream).unsafeToFuture
 
   /** Consume the content attached to this response by evaluating the provided effect function the status is in
     * the Success 2xx range. Otherwise, it consumes the response as String and report the error as a failed future.
     * @param effect the function to use to consume the stream.
     * @return eventually a value of type `A` or a failure if the status code was not 2xx.
     */
-  def readSuccess[A](effect: Stream[Task,Byte] => Task[A]): Future[A] = {
+  def readSuccess[A](effect: Stream[IO,Byte] => IO[A]): Future[A] = {
     implicit val e = internal.nonBlockingInternalExecutionContext
     filterSuccess.flatMap(_ => read(effect))
   }

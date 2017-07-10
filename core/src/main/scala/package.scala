@@ -1,6 +1,8 @@
 package lol
 
-import fs2.{ Stream, Task}
+import cats.effect.IO
+
+import fs2.{ Stream }
 
 import scala.concurrent.{ Future }
 
@@ -79,7 +81,7 @@ package object http {
     * @param upgradeConnection this function will be called with the upstream as parameter and must retun the downstream.
     * @return a 101 [[Response]].
     */
-  def SwitchingProtocol(protocol: HttpString, upgradeConnection: (Stream[Task,Byte]) => Stream[Task,Byte]) = {
+  def SwitchingProtocol(protocol: HttpString, upgradeConnection: (Stream[IO,Byte]) => Stream[IO,Byte]) = {
     Response(101, upgradeConnection = upgradeConnection).
       addHeaders(Headers.Upgrade -> protocol, Headers.Connection -> h"Upgrade")
   }

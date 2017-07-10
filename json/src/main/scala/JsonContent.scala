@@ -2,7 +2,7 @@ package lol.json
 
 import lol.http._
 
-import fs2.{ Task }
+import cats.effect.IO
 
 import scala.io.{ Codec }
 
@@ -32,7 +32,7 @@ object JsonContent {
   def decoder(maxSize: Int = ContentDecoder.MaxSize, codec: Codec = Codec.UTF8) = new ContentDecoder[Json] {
     def apply(content: Content) = {
       ContentDecoder.text()(content).flatMap { text =>
-        parse(text).fold(Task.fail, Task.now)
+        parse(text).fold(IO.raiseError, IO.pure)
       }
     }
   }
@@ -44,7 +44,7 @@ object JsonContent {
 
   /** A decoder for Server Sent Events. */
   def sseEventDecoder: ServerSentEvents.EventDecoder[Json] = new ServerSentEvents.EventDecoder[Json] {
-    def apply(data: String) = parse(data).fold(Task.fail, Task.now)
+    def apply(data: String) = parse(data).fold(IO.raiseError, IO.pure)
   }
 
 }

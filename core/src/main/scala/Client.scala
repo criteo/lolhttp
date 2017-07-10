@@ -11,8 +11,6 @@ import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.channel.socket.nio.{ NioSocketChannel }
 
-import fs2.{ Strategy }
-
 import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
@@ -77,7 +75,6 @@ trait Client extends Service {
 
   /** The ExecutionContext that will be used to run the user code. */
   implicit def executor: ExecutionContext
-  private implicit lazy val S = Strategy.fromExecutionContext(executor)
 
   private class NettyClient {
     private val eventLoop = new NioEventLoopGroup(options.ioThreads)
@@ -205,7 +202,7 @@ trait Client extends Service {
       },
       () => {
         eventuallyConnection.cancel()
-        underlyingConnection.foreach(_.close.unsafeRun())
+        underlyingConnection.foreach(_.close.unsafeRun)
       }
     )
   }

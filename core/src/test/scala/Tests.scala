@@ -26,7 +26,7 @@ abstract class Tests extends FunSuite with Matchers with OptionValues with Insid
     await(atMost) { Client.run(req)(res => Future.successful(res.headers)) }
   }
   def getString(content: Content, codec: String = "utf-8") = new String(getBytes(content).toArray, codec)
-  def getBytes(content: Content): Vector[Byte] = content.stream.runLog.unsafeRun()
+  def getBytes(content: Content): Vector[Byte] = content.stream.runLog.unsafeRunSync()
   def bytes(data: Int*): Seq[Byte] = data.map(_.toByte)
   val timer = new Timer(true)
   def timeout[A](d: Duration, a: A): Future[A] = {

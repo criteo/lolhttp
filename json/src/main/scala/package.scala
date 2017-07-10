@@ -44,10 +44,7 @@ package object json {
     * @return a [[lol.http.ContentDecoder ContentDecoder]] for `A`.
     */
   def json[A](implicit jsonDecoder: Decoder[A]) = new ContentDecoder[A] {
-    def apply(content: Content) = defaultJsonDecoder(content).flatMap { json =>
-      json.as[A].fold(IO.raiseError, IO.pure)
-    }
-    def apply(content: Content) = defaultJsonDecoder(content).flatMap { json =>
+    def apply(content: Content) = defaultJsonDecoder.apply(content).flatMap { json =>
       json.as[A].fold(IO.raiseError, IO.pure)
     }
   }

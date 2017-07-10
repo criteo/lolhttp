@@ -1,13 +1,12 @@
 package lol.http
 
-import fs2.{ Stream, Strategy }
+import fs2.{ Stream }
 import fs2.text.{ lines, utf8Decode, utf8Encode }
 
 import scala.concurrent.{ ExecutionContext }
 import ExecutionContext.Implicits.global
 
 class ConnectionUpgradeTests extends Tests {
-  implicit val S = Strategy.fromExecutionContext(ExecutionContext.Implicits.global)
 
   val App: Service = {
     case GET at "/" =>
@@ -43,10 +42,10 @@ class ConnectionUpgradeTests extends Tests {
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
-          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").pure through utf8Encode
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.unsafeRunAsyncFuture()
+          downstream.runLog.unsafeToFuture()
         }
       } should contain inOrderOnly (
         "dlrow olleH",
@@ -67,7 +66,7 @@ class ConnectionUpgradeTests extends Tests {
             result <- client.run(Get(url).addHeaders(Headers.Upgrade -> h"Push")) { response =>
               Thread.sleep(1000)
               (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
-                runLog.unsafeRunAsyncFuture()
+                runLog.unsafeToFuture()
             }
             _ = eventually(client.openedConnections should be (0))
           } yield result
@@ -85,11 +84,11 @@ class ConnectionUpgradeTests extends Tests {
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
-          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").pure through utf8Encode
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.unsafeRunAsyncFuture().flatMap { _ =>
-            downstream.runLog.unsafeRunAsyncFuture()
+          downstream.runLog.unsafeToFuture().flatMap { _ =>
+            downstream.runLog.unsafeToFuture()
           }
         }
       } should be (Error.StreamAlreadyConsumed)
@@ -105,12 +104,12 @@ class ConnectionUpgradeTests extends Tests {
           response.status should be (101)
           response.headers.get(Headers.Upgrade) should be (Some(h"ReverseEcho"))
 
-          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").pure through utf8Encode
+          val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
           val downstream2 = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.unsafeRunAsyncFuture().flatMap { _ =>
-            downstream2.runLog.unsafeRunAsyncFuture()
+          downstream.runLog.unsafeToFuture().flatMap { _ =>
+            downstream2.runLog.unsafeToFuture()
           }
         }
       } should be (Error.StreamAlreadyConsumed)
@@ -127,10 +126,10 @@ class ConnectionUpgradeTests extends Tests {
           response.headers.get(Headers.Upgrade) should be (None)
 
           // Upgrade anyway :)
-          val upstream = Stream.pure("lol") through utf8Encode
+          val upstream = Stream("lol").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream)
 
-          downstream.run.unsafeRunAsyncFuture()
+          downstream.run.unsafeToFuture()
         }
       } should be (Error.UpgradeRefused)
     }

@@ -1,6 +1,7 @@
 package lol.http
 
-import fs2.{ Stream, Chunk, Task }
+import cats.effect.IO
+import fs2.{ Stream, Chunk }
 
 import scala.concurrent.{ ExecutionContext }
 import ExecutionContext.Implicits.global
@@ -121,10 +122,10 @@ class ServerTests extends Tests {
         }
     }) { server =>
       def oneMeg = Content(
-        Stream.eval(Task.delay(Chunk.bytes(("A" * 1024).getBytes("us-ascii")))).
+        Stream.eval(IO(Chunk.bytes(("A" * 1024).getBytes("us-ascii")))).
           repeat.
           take(1024).
-          flatMap(Stream.chunk),
+          flatMap(chunk => Stream.chunk(chunk)),
         Map(Headers.ContentLength -> HttpString(1024 * 1024))
       )
 

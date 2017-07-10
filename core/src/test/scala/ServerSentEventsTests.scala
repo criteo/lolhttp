@@ -2,7 +2,8 @@ package lol.http
 
 import ServerSentEvents._
 
-import fs2.{ Task, Stream }
+import cats.effect.IO
+import fs2.{ Stream }
 
 import scala.concurrent.{ ExecutionContext }
 import ExecutionContext.Implicits.global
@@ -13,7 +14,7 @@ class ServerSentEventsTests extends Tests {
     case url"/" =>
       Ok("Hello")
     case url"/stream" =>
-      Ok(Stream(Event("Hello"), Event("World")))
+      Ok(Stream.covaryPure[IO, Event[String], Event[String]](Stream(Event("Hello"), Event("World"))))
     case url"/fakeStream" =>
       Ok("Hello").addHeaders(h"Content-Type" -> h"text/event-stream")
   }
@@ -23,8 +24,8 @@ class ServerSentEventsTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           client.run(Get("/stream")) { response =>
-            response.readAs[Stream[Task,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeRunAsyncFuture
+            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+              eventStream.runLog.map(_.toList).unsafeToFuture
             }
           }
         }
@@ -37,8 +38,8 @@ class ServerSentEventsTests extends Tests {
       the [Error] thrownBy await() {
         Client("localhost", server.port).runAndStop { client =>
           client.run(Get("/")) { response =>
-            response.readAs[Stream[Task,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeRunAsyncFuture
+            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+              eventStream.runLog.map(_.toList).unsafeToFuture
             }
           }
         }
@@ -51,8 +52,8 @@ class ServerSentEventsTests extends Tests {
       await() {
         Client("localhost", server.port).runAndStop { client =>
           client.run(Get("/fakeStream")) { response =>
-            response.readAs[Stream[Task,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeRunAsyncFuture
+            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+              eventStream.runLog.map(_.toList).unsafeToFuture
             }
           }
         }

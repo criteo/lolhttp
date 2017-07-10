@@ -15,6 +15,7 @@ import scala.concurrent.duration._
 
 import cats.Eval
 import cats.effect.IO
+import cats.effect.implicits._
 
 import internal.NettySupport._
 
@@ -143,8 +144,12 @@ object Server {
           response <- IO.fromFuture(Eval.always(serveRequest(request)))
           // If the user code did not open the content stream
           // we need to drain it now
-          _ <- request.content.stream.drain.run.handle {
-            case Error.StreamAlreadyConsumed => ()
+          _ <- request.content.stream.drain.run.attempt.flatMap {
+            case Left(e) => e match {
+              case Error.StreamAlreadyConsumed => IO.unit
+              case _ => IO.raiseError(e)
+            }
+            case Right(_) => IO.unit
           }
           // Write the response message
           _ <- responseHandler(response)

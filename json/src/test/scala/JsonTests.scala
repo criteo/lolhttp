@@ -4,7 +4,8 @@ import lol.http._
 
 import ServerSentEvents._
 
-import fs2.{ Task, Stream }
+import cats.effect.IO
+import fs2.{ Stream }
 
 import io.circe._
 import io.circe.syntax._
@@ -40,14 +41,14 @@ class JsonTests extends Tests {
 
   test("JSON decoding") {
     val jsonContent = Content.of(someJson)
-    jsonContent.as[Json].unsafeRun() should be (someJson)
+    jsonContent.as[Json].unsafeRunSync() should be (someJson)
 
     val invalidJsonContent = Content.of("""{lol}""")
-    an [ParsingFailure] should be thrownBy invalidJsonContent.as[Json].unsafeRun()
+    an [ParsingFailure] should be thrownBy invalidJsonContent.as[Json].unsafeRunSync()
 
     val blah = Blah("bar", 123, Seq(4, 5, 6))
     val caseClassContent = Content.of(blah.asJson)
-    caseClassContent.as(json[Blah]).unsafeRun() should be (blah)
+    caseClassContent.as(json[Blah]).unsafeRunSync() should be (blah)
   }
 
   test("JSON over HTTP") {
@@ -98,13 +99,13 @@ class JsonTests extends Tests {
   test("JSON over Server Sent Events") {
     withServer(Server.listen() {
       case url"/stream" =>
-        Ok(Stream(Event(Json.obj("hello" -> "world".asJson)), Event(Json.Null), Event(12.asJson)))
+        Ok(Stream.covaryPure[IO, Event[Json], Event[Json]](Stream(Event(Json.obj("hello" -> "world".asJson)), Event(Json.Null), Event(12.asJson))))
     }) { server =>
       await() {
         Client("localhost", server.port).runAndStop { client =>
           client.run(Get("/stream")) { response =>
-            response.readAs[Stream[Task,Event[Json]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeRunAsyncFuture
+            response.readAs[Stream[IO,Event[Json]]].flatMap { eventStream =>
+              eventStream.runLog.map(_.toList).unsafeToFuture
             }
           }
         }

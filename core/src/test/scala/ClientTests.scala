@@ -1,6 +1,7 @@
 package lol.http
 
-import fs2.{ Task, Chunk, Stream }
+import cats.effect.IO
+import fs2.{ Chunk, Stream }
 
 import java.util.concurrent.{ TimeoutException }
 
@@ -57,10 +58,10 @@ class ClientTests extends Tests {
       case GET at url"/huge" => {
         Ok(
           Content(
-            Stream.eval(Task.delay(Chunk.bytes(("A" * 1024).getBytes("us-ascii")))).
+            Stream.eval(IO(Chunk.bytes(("A" * 1024).getBytes("us-ascii")))).
               repeat.
               take(1024).
-              flatMap(Stream.chunk),
+              flatMap(chunk => Stream.chunk(chunk)),
             Map(Headers.ContentLength -> HttpString(1024 * 1024))
           )
         )
@@ -73,7 +74,7 @@ class ClientTests extends Tests {
           for {
             response <- client(Get("/huge"))
             _ = response.status should be (200)
-            length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size).unsafeRunAsyncFuture()
+            length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size).unsafeToFuture()
           } yield length
         }
       } should be (1024 * 1024)
@@ -150,11 +151,11 @@ class ClientTests extends Tests {
           for {
             response <- client(Get("/Hello"))
             _ = response.status should be (200)
-            helloBytes <- response.content.stream.take(8).runLog.unsafeRunAsyncFuture()
+            helloBytes <- response.content.stream.take(8).runLog.unsafeToFuture()
             _ = new String(helloBytes.toArray, "us-ascii") should be ("HelloHel")
 
             // illegal to reopen the stream
-            _ <- response.content.stream.runLog.unsafeRunAsyncFuture()
+            _ <- response.content.stream.runLog.unsafeToFuture()
           } yield ()
         }
       } should be (Error.StreamAlreadyConsumed)

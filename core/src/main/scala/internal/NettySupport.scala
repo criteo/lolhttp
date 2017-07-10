@@ -3,6 +3,7 @@ package lol.http.internal
 import scala.concurrent.ExecutionContext
 
 import cats._
+import cats.implicits._
 import cats.effect.IO
 import fs2.{Catenable, Chunk, Pull, Segment, Sink, Stream, async}
 import io.netty.channel.{Channel, ChannelFuture, ChannelHandlerContext, SimpleChannelInboundHandler}
@@ -98,57 +99,48 @@ private[http] object NettySupport {
       latch.await
       result.get
     }
-    def htttpContentSink: Sink[IO, Byte] = {
-      _.repeatPull(_.unconsChunk.flatMap {
-        case Some((chunk, h)) =>
-          Pull.eval(
-            if (channel.isOpen)
-              channel.writeAndFlush(new DefaultHttpContent(chunk.toByteBuf)).toIO
-            else
-              IO.raiseError(Error.ConnectionClosed)
-          ) as h
-        case None =>
-          Pull.eval(
-            if (channel.isOpen)
-              channel.writeAndFlush(new DefaultLastHttpContent()).toIO
-            else
-              IO.raiseError(Error.ConnectionClosed)
-          )
-      })
+    // Pull[IO, Nothing, Stream[IO, Byte]]
+    def httpContentSink: Sink[IO, Byte] = {
+      _.repeatPull { s =>
+        s.unconsChunk.flatMap[IO[Channel], Byte] {
+          case Some((chunk, t)) =>
+            Pull.eval {
+              if (channel.isOpen) channel.writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(chunk.toArray))).toIO
+              else IO.raiseError[Channel](Error.ConnectionClosed)
+            } as t
+          case None =>
+            Pull.eval {
+              if (channel.isOpen) channel.writeAndFlush(new DefaultLastHttpContent()).toIO
+              else IO.raiseError[Channel](Error.ConnectionClosed)
+            } >> Pull.done
+        }
+      }
+
     }
 
-//    def httpContentSink: Sink[Task,Byte] = {
+//    def httpContentSink = { (s: Stream[IO, Byte]) =>
+//      s.repeatPull { s =>
+//        s.unconsChunk.flatMap {
+//          case Some((h, t)) => Pull.eval(channel.writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(h.toArray))).toIO).as(Some(t))
+//          case None => Pull.eval(channel.writeAndFlush(new DefaultLastHttpContent()).toIO) >> Pull.pure(None)
+//        }
+//      }.covary[IO]
+//    }
+
+//    def bytesSink: Sink[IO,Byte] = {
 //      _.repeatPull(_.awaitOption.flatMap {
 //        case Some((chunk, h)) =>
 //          Pull.eval(
 //            if(channel.isOpen)
-//              channel.writeAndFlush(new DefaultHttpContent(chunk.toByteBuf)).toTask
+//              channel.writeAndFlush(chunk.toByteBuf).toTask
 //            else
 //              Task.fail(Error.ConnectionClosed)
 //          ) as h
 //        case None =>
-//          Pull.eval(
-//            if(channel.isOpen)
-//              channel.writeAndFlush(new DefaultLastHttpContent()).toTask
-//            else
-//              Task.fail(Error.ConnectionClosed)
-//          ) >> Pull.done
+//          Pull.done
 //      })
 //    }
 
-    def bytesSink: Sink[IO,Byte] = {
-      _.repeatPull(_.awaitOption.flatMap {
-        case Some((chunk, h)) =>
-          Pull.eval(
-            if(channel.isOpen)
-              channel.writeAndFlush(chunk.toByteBuf).toTask
-            else
-              Task.fail(Error.ConnectionClosed)
-          ) as h
-        case None =>
-          Pull.done
-      })
-    }
   }
 
   object Netty {
@@ -467,7 +459,15 @@ private[http] object NettySupport {
     // Read one HTTP message along with its content stream. The
     // content stream must be read before the next message to be
     // available.
-    def read(): IO[(HttpMessage,Stream[IO,Byte])] =
+    def read: IO[(HttpMessage, Stream[IO, Byte])] = messages.dequeue1.flatMap {
+      case Some((message, true)) => for {
+        readers <- async.semaphore
+      }
+    }
+
+
+
+    def rread(): IO[(HttpMessage,Stream[IO,Byte])] =
       messages.dequeue1.flatMap {
         case Some((message, true)) =>
           for {
@@ -508,7 +508,8 @@ private[http] object NettySupport {
       for {
         _ <- if(client) permits.decrement else permits.increment
         _ <- if(channel.isOpen) IO(channel.writeAndFlush(message)) else IO.raiseError(Error.ConnectionClosed)
-        _ <- (contentStream to channel.httpContentSink).run
+        _ <- (contentStream)
+        //_ <- (contentStream to channel.httpContentSink).run
         _ <- IO(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
       } yield ()
 

@@ -2,19 +2,41 @@ package lol.http.internal
 
 import scala.concurrent.ExecutionContext
 
-import cats._
-import cats.effect.IO
-import fs2.{Catenable, Chunk, Pull, Segment, Sink, Stream, async}
-import io.netty.channel.{Channel, ChannelFuture, ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.logging.{LogLevel, LoggingHandler}
-import io.netty.util.concurrent.GenericFutureListener
-import io.netty.buffer.{ByteBuf, Unpooled}
-import io.netty.handler.codec.http.{DefaultHttpContent, DefaultHttpRequest, DefaultHttpResponse, DefaultLastHttpContent, HttpClientCodec, HttpContent, HttpContentDecompressor, HttpMessage, HttpObject, HttpRequest, HttpRequestDecoder, HttpResponse, HttpResponseEncoder, HttpResponseStatus, HttpUtil, LastHttpContent, HttpMethod => NettyHttpMethod, HttpVersion => NettyHttpVersion}
-import scala.concurrent.{Future, Promise}
-import scala.collection.mutable.ListBuffer
+import cats.effect.{ IO }
+import fs2.{ Chunk, Pull, Segment, Sink, Stream, async }
+
+import io.netty.channel.{
+  Channel,
+  ChannelFuture,
+  ChannelHandlerContext,
+  SimpleChannelInboundHandler }
+import io.netty.handler.logging.{ LogLevel, LoggingHandler }
+import io.netty.util.concurrent.{ GenericFutureListener }
+import io.netty.buffer.{ Unpooled, ByteBuf }
+import io.netty.handler.codec.http.{
+  DefaultHttpContent,
+  DefaultHttpRequest,
+  DefaultHttpResponse,
+  DefaultLastHttpContent,
+  HttpClientCodec,
+  HttpContent,
+  HttpContentDecompressor,
+  HttpMessage,
+  HttpObject,
+  HttpRequest,
+  HttpRequestDecoder,
+  HttpResponse,
+  HttpResponseEncoder,
+  HttpResponseStatus,
+  HttpUtil,
+  LastHttpContent,
+  HttpMethod => NettyHttpMethod,
+  HttpVersion => NettyHttpVersion }
+
+import scala.concurrent.{ Future, Promise }
+import scala.collection.mutable.{ ListBuffer }
 import collection.JavaConverters._
 
-import io.netty.util
 import lol.http._
 
 private[http] object NettySupport {
@@ -456,21 +478,29 @@ private[http] object NettySupport {
             readers <- async.semaphore[IO](1)
             eosReached <- async.signalOf[IO, Boolean](false)
             messageStream =
-              Stream.eval(readers.tryDecrement).flatMap {
+              Stream.
+                // The content stream can be read only once
+                eval(readers.tryDecrement).flatMap {
                 case false =>
                   Stream.fail(Error.StreamAlreadyConsumed)
                 case true =>
-                  contentStream
-                      .evalMap(chunk => eosReached.set(chunk.isEmpty).map(_ => chunk))
-                      .takeWhile(_.isDefined)
-                      .flatMap(chunk => Stream.chunk(chunk.get))
-                      .onFinalize {
-                        for {
-                          fullyRead <- eosReached.get
-                          _ <- if (fullyRead) IO.pure(()) else contentStream.takeWhile(_.isDefined).drain.run
-                          _ <- if (client) permits.increment else permits.decrement
-                        } yield ()
-                      }
+                  contentStream.
+                    // We read the queue until a None, that marks
+                    // the content stream end.
+                    evalMap(chunk => eosReached.set(chunk.isEmpty).map(_ => chunk)).
+                    takeWhile(_.isDefined).
+                    // The stream of bytes
+                    flatMap(chunk => Stream.chunk(chunk.get)).
+                    // When user code finishes consuming this stream, we need
+                    // to drain the remaining content if the eos has not been
+                    // reached yet.
+                    onFinalize {
+                      for {
+                        fullyRead <- eosReached.get
+                        _ <- if (fullyRead) IO.pure(()) else contentStream.takeWhile(_.isDefined).drain.run
+                        _ <- if (client) permits.increment else permits.decrement
+                      } yield ()
+                    }
               }
           } yield (message, messageStream)
         case Some((message, false)) => IO.pure((message, Stream.empty))

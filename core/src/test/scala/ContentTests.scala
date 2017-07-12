@@ -93,7 +93,6 @@ class ContentTests extends Tests {
   }
 
   test("File") {
-    import scala.concurrent.ExecutionContext.Implicits.global
 
     val url = this.getClass.getResource("/index.html")
     url != null should be (true)

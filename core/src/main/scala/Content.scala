@@ -12,9 +12,8 @@ import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.channels.{ AsynchronousFileChannel, CompletionHandler }
 import java.nio.file.{ StandardOpenOption }
 
-import cats.effect.IO
-
-import fs2.{ Chunk, Segment, Stream }
+import cats.effect.{ IO }
+import fs2.{ Chunk, Stream }
 
 /** An HTTP message content body.
   *
@@ -352,7 +351,7 @@ object ContentEncoder {
     * @param executor an execution context that will be used to run the async IO operations.
     * @return an encoder for `java.io.File`.
     */
-  def file(chunkSize: Int = 16 * 1024)(implicit executor: ExecutionContext) = new ContentEncoder[File] {
+  def file(chunkSize: Int = 16 * 1024) = new ContentEncoder[File] {
     def apply(data: File) = {
       val channel = AsynchronousFileChannel.open(data.toPath, StandardOpenOption.READ)
       val buffer = ByteBuffer.allocateDirect(chunkSize)
@@ -406,7 +405,7 @@ object ContentEncoder {
   }
 
   /** Default text encoder, using `16KB` chunks. */
-  implicit def defaultFile(implicit executor: ExecutionContext) = file()
+  implicit def defaultFile = file()
 
 }
 

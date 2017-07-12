@@ -1,7 +1,7 @@
 package lol.http
 
 import cats.effect.IO
-import fs2.{Stream, Chunk, Segment }
+import fs2.{ Stream, Chunk }
 import fs2.text
 
 /** Support for Server Sent Events content. It allows a server to stream

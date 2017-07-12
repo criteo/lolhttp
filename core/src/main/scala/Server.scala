@@ -10,12 +10,11 @@ import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
 import scala.util.{ Try }
-import scala.concurrent.{ExecutionContext, Promise, Future }
+import scala.concurrent.{ ExecutionContext, Promise, Future }
 import scala.concurrent.duration._
 
-import cats.Eval
-import cats.effect.IO
-import cats.effect.implicits._
+import cats.{ Eval }
+import cats.effect.{ IO }
 
 import internal.NettySupport._
 

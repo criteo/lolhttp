@@ -1,6 +1,7 @@
 package lol.http
 
-import fs2.{Stream, Chunk, Task}
+import cats.effect.IO
+import fs2.{ Stream, Chunk }
 import fs2.text
 
 /** Support for Server Sent Events content. It allows a server to stream
@@ -23,13 +24,13 @@ object ServerSentEvents {
 
   /** Decode the string event payload as a value of type A. */
   trait EventDecoder[+A] {
-    def apply(data: String): Task[A]
+    def apply(data: String): IO[A]
   }
 
   /** Provides default EventDecoders. */
   object EventDecoder {
     implicit val stringDecoder = new EventDecoder[String] {
-      def apply(value: String) = Task.now(value)
+      def apply(value: String) = IO.pure(value)
     }
   }
 
@@ -46,24 +47,25 @@ object ServerSentEvents {
   private val EVENT = chunk("event: ")
   private val ID = chunk("id: ")
 
-  private[http] def encoder[A](eventEncoder: EventEncoder[A]): ContentEncoder[Stream[Task, Event[A]]] = new ContentEncoder[Stream[Task, Event[A]]] {
-    def apply(events: Stream[Task, Event[A]]) =
-      Content(events.map { case Event(data, maybeEvent, maybeId) =>
-        Chunk.concat(
+  private[http] def encoder[A](eventEncoder: EventEncoder[A]): ContentEncoder[Stream[IO, Event[A]]] = new ContentEncoder[Stream[IO, Event[A]]] {
+    def apply(events: Stream[IO, Event[A]]) = {
+      val e = events.map {
+        case Event(data, maybeEvent, maybeId) =>
           maybeEvent.map(str => Seq(EVENT, chunk(str), `\n`)).getOrElse(Nil) ++
           maybeId.map(str => Seq(ID, chunk(str), `\n`)).getOrElse(Nil) ++
           eventEncoder(data).split("\n").flatMap(str => Seq(DATA, chunk(str), `\n`)) ++
           Seq(`\n`)
-        )
-      }.flatMap(Stream.chunk), Map(h"Content-Type" -> h"text/event-stream"))
+      }.flatMap(s => Stream.emits(s)).flatMap(s => Stream.chunk(s))
+      Content(e, Map(h"Content-Type" -> h"text/event-stream"))
+    }
   }
 
-  private[http] def decoder[A](eventDecoder: EventDecoder[A]): ContentDecoder[Stream[Task, Event[A]]] = new ContentDecoder[Stream[Task, Event[A]]] {
+  private[http] def decoder[A](eventDecoder: EventDecoder[A]): ContentDecoder[Stream[IO, Event[A]]] = new ContentDecoder[Stream[IO, Event[A]]] {
     def apply(content: Content) =
       if(content.headers.get(h"Content-Type").exists(_ == h"text/event-stream"))
-        Task.now {
+        IO.pure {
           content.stream.through(text.utf8Decode).through(text.lines).
-            scan(Left((new StringBuilder, None, None)):Either[(StringBuilder,Option[String],Option[String]), Task[Event[A]]]) {
+            scan(Left((new StringBuilder, None, None)):Either[(StringBuilder,Option[String],Option[String]), IO[Event[A]]]) {
               case (seed, line) =>
                 val (dataBuffer, maybeEvent, maybeId) = seed match {
                   case Left(x) => x
@@ -93,7 +95,7 @@ object ServerSentEvents {
             evalMap(identity)
         }
       else
-        Task.fail {
+        IO.raiseError {
           Error.UnexpectedContentType(s"Expected `text/event-stream' content but got `${content.headers.get(h"Content-Type").getOrElse("")}'")
         }
   }

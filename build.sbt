@@ -106,7 +106,7 @@ lazy val lolhttp =
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.9.5",
+      "co.fs2" %% "fs2-core" % "0.10.0-M3",
       "io.netty" % "netty-codec-http2" % "4.1.11.Final",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     ),

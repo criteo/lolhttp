@@ -10,10 +10,11 @@ import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
 import scala.util.{ Try }
-import scala.concurrent.{ExecutionContext, Promise, Future }
+import scala.concurrent.{ ExecutionContext, Promise, Future }
 import scala.concurrent.duration._
 
-import fs2.{ Task, Strategy }
+import cats.{ Eval }
+import cats.effect.{ IO }
 
 import internal.NettySupport._
 
@@ -113,7 +114,6 @@ object Server {
     options: ServerOptions = ServerOptions(),
     onError: (Throwable => Response) = defaultErrorHandler
   )(service: Service)(implicit executor: ExecutionContext): Server = {
-    implicit val S = Strategy.fromExecutionContext(executor)
 
     def serveRequest(request: Request) = {
       Future(try { service(request) } catch { case e: Throwable => Future.failed(e) })(executor).
@@ -131,7 +131,7 @@ object Server {
       }
 
       // Loop over incoming request
-      def go(): Task[Unit] = for {
+      def go(): IO[Unit] = for {
         message <- connection()
         (request, responseHandler) = message
         // Handle the request in a totally asynchronous way,
@@ -140,16 +140,20 @@ object Server {
         // or HTTP/2.0)
         _ = (for {
           // Apply user code and retrieve the response
-          response <- Task.fromFuture(serveRequest(request))
+          response <- IO.fromFuture(Eval.always(serveRequest(request)))
           // If the user code did not open the content stream
           // we need to drain it now
-          _ <- request.content.stream.drain.run.handle {
-            case Error.StreamAlreadyConsumed => ()
+          _ <- request.content.stream.drain.run.attempt.flatMap {
+            case Left(e) => e match {
+              case Error.StreamAlreadyConsumed => IO.unit
+              case _ => IO.raiseError(e)
+            }
+            case Right(_) => IO.unit
           }
           // Write the response message
           _ <- responseHandler(response)
         } yield ()).unsafeRunAsync(asyncResult)
-        _ <- Task.suspend { go() }
+        _ <- IO.suspend { go() }
       } yield ()
       go().unsafeRunAsync(asyncResult)
     }

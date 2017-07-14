@@ -11,8 +11,6 @@ import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.channel.socket.{ SocketChannel }
 import io.netty.channel.socket.nio.{ NioSocketChannel }
 
-import fs2.{ Strategy }
-
 import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
@@ -77,7 +75,6 @@ trait Client extends Service {
 
   /** The ExecutionContext that will be used to run the user code. */
   implicit def executor: ExecutionContext
-  private implicit lazy val S = Strategy.fromExecutionContext(executor)
 
   private class NettyClient {
     private val eventLoop = new NioEventLoopGroup(options.ioThreads)
@@ -150,7 +147,7 @@ trait Client extends Service {
             andThen {
               case Success(c) =>
                 if(!connections.offer(c)) Panic.!!!()
-                c.closed.unsafeRunAsyncFuture().andThen { case _ => destroyConnection(c) }
+                c.closed.unsafeToFuture().andThen { case _ => destroyConnection(c) }
               case Failure(e) =>
                 liveConnections.decrementAndGet()
                 // If we fail obtaining a connection for any reason, let's fail all
@@ -179,7 +176,7 @@ trait Client extends Service {
       waiters.remove(waiter)
       waiter.tryFailure(Error.ClientAlreadyClosed)
     }
-    Future.sequence(connections.asScala.map(_.close.unsafeRunAsyncFuture)).map { _ =>
+    Future.sequence(connections.asScala.map(_.close.unsafeToFuture)).map { _ =>
       if(liveConnections.intValue != 0) Panic.!!!()
     }.andThen { case _ =>
       nettyClient.shutdown()
@@ -201,11 +198,11 @@ trait Client extends Service {
           if(request.headers.contains(h"Host")) request else request.addHeaders(h"Host" -> h"${this.host}")
         (for {
           response <- connection(requestWithHost, () => releaseConnection(connection))
-        } yield response).unsafeRunAsyncFuture()
+        } yield response).unsafeToFuture()
       },
       () => {
         eventuallyConnection.cancel()
-        underlyingConnection.foreach(_.close.unsafeRun())
+        underlyingConnection.foreach(_.close.unsafeRunSync)
       }
     )
   }

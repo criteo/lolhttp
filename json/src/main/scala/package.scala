@@ -2,7 +2,7 @@ package lol
 
 import http._
 
-import fs2.{ Task }
+import cats.effect.IO
 
 import io.circe.{ Decoder }
 
@@ -44,8 +44,8 @@ package object json {
     * @return a [[lol.http.ContentDecoder ContentDecoder]] for `A`.
     */
   def json[A](implicit jsonDecoder: Decoder[A]) = new ContentDecoder[A] {
-    def apply(content: Content) = defaultJsonDecoder(content).flatMap { json =>
-      json.as[A].fold(Task.fail, Task.now)
+    def apply(content: Content) = defaultJsonDecoder.apply(content).flatMap { json =>
+      json.as[A].fold(IO.raiseError, IO.pure)
     }
   }
 

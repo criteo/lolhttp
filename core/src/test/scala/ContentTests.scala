@@ -30,13 +30,13 @@ class ContentTests extends Tests {
     val text = "Do you speak English? えいごをはなせますか"
     val textContent = Content.of(text)
 
-    textContent.as[String].unsafeRun() should be (text)
-    textContent.as(ContentDecoder.text(defaultCodec = Codec.ISO8859)).unsafeRun() should not be (text)
-    textContent.as(ContentDecoder.text(maxSize = 21)).unsafeRun() should be (text.take(21))
+    textContent.as[String].unsafeRunSync() should be (text)
+    textContent.as(ContentDecoder.text(defaultCodec = Codec.ISO8859)).unsafeRunSync() should not be (text)
+    textContent.as(ContentDecoder.text(maxSize = 21)).unsafeRunSync() should be (text.take(21))
 
     // A truncated byte buffer is not necessarely a valid utf-8 sequence
     a [java.nio.charset.MalformedInputException] should be thrownBy {
-      textContent.as(ContentDecoder.text(maxSize = 23)).unsafeRun()
+      textContent.as(ContentDecoder.text(maxSize = 23)).unsafeRunSync()
     }
   }
 
@@ -51,8 +51,8 @@ class ContentTests extends Tests {
       "H%C3%A9h%C3%A9=lol&H%C3%A9h%C3%A9=wat%26hop&Do+you+speak+English%3F=%E3%81%88%E3%81%84%E3%81%94" +
       "%E3%82%92%E3%81%AF%E3%81%AA%E3%81%9B%E3%81%BE%E3%81%99%E3%81%8B"
     )
-    formContent.as[Map[String,Seq[String]]].unsafeRun() should be (form)
-    formContent.as[Map[String,String]].unsafeRun() should be (Map(
+    formContent.as[Map[String,Seq[String]]].unsafeRunSync() should be (form)
+    formContent.as[Map[String,String]].unsafeRunSync() should be (Map(
       "Héhé" -> "lol",
       "Do you speak English?" -> "えいごをはなせますか"
     ))
@@ -67,7 +67,7 @@ class ContentTests extends Tests {
     new String(getBytes(formWithCharsetContent).toArray, "us-ascii") should be (
       "_charset_=windows-1252&H%E9h%E9=lol&H%E9h%E9=wat%26hop&Do+you+speak+English%3F=%26%2312360%3B%26%2312356%3B%26%2312372%3B%26%2312434%3B%26%2312399%3B%26%2312394%3B%26%2312379%3B%26%2312414%3B%26%2312377%3B%26%2312363%3B"
     )
-    formWithCharsetContent.as[Map[String,Seq[String]]].unsafeRun() should be (formWithCharset)
+    formWithCharsetContent.as[Map[String,Seq[String]]].unsafeRunSync() should be (formWithCharset)
   }
 
   test("InputStream", Pure) {
@@ -85,15 +85,14 @@ class ContentTests extends Tests {
 
     ContentEncoder.inputStream(chunkSize = 1, blockingExecutor = ec).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
-      runLog.unsafeRun().mkString should be ("L_O_L_\n_")
+      runLog.unsafeRunSync().mkString should be ("L_O_L_\n_")
 
     ContentEncoder.inputStream(chunkSize = 2, blockingExecutor = ec).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
-      runLog.unsafeRun().mkString should be ("LO_L\n_")
+      runLog.unsafeRunSync().mkString should be ("LO_L\n_")
   }
 
   test("File") {
-    import scala.concurrent.ExecutionContext.Implicits.global
 
     val url = this.getClass.getResource("/index.html")
     url != null should be (true)
@@ -122,7 +121,7 @@ class ContentTests extends Tests {
 
     val x = content2.stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
-      runLog.unsafeRun().mkString
+      runLog.unsafeRunSync().mkString
 
     x should be (realContent.zip(0 to realContent.size map(_ => '_')).map { case (a,b) => "" + a + b }.mkString)
   }

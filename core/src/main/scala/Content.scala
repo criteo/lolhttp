@@ -12,7 +12,8 @@ import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.channels.{ AsynchronousFileChannel, CompletionHandler }
 import java.nio.file.{ StandardOpenOption }
 
-import fs2.{ Strategy, Chunk, Task, Stream }
+import cats.effect.{ IO }
+import fs2.{ Chunk, Stream }
 
 /** An HTTP message content body.
   *
@@ -25,15 +26,15 @@ import fs2.{ Strategy, Chunk, Task, Stream }
   * @param headers a set of content-related HTTP headers.
   */
 case class Content(
-  stream: Stream[Task,Byte],
+  stream: Stream[IO,Byte],
   headers: Map[HttpString,HttpString] = Map.empty
 ) {
 
-  /** Create an [[fs2.Task]] that consume this stream to a value of type `A`.
-    * @param decoder the [[lol.http.ContentDecoder]] able to read stream as values of type `A`.
-    * @return an [[fs2.Task]] that can be run to consume the stream.
+  /** Create an [[cats.effect.IO]] that consumes this stream to a value of type `A`.
+    * @param decoder the [[lol.http.ContentDecoder]] is able to read stream as values of type `A`.
+    * @return an [[cats.effect.IO]] that can be run to consume the stream.
     */
-  def as[A](implicit decoder: ContentDecoder[A]): Task[A] = decoder(this)
+  def as[A](implicit decoder: ContentDecoder[A]): IO[A] = decoder(this)
 
   /** Add new HTTP headers to this content.
     * @param newHeaders the set of new HTTP header names and values to add to this content.
@@ -85,11 +86,11 @@ object Content {
   */
 trait ContentDecoder[+A] {
 
-  /** Create an [[fs2.Task]] that consume the content stream and produce a scala value.
+  /** Create an [[cats.effect.IO]] that consumes the content stream and produces a scala value.
     * @param content an HTTP content.
-    * @return an [[fs2.Task]] that you can run to eventually retrieve the scala value.
+    * @return an [[cats.effect.IO]] that you can run to eventually retrieve the scala value.
     */
-  def apply(content: Content): Task[A]
+  def apply(content: Content): IO[A]
 }
 
 /** Library of built-in content decoders.
@@ -318,8 +319,7 @@ object ContentEncoder {
     */
   def inputStream(blockingExecutor: ExecutionContext, chunkSize: Int = 16 * 1024) = new ContentEncoder[InputStream] {
     def apply(data: InputStream) = {
-      implicit val S = Strategy.fromExecutionContext(blockingExecutor)
-      val stream = Stream.eval(Task.async[Option[Chunk[Byte]]] { cb =>
+      val stream = Stream.eval(IO.async[Option[Chunk[Byte]]] { cb =>
         try {
           blocking {
             val buffer = Array.ofDim[Byte](chunkSize)
@@ -335,7 +335,7 @@ object ContentEncoder {
         catch {
           case e: Throwable => cb(Left(e))
         }
-      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get)).onFinalize(Task.delay {
+      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get)).onFinalize(IO {
         data.close()
       })
 
@@ -351,13 +351,12 @@ object ContentEncoder {
     * @param executor an execution context that will be used to run the async IO operations.
     * @return an encoder for `java.io.File`.
     */
-  def file(chunkSize: Int = 16 * 1024)(implicit executor: ExecutionContext) = new ContentEncoder[File] {
+  def file(chunkSize: Int = 16 * 1024) = new ContentEncoder[File] {
     def apply(data: File) = {
-      implicit val S = Strategy.fromExecutionContext(executor)
       val channel = AsynchronousFileChannel.open(data.toPath, StandardOpenOption.READ)
       val buffer = ByteBuffer.allocateDirect(chunkSize)
       var position = 0
-      val stream = Stream.eval(Task.async[Option[Chunk[Byte]]] { cb =>
+      val stream = Stream.eval(IO.async[Option[Chunk[Byte]]] { cb =>
         try {
           if(channel.isOpen) {
             channel.read(buffer, position, (), new CompletionHandler[Integer,Unit] {
@@ -391,7 +390,7 @@ object ContentEncoder {
         catch {
           case e: Throwable => cb(Left(e))
         }
-      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get)).onFinalize(Task.delay {
+      }).repeat.takeWhile(_.isDefined).flatMap(c => Stream.chunk(c.get)).onFinalize(IO {
         channel.close()
       })
 
@@ -406,7 +405,7 @@ object ContentEncoder {
   }
 
   /** Default text encoder, using `16KB` chunks. */
-  implicit def defaultFile(implicit executor: ExecutionContext) = file()
+  implicit def defaultFile = file()
 
 }
 

@@ -1,40 +1,41 @@
 package lol.http.internal
 
-import fs2.{ Stream, Strategy, Chunk, Task, Pull, Sink, async }
+import scala.concurrent.ExecutionContext
+
+import cats.effect.{ IO }
+import fs2.{ Chunk, Pull, Segment, Sink, Stream, async }
 
 import io.netty.channel.{
   Channel,
   ChannelFuture,
-  SimpleChannelInboundHandler,
-  ChannelHandlerContext }
+  ChannelHandlerContext,
+  SimpleChannelInboundHandler }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
 import io.netty.util.concurrent.{ GenericFutureListener }
 import io.netty.buffer.{ Unpooled, ByteBuf }
 import io.netty.handler.codec.http.{
-  HttpObject,
-  HttpContent,
-  LastHttpContent,
-  HttpMessage,
-  HttpResponse,
   DefaultHttpContent,
-  DefaultHttpResponse,
   DefaultHttpRequest,
+  DefaultHttpResponse,
   DefaultLastHttpContent,
   HttpClientCodec,
-  HttpResponseEncoder,
-  HttpRequestDecoder,
+  HttpContent,
   HttpContentDecompressor,
-  HttpMethod => NettyHttpMethod,
-  HttpVersion => NettyHttpVersion,
-  HttpResponseStatus,
+  HttpMessage,
+  HttpObject,
   HttpRequest,
-  HttpUtil }
+  HttpRequestDecoder,
+  HttpResponse,
+  HttpResponseEncoder,
+  HttpResponseStatus,
+  HttpUtil,
+  LastHttpContent,
+  HttpMethod => NettyHttpMethod,
+  HttpVersion => NettyHttpVersion }
 
 import scala.concurrent.{ Future, Promise }
 import scala.collection.mutable.{ ListBuffer }
 import collection.JavaConverters._
-
-import fs2.{ Task }
 
 import lol.http._
 
@@ -55,8 +56,8 @@ private[http] object NettySupport {
       })
       p.future
     }
-    def toTask(implicit S: Strategy): Task[Channel] = {
-      Task.async { cb =>
+    def toIO: IO[Channel] = {
+      IO.async { cb =>
         try {
           f.addListener(new GenericFutureListener[ChannelFuture] {
             override def operationComplete(f: ChannelFuture) = {
@@ -78,15 +79,29 @@ private[http] object NettySupport {
   }
 
   implicit class NettyByteBuffer(buffer: ByteBuf) {
+    def toSegment: Segment[Byte, Unit] = {
+      val segments = ListBuffer.empty[Segment[Byte, Unit]]
+      while (buffer.readableBytes > 0) {
+        val bytes = Array.ofDim[Byte](buffer.readableBytes)
+        buffer.readBytes(bytes)
+        segments += Chunk.bytes(bytes)
+      }
+      segments.foldLeft(Segment.empty[Byte])((acc, seg) => acc ++ seg)
+    }
+
     def toChunk: Chunk[Byte] = {
       val chunks = ListBuffer.empty[Chunk[Byte]]
-      while(buffer.readableBytes > 0) {
+      while (buffer.readableBytes > 0) {
         val bytes = Array.ofDim[Byte](buffer.readableBytes)
         buffer.readBytes(bytes)
         chunks += Chunk.bytes(bytes)
       }
-      Chunk.concat(chunks)
+      Segment.seq(chunks).flattenChunks.toChunk
     }
+  }
+
+  implicit class SegmentByteBuffer(segment: Segment[Byte, Unit]) {
+    def toByteBuf: ByteBuf = Unpooled.wrappedBuffer(segment.toChunk.toArray)
   }
 
   implicit class ChunkByteBuffer(chunk: Chunk[Byte]) {
@@ -107,49 +122,48 @@ private[http] object NettySupport {
       latch.await
       result.get
     }
-
-    def httpContentSink(implicit S: Strategy): Sink[Task,Byte] = {
-      _.repeatPull(_.awaitOption.flatMap {
-        case Some((chunk, h)) =>
-          Pull.eval(
-            if(channel.isOpen)
-              channel.writeAndFlush(new DefaultHttpContent(chunk.toByteBuf)).toTask
-            else
-              Task.fail(Error.ConnectionClosed)
-          ) as h
-        case None =>
-          Pull.eval(
-            if(channel.isOpen)
-              channel.writeAndFlush(new DefaultLastHttpContent()).toTask
-            else
-              Task.fail(Error.ConnectionClosed)
-          ) >> Pull.done
-      })
+    // Pull[IO, Nothing, Stream[IO, Byte]]
+    def httpContentSink: Sink[IO, Byte] = {
+      _.repeatPull { s =>
+        s.unconsChunk.flatMap {
+          case Some((chunk, t)) =>
+            Pull.eval {
+              if (channel.isOpen) channel.writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(chunk.toArray))).toIO
+              else IO.raiseError(Error.ConnectionClosed)
+            }.as(Some(t))
+          case None =>
+            Pull.eval {
+              if (channel.isOpen) channel.writeAndFlush(new DefaultLastHttpContent()).toIO
+              else IO.raiseError(Error.ConnectionClosed)
+            } >> Pull.pure(None)
+        }
+      }
     }
 
-    def bytesSink(implicit S: Strategy): Sink[Task,Byte] = {
-      _.repeatPull(_.awaitOption.flatMap {
-        case Some((chunk, h)) =>
-          Pull.eval(
-            if(channel.isOpen)
-              channel.writeAndFlush(chunk.toByteBuf).toTask
-            else
-              Task.fail(Error.ConnectionClosed)
-          ) as h
-        case None =>
-          Pull.done
-      })
+    def bytesSink: Sink[IO, Byte] = {
+      _.repeatPull { s =>
+        s.unconsChunk.flatMap {
+          case Some((chunk, t)) =>
+            Pull.eval {
+              if (channel.isOpen) channel.writeAndFlush(Unpooled.wrappedBuffer(chunk.toArray)).toIO
+              else IO.raiseError(Error.ConnectionClosed)
+            }.as(Some(t))
+          case None =>
+            Pull.pure(None)
+        }
+      }
     }
+
   }
 
   object Netty {
-    def clientConnection(channel: Channel, debug: Option[String])(implicit S: Strategy): ClientConnection = {
+    def clientConnection(channel: Channel, debug: Option[String])(implicit ec: ExecutionContext): ClientConnection = {
       debug.foreach(logger => channel.pipeline.addLast("Debug", new LoggingHandler(logger, LogLevel.INFO)))
       channel.pipeline.addLast("HttpClientCodec", new HttpClientCodec())
       channel.pipeline.addLast("HttpDecompress", new HttpContentDecompressor())
       val http1xConnection = new Http1xConnection(channel, client = true)
       new ClientConnection {
-        def apply(request: Request, release: () => Unit): Task[Response] =
+        def apply(request: Request, release: () => Unit): IO[Response] =
           for {
             nettyRequest <- {
               val nettyRequest = new DefaultHttpRequest(
@@ -164,11 +178,11 @@ private[http] object NettySupport {
                 nettyRequest
               }
             }
-            response <- http1xConnection.read().flatMap {
+            response <- http1xConnection.read.flatMap {
               case (nettyResponse: HttpResponse, contentStream) =>
                 for {
-                  readers <- async.semaphore[Task](1)
-                  upgradedReaders <- async.semaphore[Task](1)
+                  readers <- async.semaphore[IO](1)
+                  upgradedReaders <- async.semaphore[IO](1)
                 } yield {
                   val response: Response = Response(
                     status = nettyResponse.status.code,
@@ -186,7 +200,7 @@ private[http] object NettySupport {
                               case true =>
                                 contentStream.onFinalize(
                                   if(HttpUtil.isKeepAlive(nettyRequest) && HttpUtil.isKeepAlive(nettyResponse)) {
-                                    Task.delay(release())
+                                    IO(release())
                                   }
                                   else {
                                     http1xConnection.close
@@ -236,21 +250,21 @@ private[http] object NettySupport {
       }
     }
 
-    def serverConnection(channel: Channel, debug: Option[String])(implicit S: Strategy): ServerConnection = {
+    def serverConnection(channel: Channel, debug: Option[String])(implicit ec: ExecutionContext): ServerConnection = {
       debug.foreach(logger => channel.pipeline.addLast("Debug", new LoggingHandler(logger, LogLevel.INFO)))
       channel.pipeline.addLast("HttpRequestDecoder", new HttpRequestDecoder())
       channel.pipeline.addLast("HttpResponseEncoder", new HttpResponseEncoder())
       val http1xConnection = new Http1xConnection(channel, client = false)
       new ServerConnection {
-        val lock = async.semaphore[Task](1).unsafeRun()
-        def apply(): Task[(Request, Response => Task[Unit])] =
+        val lock = async.semaphore[IO](1).unsafeRunSync()
+        def apply(): IO[(Request, Response => IO[Unit])] =
           for {
-            _ <- lock.decrement.race(http1xConnection.closed)
-            request <- http1xConnection.read().flatMap {
+            _ <- async.race(lock.decrement, http1xConnection.closed)
+            request <- http1xConnection.read.flatMap {
               case (nettyRequest: HttpRequest, contentStream) =>
                 for {
                   // Track the number of content readers
-                  readers <- async.semaphore[Task](1)
+                  readers <- async.semaphore[IO](1)
                 } yield {
                   Request(
                     method = HttpMethod(nettyRequest.method.name),
@@ -278,7 +292,7 @@ private[http] object NettySupport {
                 Panic.!!!(s"Expected HttpRequest, got ${x}")
             }
           } yield {
-            request -> (response => {
+            request -> ((response: Response) => {
               val nettyResponse = new DefaultHttpResponse(
                 NettyHttpVersion.HTTP_1_1,
                 HttpResponseStatus.valueOf(response.status)
@@ -297,7 +311,7 @@ private[http] object NettySupport {
                     }
                   }
                   else {
-                    Task.now(())
+                    IO.pure(())
                   }
                 }
                 _ <- lock.increment
@@ -315,35 +329,35 @@ private[http] object NettySupport {
   trait ClientConnection {
     // Send a request and a callback allowing the underlying impl to
     // release the connection, and eventually receive the response.
-    def apply(request: Request, release: () => Unit): Task[Response]
+    def apply(request: Request, release: () => Unit): IO[Response]
     def isOpen: Boolean
-    def close: Task[Unit]
-    def closed: Task[Unit]
+    def close: IO[Unit]
+    def closed: IO[Unit]
   }
   trait ServerConnection {
     // Wait for a request and a callback allowing to send the correponding
     // response when it is ready.
-    def apply(): Task[(Request, Response => Task[Unit])]
+    def apply(): IO[(Request, Response => IO[Unit])]
     def isOpen: Boolean
-    def close: Task[Unit]
-    def closed: Task[Unit]
+    def close: IO[Unit]
+    def closed: IO[Unit]
   }
 
-  class Http1xConnection(channel: Channel, client: Boolean)(implicit S: Strategy) {
+  class Http1xConnection(channel: Channel, client: Boolean)(implicit ec: ExecutionContext) {
     // At first we set the channel in auto read to get the first message
     channel.config.setAutoRead(true)
 
     val (messages, content, permits) = (for {
       // The HTTP messages buffer. We use an unboundedQueue here but
       // because we only 1 message at a time, the effective size will be 1.
-      messages <- async.unboundedQueue[Task,Option[(HttpMessage,Boolean)]]
+      messages <- async.unboundedQueue[IO,Option[(HttpMessage,Boolean)]]
       // The content buffer. We use also an unboundedQueue here but
       // because we ask netty to stop to read as soon as we have one chunk,
       // so the effective size will be 1 as well.
-      content <- async.unboundedQueue[Task,Option[Chunk[Byte]]]
+      content <- async.unboundedQueue[IO,Option[Chunk[Byte]]]
       // Track usages. We only allow one message to be write/read at a time.
-      permits <- async.semaphore[Task](1)
-    } yield (messages, content, permits)).unsafeRun()
+      permits <- async.semaphore[IO](1)
+    } yield (messages, content, permits)).unsafeRunSync()
 
     // Each time we consume a chunk we ask the channel
     // to read the next message. When this chunk has been
@@ -351,7 +365,7 @@ private[http] object NettySupport {
     // Because we are now consuming this chunk, we can inform the
     // socket that we are ready to receive new data.
     val contentStream =
-      content.dequeue.evalMap { chunk => Task.delay(if(chunk.isDefined) channel.read()).map(_ => chunk) }
+      content.dequeue.evalMap { chunk => IO(if(chunk.isDefined) channel.read()).map(_ => chunk) }
 
     channel.pipeline.addLast("HttpStreamHandler", new SimpleChannelInboundHandler[HttpObject]() {
       // Mutable reference is safe here because the code is single threaded.
@@ -375,20 +389,20 @@ private[http] object NettySupport {
           (if(hasContent(message)) {
             (for {
               _ <- messages.enqueue1(Some(message -> true))
-              _ <- Task.delay(skipContent = false)
-              _ <- Task.delay(channel.config.setAutoRead(false))
+              _ <- IO(skipContent = false)
+              _ <- IO(channel.config.setAutoRead(false))
             } yield ())
           }
           else {
             (for {
               _ <- messages.enqueue1(Some(message -> false))
-              _ <- Task.delay(skipContent = true)
+              _ <- IO(skipContent = true)
             } yield ())
-          }).unsafeRun()
+          }).unsafeRunSync()
         // We ignore the content and the last chunk has been received,
         // mark the connection ready for next message.
         case lastChunk: LastHttpContent if skipContent =>
-          (if(client) permits.increment else permits.decrement).unsafeRun()
+          (if(client) permits.increment else permits.decrement).unsafeRunSync()
         // Should not happen, unless the client send us a GET/HEAD request
         // with a content body and we will ignore it anyawy
         case chunk: HttpContent if skipContent =>
@@ -402,14 +416,14 @@ private[http] object NettySupport {
             _ <- content.enqueue1(Some(buffer))
             _ <- content.enqueue1(Some(lastChunk.content.toChunk))
             _ <- content.enqueue1(None)
-            _ <- Task.delay {
+            _ <- IO {
               buffer = Chunk.empty
               channel.config.setAutoRead(true)
             }
-          } yield ()).unsafeRun()
+          } yield ()).unsafeRunSync()
         // A content chunk has been received. Add it to the buffer.
         case chunk: HttpContent =>
-          buffer = Chunk.concat(Seq(buffer, chunk.content.toChunk))
+          buffer = chunk.content.toChunk.prepend(buffer).toChunk
       }
 
       // No more data available on the socket. Enqueue the buffered
@@ -417,8 +431,8 @@ private[http] object NettySupport {
       override def channelReadComplete(ctx: ChannelHandlerContext) = {
         (for {
           _ <- content.enqueue1(Some(buffer))
-          _ <- Task.delay(buffer = Chunk.empty)
-        } yield ()).unsafeRun()
+          _ <- IO(buffer = Chunk.empty)
+        } yield ()).unsafeRunSync()
       }
     })
 
@@ -426,7 +440,7 @@ private[http] object NettySupport {
       override def channelRead0(ctx: ChannelHandlerContext, msg: Any) = msg match {
         // If we have switched protocol, we now receive raw bytes buffer here.
         case msg: ByteBuf =>
-          content.enqueue1(Some(msg.toChunk)).unsafeRun()
+          content.enqueue1(Some(msg.toChunk)).unsafeRunSync()
           // Stop reading automatically now, user code will pull the stream.
           channel.config.setAutoRead(false)
         case _ =>
@@ -444,72 +458,73 @@ private[http] object NettySupport {
     // When the channel is closed we push None to the message
     // queue, to indicate the End Of Stream. We also push None
     // to the content queue to force incomplete stream to finish.
-    lazy val closed: Task[Unit] = channel.closeFuture.toTask.flatMap { _ =>
-      (for {
+    lazy val closed: IO[Unit] = channel.closeFuture.toIO.flatMap { _ =>
+      for {
         _ <- messages.enqueue1(None)
         _ <- content.enqueue1(None)
-      } yield ())
+      } yield ()
     }
 
     def isOpen: Boolean = channel.isOpen
-    def close: Task[Unit] = Task.delay(if(channel.isOpen) channel.close())
+    def close: IO[Unit] = IO(if(channel.isOpen) channel.close())
 
     // Read one HTTP message along with its content stream. The
     // content stream must be read before the next message to be
     // available.
-    def read(): Task[(HttpMessage,Stream[Task,Byte])] =
+    def read: IO[(HttpMessage, Stream[IO, Byte])] =
       messages.dequeue1.flatMap {
         case Some((message, true)) =>
           for {
-            readers <- async.semaphore[Task](1) // Keep track of the number of readers
-            eosReached <- async.signalOf[Task,Boolean](false) // Keep track of the End Of Stream
+            readers <- async.semaphore[IO](1)
+            eosReached <- async.signalOf[IO, Boolean](false)
             messageStream =
               Stream.
                 // The content stream can be read only once
                 eval(readers.tryDecrement).flatMap {
-                  case false =>
-                    Stream.fail(Error.StreamAlreadyConsumed)
-                  case true =>
-                    contentStream.
-                      // We read the queue until a None, that mark
-                      // the content stream end.
-                      evalMap { chunk => eosReached.set(chunk.isEmpty).map(_ => chunk) }.
-                      takeWhile(_.isDefined).
-                      // The stream of bytes
-                      flatMap(chunk => Stream.chunk(chunk.get)).
-                      // When user code finished to consume this stream, we need
-                      // to drain the remaining content if the eos has not been
-                      // reached yet.
-                      onFinalize(for {
+                case false =>
+                  Stream.fail(Error.StreamAlreadyConsumed)
+                case true =>
+                  contentStream.
+                    // We read the queue until a None, that marks
+                    // the content stream end.
+                    evalMap(chunk => eosReached.set(chunk.isEmpty).map(_ => chunk)).
+                    takeWhile(_.isDefined).
+                    // The stream of bytes
+                    flatMap(chunk => Stream.chunk(chunk.get)).
+                    // When user code finishes consuming this stream, we need
+                    // to drain the remaining content if the eos has not been
+                    // reached yet.
+                    onFinalize {
+                      for {
                         fullyRead <- eosReached.get
-                        _ <- if(fullyRead) Task.now(()) else contentStream.takeWhile(_.isDefined).drain.run
-                        _ <- if(client) permits.increment else permits.decrement
-                      } yield ())
-                }
+                        _ <- if (fullyRead) IO.pure(()) else contentStream.takeWhile(_.isDefined).drain.run
+                        _ <- if (client) permits.increment else permits.decrement
+                      } yield ()
+                    }
+              }
           } yield (message, messageStream)
-        case Some((message, false)) =>
-          Task.now((message, Stream.empty))
-        case _ =>
-          Task.fail(Error.ConnectionClosed)
+        case Some((message, false)) => IO.pure((message, Stream.empty))
+        case _ => IO.raiseError(Error.ConnectionClosed)
       }
 
+
     // Write an HTTP message along with its content to the channel.
-    def write(message: HttpMessage, contentStream: Stream[Task,Byte]): Task[Unit] =
+    def write(message: HttpMessage, contentStream: Stream[IO,Byte]): IO[Unit] =
       for {
         _ <- if(client) permits.decrement else permits.increment
-        _ <- if(channel.isOpen) Task.delay(channel.writeAndFlush(message)) else Task.fail(Error.ConnectionClosed)
+        _ <- if(channel.isOpen) IO(channel.writeAndFlush(message)) else IO.raiseError(Error.ConnectionClosed)
         _ <- (contentStream to channel.httpContentSink).run
-        _ <- Task.delay(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
+        _ <- IO(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
       } yield ()
 
     // Upgrade the connection to a plain TCP connection: we deregister
     // all the netty HTTP pipeline.
-    def upgrade(): Task[Stream[Task,Byte]] =
+    def upgrade(): IO[Stream[IO,Byte]] =
       for {
         _ <- permits.decrement
         _ <- messages.enqueue1(None)
-        in <- Task.delay {
-          channel.runInEventLoop[Stream[Task,Byte]] {
+        in <- IO {
+          channel.runInEventLoop[Stream[IO,Byte]] {
             channel.pipeline.names.asScala.filter(_.startsWith("Http")).foreach(channel.pipeline.remove)
             // Read the next message
             channel.read()

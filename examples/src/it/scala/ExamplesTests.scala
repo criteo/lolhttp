@@ -36,7 +36,7 @@ import ExecutionContext.Implicits.global
 class ExamplesTests extends Tests  {
   import ExamplesTests.runExample
 
-  test("HelloWorld", Unsafe) {
+  test("HelloWorld", Slow) {
     val forked = runExample("HelloWorld")
     val requests = 100
 
@@ -56,7 +56,7 @@ class ExamplesTests extends Tests  {
     }
   }
 
-  test("LargeFileUpload", Unsafe) {
+  test("LargeFileUpload", Slow) {
     val forked = runExample("LargeFileUpload")
     val message = Chunk.bytes("HELLO".getBytes)
     val chunk = Chunk.bytes(("A" * 1024).getBytes)
@@ -87,7 +87,7 @@ class ExamplesTests extends Tests  {
     }
   }
 
-  test("ServingFiles", Unsafe) {
+  test("ServingFiles", Slow) {
     val forked = runExample("ServingFiles")
 
     try {
@@ -127,7 +127,7 @@ class ExamplesTests extends Tests  {
     }
   }
 
-  test("ReverseProxy", Unsafe) {
+  test("ReverseProxy", Slow) {
     val forked = runExample("ReverseProxy")
     try {
       val responses = eventually(await() {
@@ -145,7 +145,7 @@ class ExamplesTests extends Tests  {
     }
   }
 
-  test("JsonWebService", Unsafe) {
+  test("JsonWebService", Slow) {
     val forked = runExample("JsonWebService")
     val client = Client("localhost", 8888)
     try {
@@ -170,7 +170,7 @@ class ExamplesTests extends Tests  {
     }
   }
 
-  test("GithubClient", Unsafe) {
+  test("GithubClient", Slow) {
     val forked = runExample("GithubClient")
     forked.waitFor should be (0)
   }

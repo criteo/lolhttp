@@ -13,7 +13,6 @@ import ExecutionContext.Implicits.global
 class StreamingTests extends Tests {
 
   def now = System.currentTimeMillis
-  implicit val SC = Scheduler.fromFixedDaemonPool(1)
   val `10Meg` = 10 * 1024 * 1024
 
   // Transform the stream into packets of 10Meg
@@ -29,7 +28,12 @@ class StreamingTests extends Tests {
     withServer(Server.listen() { req =>
       val start = now
       // Read at most 3Meg per second
-      req.read(_.through(rechunk).evalMap(c => IO(println(s"${c.size} bytes received"))).flatMap(_ => fs2.time.sleep[IO](3.seconds)).run).map { _ =>
+      req.read(stream => Scheduler[IO](corePoolSize = 1).flatMap { scheduler =>
+        stream.
+          through(rechunk).
+          evalMap(c => IO(println(s"${c.size} bytes received"))).
+          flatMap(_ => scheduler.sleep[IO](3.seconds))
+      }.run).map { _ =>
         Ok(s"${now - start}")
       }
     }) { server =>

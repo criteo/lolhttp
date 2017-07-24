@@ -1,4 +1,4 @@
-val VERSION = "0.5.1"
+val VERSION = "0.6.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
@@ -88,15 +88,14 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.10.0-M3",
+      "co.fs2" %% "fs2-core" % "0.10.0-M4",
       "io.netty" % "netty-codec-http2" % "4.1.11.Final",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     ),
 
     // Vendorise internal libs
     assemblyShadeRules in assembly := Seq(
-      ShadeRule.rename("io.netty.**" -> "lol.http.internal.@0").inAll,
-      ShadeRule.rename("org.bouncycastle.**" -> "lol.http.internal.@0").inAll
+      ShadeRule.rename("io.netty.**" -> "lol.http.internal.@0").inAll
     ),
     assemblyMergeStrategy in assembly := {
       case "META-INF/io.netty.versions.properties" =>

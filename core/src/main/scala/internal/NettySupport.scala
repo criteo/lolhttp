@@ -110,19 +110,25 @@ private[http] object NettySupport {
 
   implicit class BetterChannel(channel: Channel) {
 
-    def runInEventLoop[A](a: => A): A = {
+    def runInEventLoop[A](thunk: () => A): A = {
       val latch = new java.util.concurrent.CountDownLatch(1)
       @volatile var result: Option[A] = None
       channel.eventLoop.submit(new Runnable() {
         def run = {
-          result = Some(a)
+          result = Some(thunk())
           latch.countDown
         }
       })
       latch.await
       result.get
     }
-    // Pull[IO, Nothing, Stream[IO, Byte]]
+
+    def runInEventLoopAsync[A](thunk: () => A): Unit = {
+      channel.eventLoop.submit(new Runnable() {
+        def run = thunk()
+      })
+    }
+
     def httpContentSink: Sink[IO, Byte] = {
       _.repeatPull { s =>
         s.unconsChunk.flatMap {
@@ -365,7 +371,9 @@ private[http] object NettySupport {
     // Because we are now consuming this chunk, we can inform the
     // socket that we are ready to receive new data.
     val contentStream =
-      content.dequeue.evalMap { chunk => IO(if(chunk.isDefined) channel.read()).map(_ => chunk) }
+      content.dequeue.evalMap { chunk =>
+        IO(if(chunk.isDefined) channel.runInEventLoopAsync(() => channel.read())).map(_ => chunk)
+      }
 
     channel.pipeline.addLast("HttpStreamHandler", new SimpleChannelInboundHandler[HttpObject]() {
       // Mutable reference is safe here because the code is single threaded.
@@ -524,7 +532,7 @@ private[http] object NettySupport {
         _ <- permits.decrement
         _ <- messages.enqueue1(None)
         in <- IO {
-          channel.runInEventLoop[Stream[IO,Byte]] {
+          channel.runInEventLoop[Stream[IO,Byte]] { () =>
             channel.pipeline.names.asScala.filter(_.startsWith("Http")).foreach(channel.pipeline.remove)
             // Read the next message
             channel.read()

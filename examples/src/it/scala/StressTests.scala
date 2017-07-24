@@ -11,7 +11,7 @@ import ExecutionContext.Implicits.global
 class StressTests extends Tests {
   val bigJsonDocument = parse(s"""[${1 to 2048 mkString(",")}]""").right.get
 
-  test("Using a new connection for each request", Unsafe) {
+  test("Using a new connection for each request", Slow) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       (1 to 20).foreach { _ =>
         await() {
@@ -27,7 +27,7 @@ class StressTests extends Tests {
     }
   }
 
-  test("Reusing a connection pool", Unsafe) {
+  test("Reusing a connection pool", Slow) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       val client = Client("localhost", port = server.port)
       (1 to 20).foreach { _ =>
@@ -43,7 +43,7 @@ class StressTests extends Tests {
     }
   }
 
-  test("Reusing a single connection", Unsafe) {
+  test("Reusing a single connection", Slow) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       val client = Client("localhost", port = server.port, maxConnections = 1)
       (1 to 20).foreach { _ =>
@@ -59,7 +59,7 @@ class StressTests extends Tests {
     }
   }
 
-  test("Sequential, using a new connection for each request", Unsafe) {
+  test("Sequential, using a new connection for each request", Slow) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       (1 to 5000).map { i =>
         await() {
@@ -71,7 +71,7 @@ class StressTests extends Tests {
     }
   }
 
-  test("Sequential, using a connection pool", Unsafe) {
+  test("Sequential, using a connection pool", Slow) {
     withServer(Server.listen() { _ => Ok(bigJsonDocument) }) { server =>
       val client = Client("localhost", port = server.port, maxConnections = 1)
       (1 to 5000).map { i =>

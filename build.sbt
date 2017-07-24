@@ -19,8 +19,7 @@ lazy val commonSettings = Seq(
   ),
 
   // Tests
-  fork in Test := Option(System.getProperty("fork")).isDefined,
-  testOptions in Test += Tests.Argument("-l", "Unsafe"),
+  fork in Test := true,
 
   // Useful to run flakey tests
   commands += Command.single("repeat") { (state, arg) =>
@@ -28,26 +27,8 @@ lazy val commonSettings = Seq(
   },
 
   // Run example in another JVM, and quit on key press
-  commands += Command.single("example") { (state, arg) =>
-    s"examples/test:runMain lol.http.examples.ExamplesTests $arg" :: state
-  },
-
-  // Run unsafe examples tests
-  commands += Command.command("testExamples") { (state) =>
-    val extracted = Project.extract(state)
-    import extracted._
-    val Some(testClassPath) = classDirectory in (examples, Test) get structure.data
-    s"""examples/test:runMain org.scalatest.tools.Runner -R $testClassPath -o -s lol.http.examples.ExamplesTests""" ::
-    state
-  },
-
-  // Run stress tests
-  commands += Command.command("stressTests") { (state) =>
-    val extracted = Project.extract(state)
-    import extracted._
-    val Some(testClassPath) = classDirectory in (examples, Test) get structure.data
-    s"""examples/test:runMain org.scalatest.tools.Runner -R $testClassPath -o -s lol.http.examples.StressTests""" ::
-    state
+  commands += Command.single("runExample") { (state, arg) =>
+    s"examples/it:runMain lol.http.examples.ExamplesTests $arg" :: state
   },
 
   // Maven config
@@ -103,8 +84,9 @@ def removeDependencies(groups: String*)(xml: scala.xml.Node) = {
 
 lazy val lolhttp =
   (project in file("core")).
-  settings(commonSettings: _*).
   settings(
+    commonSettings,
+
     libraryDependencies ++= Seq(
       "co.fs2" %% "fs2-core" % "0.10.0-M3",
       "io.netty" % "netty-codec-http2" % "4.1.11.Final",
@@ -140,38 +122,38 @@ lazy val lolhttp =
 
 lazy val loljson =
   (project in file("json")).
-  settings(commonSettings: _*).
   settings(
+    commonSettings,
+
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser",
       "io.circe" %% "circe-optics"
-    ).map(_ % "0.7.1") ++ Seq(
-      "org.scalatest" %% "scalatest" % "3.0.3" % "test"
-    ),
+    ).map(_ % "0.7.1"),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
 
 lazy val lolhtml =
   (project in file("html")).
-  settings(commonSettings: _*).
   settings(
-    libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.3" % "test"
-    ),
+    commonSettings,
+
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
 
 lazy val examples: Project =
   project.
-  settings(commonSettings: _*).
+  configs(IntegrationTest).
   settings(
+    commonSettings,
+    Defaults.itSettings,
+
     publishArtifact := false,
-    fork in Test := true,
-    connectInput in Test := true
+    fork in IntegrationTest := true,
+    connectInput in IntegrationTest := true
   ).
   settings(
     Option(System.getProperty("generateExamples")).map(_ => Seq(
@@ -188,13 +170,14 @@ lazy val examples: Project =
       )
     )).getOrElse(Nil): _*
   ).
-  dependsOn(lolhttp % "compile->compile;test->test", loljson, lolhtml)
+  dependsOn(lolhttp % "compile->compile;test->test;it->test", loljson, lolhtml)
 
 lazy val root =
   (project in file(".")).
-  settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
   settings(
+    commonSettings,
+
     publishArtifact := false,
     scalacOptions in (Compile,doc) ++= Seq(
       Seq(

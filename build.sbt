@@ -1,4 +1,4 @@
-val VERSION = "0.6.0"
+val VERSION = "0.6.1"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
@@ -106,7 +106,9 @@ lazy val lolhttp =
     },
     assemblyExcludedJars in assembly := {
       val cp = (fullClasspath in assembly).value
-      cp.filter(_.data.getName.startsWith("fs2-"))
+      cp.filterNot { el =>
+        !el.data.getName.endsWith(".jar") || el.data.getName.startsWith("netty-")
+      }
     },
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
     publishArtifact in (Compile, packageBin) := false,

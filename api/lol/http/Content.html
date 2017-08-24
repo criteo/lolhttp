@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.5.1 - lol.http.Content</title>
-          <meta name="description" content="lolhttp 0.5.1 - lol.http.Content" />
-          <meta name="keywords" content="lolhttp 0.5.1 lol.http.Content" />
+          <title>lolhttp 0.6.1 - lol.http.Content</title>
+          <meta name="description" content="lolhttp 0.6.1 - lol.http.Content" />
+          <meta name="keywords" content="lolhttp 0.6.1 lol.http.Content" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.5.1</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.6.1</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -265,7 +265,7 @@ dynamic parameters in URL templates.">
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Content</span><span class="params">(<span name="stream">stream: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">Content</span><span class="params">(<span name="stream">stream: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<span class="extype" name="cats.effect.IO">IO</span>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
@@ -323,9 +323,9 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="lol.http.Content#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(stream:fs2.Stream[fs2.Task,Byte],headers:Map[lol.http.HttpString,lol.http.HttpString]):lol.http.Content"></a><a id="&lt;init&gt;:Content"></a>
+      <a id="&lt;init&gt;(stream:fs2.Stream[cats.effect.IO,Byte],headers:Map[lol.http.HttpString,lol.http.HttpString]):lol.http.Content"></a><a id="&lt;init&gt;:Content"></a>
       <span class="permalink">
-      <a href="../../lol/http/Content.html#&lt;init&gt;(stream:fs2.Stream[fs2.Task,Byte],headers:Map[lol.http.HttpString,lol.http.HttpString]):lol.http.Content" title="Permalink">
+      <a href="../../lol/http/Content.html#&lt;init&gt;(stream:fs2.Stream[cats.effect.IO,Byte],headers:Map[lol.http.HttpString,lol.http.HttpString]):lol.http.Content" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -334,7 +334,7 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Content</span><span class="params">(<span name="stream">stream: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span>
+        <span class="name">Content</span><span class="params">(<span name="stream">stream: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<span class="extype" name="cats.effect.IO">IO</span>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span>
       </span>
       
       <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">stream</dt><dd class="cmt"><p>an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">fs2.Stream</a> of <code>Byte</code>.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>a set of content-related HTTP headers.</p></dd></dl></div>
@@ -413,9 +413,9 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
       
       <p class="shortcomment cmt">Add new HTTP headers to this content.</p><div class="fullcomment"><div class="comment cmt"><p>Add new HTTP headers to this content.</p></div><dl class="paramcmts block"><dt class="param">newHeaders</dt><dd class="cmt"><p>the set of new HTTP header names and values to add to this content.</p></dd><dt>returns</dt><dd class="cmt"><p>a copy of the content with the new headers added.</p></dd></dl></div>
     </li><li name="lol.http.Content#as" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="as[A](implicitdecoder:lol.http.ContentDecoder[A]):fs2.Task[A]"></a><a id="as[A](ContentDecoder[A]):Task[A]"></a>
+      <a id="as[A](implicitdecoder:lol.http.ContentDecoder[A]):cats.effect.IO[A]"></a><a id="as[A](ContentDecoder[A]):IO[A]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Content.html#as[A](implicitdecoder:lol.http.ContentDecoder[A]):fs2.Task[A]" title="Permalink">
+      <a href="../../lol/http/Content.html#as[A](implicitdecoder:lol.http.ContentDecoder[A]):cats.effect.IO[A]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -424,10 +424,10 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">as</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="decoder">decoder: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="lol.http.Content.as.A">A</span>]</span>)</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>[<span class="extype" name="lol.http.Content.as.A">A</span>]</span>
+        <span class="name">as</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="decoder">decoder: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="lol.http.Content.as.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="cats.effect.IO">IO</span>[<span class="extype" name="lol.http.Content.as.A">A</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Create an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">fs2.Task</a> that consume this stream to a value of type <code>A</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Create an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">fs2.Task</a> that consume this stream to a value of type <code>A</code>.</p></div><dl class="paramcmts block"><dt class="param">decoder</dt><dd class="cmt"><p>the <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">lol.http.ContentDecoder</a> able to read stream as values of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">fs2.Task</a> that can be run to consume the stream.</p></dd></dl></div>
+      <p class="shortcomment cmt">Create an <span class="extype" name="cats.effect.IO">cats.effect.IO</span> that consumes this stream to a value of type <code>A</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Create an <span class="extype" name="cats.effect.IO">cats.effect.IO</span> that consumes this stream to a value of type <code>A</code>.</p></div><dl class="paramcmts block"><dt class="param">decoder</dt><dd class="cmt"><p>the <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">lol.http.ContentDecoder</a> is able to read stream as values of type <code>A</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>an <span class="extype" name="cats.effect.IO">cats.effect.IO</span> that can be run to consume the stream.</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -617,9 +617,9 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
       
       <p class="shortcomment cmt">Remove HTTP headers from this content.</p><div class="fullcomment"><div class="comment cmt"><p>Remove HTTP headers from this content.</p></div><dl class="paramcmts block"><dt class="param">headerNames</dt><dd class="cmt"><p>the set of HTTP headers names to remove fromt this content.</p></dd><dt>returns</dt><dd class="cmt"><p>a copy of the content without the removed headers.</p></dd></dl></div>
     </li><li name="lol.http.Content#stream" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="stream:fs2.Stream[fs2.Task,Byte]"></a><a id="stream:Stream[Task,Byte]"></a>
+      <a id="stream:fs2.Stream[cats.effect.IO,Byte]"></a><a id="stream:Stream[IO,Byte]"></a>
       <span class="permalink">
-      <a href="../../lol/http/Content.html#stream:fs2.Stream[fs2.Task,Byte]" title="Permalink">
+      <a href="../../lol/http/Content.html#stream:fs2.Stream[cats.effect.IO,Byte]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -628,7 +628,7 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">stream</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Task" class="extype" target="_top">Task</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>
+        <span class="name">stream</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<span class="extype" name="cats.effect.IO">IO</span>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>
       </span>
       
       

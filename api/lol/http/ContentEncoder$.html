@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.5.1 - lol.http.ContentEncoder</title>
-          <meta name="description" content="lolhttp 0.5.1 - lol.http.ContentEncoder" />
-          <meta name="keywords" content="lolhttp 0.5.1 lol.http.ContentEncoder" />
+          <title>lolhttp 0.6.1 - lol.http.ContentEncoder</title>
+          <meta name="description" content="lolhttp 0.6.1 - lol.http.ContentEncoder" />
+          <meta name="keywords" content="lolhttp 0.6.1 lol.http.ContentEncoder" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.5.1</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.6.1</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -448,9 +448,9 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
               
         </dd></dl></div>
     </li><li name="lol.http.ContentEncoder#defaultFile" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="defaultFile(implicitexecutor:scala.concurrent.ExecutionContext):lol.http.ContentEncoder[java.io.File]"></a><a id="defaultFile(ExecutionContext):ContentEncoder[File]"></a>
+      <a id="defaultFile:lol.http.ContentEncoder[java.io.File]"></a><a id="defaultFile:ContentEncoder[File]"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentEncoder$.html#defaultFile(implicitexecutor:scala.concurrent.ExecutionContext):lol.http.ContentEncoder[java.io.File]" title="Permalink">
+      <a href="../../lol/http/ContentEncoder$.html#defaultFile:lol.http.ContentEncoder[java.io.File]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -459,7 +459,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">defaultFile</span><span class="params">(<span class="implicit">implicit </span><span name="executor">executor: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>)</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="java.io.File">File</span>]</span>
+        <span class="name">defaultFile</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="java.io.File">File</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Default text encoder, using <code>16KB</code> chunks.</p>
@@ -528,9 +528,9 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="lol.http.ContentEncoder#file" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="file(chunkSize:Int)(implicitexecutor:scala.concurrent.ExecutionContext):lol.http.ContentEncoder[java.io.File]"></a><a id="file(Int)(ExecutionContext):ContentEncoder[File]"></a>
+      <a id="file(chunkSize:Int):lol.http.ContentEncoder[java.io.File]"></a><a id="file(Int):ContentEncoder[File]"></a>
       <span class="permalink">
-      <a href="../../lol/http/ContentEncoder$.html#file(chunkSize:Int)(implicitexecutor:scala.concurrent.ExecutionContext):lol.http.ContentEncoder[java.io.File]" title="Permalink">
+      <a href="../../lol/http/ContentEncoder$.html#file(chunkSize:Int):lol.http.ContentEncoder[java.io.File]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -539,10 +539,10 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">file</span><span class="params">(<span name="chunkSize">chunkSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol">16 * 1024</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="executor">executor: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a></span>)</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="java.io.File">File</span>]</span>
+        <span class="name">file</span><span class="params">(<span name="chunkSize">chunkSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol">16 * 1024</span></span>)</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="java.io.File">File</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Create a content encoder for <code>java.io.File</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Create a content encoder for <code>java.io.File</code>.</p></div><dl class="paramcmts block"><dt class="param">chunkSize</dt><dd class="cmt"><p>the size of chunks that will be produced in the content stream. Default to <code>16KB</code>.</p></dd><dt class="param">executor</dt><dd class="cmt"><p>an execution context that will be used to run the async IO operations.</p></dd><dt>returns</dt><dd class="cmt"><p>an encoder for <code>java.io.File</code>.</p></dd></dl></div>
+      <p class="shortcomment cmt">Create a content encoder for <code>java.io.File</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Create a content encoder for <code>java.io.File</code>.</p></div><dl class="paramcmts block"><dt class="param">chunkSize</dt><dd class="cmt"><p>the size of chunks that will be produced in the content stream. Default to <code>16KB</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>an encoder for <code>java.io.File</code>.</p></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">

@@ -199,9 +199,9 @@ lazy val root =
         allJars.
           flatMap(x => x.metadata.get(moduleID.key).map(m => x.data -> m)).
           collect {
-            case (jar, ModuleID("org.scala-lang", "scala-library", _, _, _, _, _, _, _, _, _)) =>
+            case (jar, module) if module.name == "scala-library" =>
               jar -> "https://www.scala-lang.org/api/current/"
-            case (jar, ModuleID("co.fs2", "fs2-core_2.12", _, _, _, _, _, _, _, _, _)) =>
+            case (jar, module) if module.name == "fs2-core_2.12" =>
               jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/"
           }.
           toMap.

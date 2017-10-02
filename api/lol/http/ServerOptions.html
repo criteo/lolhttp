@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.6.1 - lol.http.ServerOptions</title>
-          <meta name="description" content="lolhttp 0.6.1 - lol.http.ServerOptions" />
-          <meta name="keywords" content="lolhttp 0.6.1 lol.http.ServerOptions" />
+          <title>lolhttp 0.7.0 - lol.http.ServerOptions</title>
+          <meta name="description" content="lolhttp 0.7.0 - lol.http.ServerOptions" />
+          <meta name="keywords" content="lolhttp 0.7.0 lol.http.ServerOptions" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.6.1</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.7.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -263,12 +263,13 @@ dynamic parameters in URL templates.">
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">ServerOptions</span><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="defval" name="Math.max(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a>] = <span class="symbol">None</span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">ServerOptions</span><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="defval" name="Math.max(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a>] = <span class="symbol">None</span></span>, <span name="protocols">protocols: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="index.html#HTTP:String">Set(HTTP)</a></span></span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Allow to configure an HTTP server.</p></div><dl class="paramcmts block"><dt class="param">ioThreads</dt><dd class="cmt"><p>the number of threads used for the IO work. Default to <code>max(availableProcessors, 2)</code>.</p></dd><dt class="param">tcpNoDelay</dt><dd class="cmt"><p>if true disable Nagle's algorithm. Default <code>true</code>.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>if defined used as a hint for the TCP buffer size. If none use the system default. Default to <code>None</code>.</p></dd><dt class="param">debug</dt><dd class="cmt"><p>if defined log the TCP traffic with the provided logger name. Default to <code>None</code>.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Server.scala" target="_blank">Server.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Allow to configure an HTTP server.</p></div><dl class="paramcmts block"><dt class="param">ioThreads</dt><dd class="cmt"><p>the number of threads used for the IO work. Default to <code>max(availableProcessors, 2)</code>.</p></dd><dt class="param">tcpNoDelay</dt><dd class="cmt"><p>if true disable Nagle's algorithm. Default <code>true</code>.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>if defined used as a hint for the TCP buffer size. If none use the system default. Default to <code>None</code>.</p></dd><dt class="param">protocols</dt><dd class="cmt"><p>the allowed protocols (HTTP, HTTP2 or both). If SSL enabled the protocol is negociated using ALPN.
+                 Without SSL enabled only direct HTTP2 connections with prior knowledge are supported.</p></dd><dt class="param">debug</dt><dd class="cmt"><p>if defined log the TCP traffic with the provided logger name. Default to <code>None</code>.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Server.scala" target="_blank">Server.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -319,9 +320,9 @@ dynamic parameters in URL templates.">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="lol.http.ServerOptions#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(ioThreads:Int,tcpNoDelay:Boolean,bufferSize:Option[Int],debug:Option[String]):lol.http.ServerOptions"></a><a id="&lt;init&gt;:ServerOptions"></a>
+      <a id="&lt;init&gt;(ioThreads:Int,tcpNoDelay:Boolean,bufferSize:Option[Int],protocols:Set[String],debug:Option[String]):lol.http.ServerOptions"></a><a id="&lt;init&gt;:ServerOptions"></a>
       <span class="permalink">
-      <a href="../../lol/http/ServerOptions.html#&lt;init&gt;(ioThreads:Int,tcpNoDelay:Boolean,bufferSize:Option[Int],debug:Option[String]):lol.http.ServerOptions" title="Permalink">
+      <a href="../../lol/http/ServerOptions.html#&lt;init&gt;(ioThreads:Int,tcpNoDelay:Boolean,bufferSize:Option[Int],protocols:Set[String],debug:Option[String]):lol.http.ServerOptions" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -330,10 +331,11 @@ dynamic parameters in URL templates.">
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ServerOptions</span><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="defval" name="Math.max(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a>] = <span class="symbol">None</span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span>
+        <span class="name">ServerOptions</span><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="defval" name="Math.max(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a>] = <span class="symbol">None</span></span>, <span name="protocols">protocols: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="index.html#HTTP:String">Set(HTTP)</a></span></span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span>
       </span>
       
-      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">ioThreads</dt><dd class="cmt"><p>the number of threads used for the IO work. Default to <code>max(availableProcessors, 2)</code>.</p></dd><dt class="param">tcpNoDelay</dt><dd class="cmt"><p>if true disable Nagle's algorithm. Default <code>true</code>.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>if defined used as a hint for the TCP buffer size. If none use the system default. Default to <code>None</code>.</p></dd><dt class="param">debug</dt><dd class="cmt"><p>if defined log the TCP traffic with the provided logger name. Default to <code>None</code>.</p></dd></dl></div>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">ioThreads</dt><dd class="cmt"><p>the number of threads used for the IO work. Default to <code>max(availableProcessors, 2)</code>.</p></dd><dt class="param">tcpNoDelay</dt><dd class="cmt"><p>if true disable Nagle's algorithm. Default <code>true</code>.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>if defined used as a hint for the TCP buffer size. If none use the system default. Default to <code>None</code>.</p></dd><dt class="param">protocols</dt><dd class="cmt"><p>the allowed protocols (HTTP, HTTP2 or both). If SSL enabled the protocol is negociated using ALPN.
+                 Without SSL enabled only direct HTTP2 connections with prior knowledge are supported.</p></dd><dt class="param">debug</dt><dd class="cmt"><p>if defined log the TCP traffic with the provided logger name. Default to <code>None</code>.</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -440,6 +442,8 @@ dynamic parameters in URL templates.">
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -478,28 +482,6 @@ dynamic parameters in URL templates.">
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <span class="permalink">
-      <a href="../../lol/http/ServerOptions.html#finalize():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="symbol">classOf[java.lang.Throwable]</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -515,7 +497,10 @@ dynamic parameters in URL templates.">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="lol.http.ServerOptions#ioThreads" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ioThreads:Int"></a>
       <span class="permalink">
@@ -579,7 +564,10 @@ dynamic parameters in URL templates.">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
@@ -595,7 +583,26 @@ dynamic parameters in URL templates.">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="lol.http.ServerOptions#protocols" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="protocols:Set[String]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/ServerOptions.html#protocols:Set[String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">protocols</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
@@ -700,7 +707,36 @@ dynamic parameters in URL templates.">
 
         
 
-        
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../lol/http/ServerOptions.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+                <span class="name">@deprecated</span>
+              
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">

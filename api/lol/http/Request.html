@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.6.1 - lol.http.Request</title>
-          <meta name="description" content="lolhttp 0.6.1 - lol.http.Request" />
-          <meta name="keywords" content="lolhttp 0.6.1 lol.http.Request" />
+          <title>lolhttp 0.7.0 - lol.http.Request</title>
+          <meta name="description" content="lolhttp 0.7.0 - lol.http.Request" />
+          <meta name="keywords" content="lolhttp 0.7.0 lol.http.Request" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.6.1</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.7.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -263,14 +263,14 @@ dynamic parameters in URL templates.">
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Request</span><span class="params">(<span name="method">method: <a href="HttpMethod.html" class="extype" name="lol.http.HttpMethod">HttpMethod</a></span>, <span name="url">url: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;/&quot;</span></span>, <span name="scheme">scheme: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;http&quot;</span></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">Request</span><span class="params">(<span name="method">method: <a href="HttpMethod.html" class="extype" name="lol.http.HttpMethod">HttpMethod</a></span>, <span name="url">url: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;/&quot;</span></span>, <span name="scheme">scheme: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;http&quot;</span></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="protocol">protocol: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol"><span class="name"><a href="index.html#HTTP:String">HTTP</a></span></span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       </h4>
 
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An HTTP request.</p><p>Represent all the data available in the HTTP request headers, and the request content that
 can be consumed lazily if needed.
-</p></div><dl class="paramcmts block"><dt class="param">method</dt><dd class="cmt"><p>the HTTP method such as GET or POST.</p></dd><dt class="param">url</dt><dd class="cmt"><p>the resource URL.</p></dd><dt class="param">scheme</dt><dd class="cmt"><p>the scheme such as <code>http</code> or <code>https</code>.</p></dd><dt class="param">content</dt><dd class="cmt"><p>the request content.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>the HTTP headers.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Request.scala" target="_blank">Request.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="paramcmts block"><dt class="param">method</dt><dd class="cmt"><p>the HTTP method such as GET or POST.</p></dd><dt class="param">url</dt><dd class="cmt"><p>the resource URL.</p></dd><dt class="param">scheme</dt><dd class="cmt"><p>the scheme such as <code>http</code> or <code>https</code>.</p></dd><dt class="param">content</dt><dd class="cmt"><p>the request content.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>the HTTP headers.</p></dd><dt class="param">protocol</dt><dd class="cmt"><p>the protocol version.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/Request.scala" target="_blank">Request.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -321,9 +321,9 @@ can be consumed lazily if needed.
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="lol.http.Request#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(method:lol.http.HttpMethod,url:String,scheme:String,content:lol.http.Content,headers:Map[lol.http.HttpString,lol.http.HttpString]):lol.http.Request"></a><a id="&lt;init&gt;:Request"></a>
+      <a id="&lt;init&gt;(method:lol.http.HttpMethod,url:String,scheme:String,content:lol.http.Content,headers:Map[lol.http.HttpString,lol.http.HttpString],protocol:String):lol.http.Request"></a><a id="&lt;init&gt;:Request"></a>
       <span class="permalink">
-      <a href="../../lol/http/Request.html#&lt;init&gt;(method:lol.http.HttpMethod,url:String,scheme:String,content:lol.http.Content,headers:Map[lol.http.HttpString,lol.http.HttpString]):lol.http.Request" title="Permalink">
+      <a href="../../lol/http/Request.html#&lt;init&gt;(method:lol.http.HttpMethod,url:String,scheme:String,content:lol.http.Content,headers:Map[lol.http.HttpString,lol.http.HttpString],protocol:String):lol.http.Request" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -332,10 +332,10 @@ can be consumed lazily if needed.
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Request</span><span class="params">(<span name="method">method: <a href="HttpMethod.html" class="extype" name="lol.http.HttpMethod">HttpMethod</a></span>, <span name="url">url: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;/&quot;</span></span>, <span name="scheme">scheme: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;http&quot;</span></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span>
+        <span class="name">Request</span><span class="params">(<span name="method">method: <a href="HttpMethod.html" class="extype" name="lol.http.HttpMethod">HttpMethod</a></span>, <span name="url">url: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;/&quot;</span></span>, <span name="scheme">scheme: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;http&quot;</span></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="protocol">protocol: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol"><span class="name"><a href="index.html#HTTP:String">HTTP</a></span></span></span>)</span>
       </span>
       
-      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">method</dt><dd class="cmt"><p>the HTTP method such as GET or POST.</p></dd><dt class="param">url</dt><dd class="cmt"><p>the resource URL.</p></dd><dt class="param">scheme</dt><dd class="cmt"><p>the scheme such as <code>http</code> or <code>https</code>.</p></dd><dt class="param">content</dt><dd class="cmt"><p>the request content.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>the HTTP headers.</p></dd></dl></div>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">method</dt><dd class="cmt"><p>the HTTP method such as GET or POST.</p></dd><dt class="param">url</dt><dd class="cmt"><p>the resource URL.</p></dd><dt class="param">scheme</dt><dd class="cmt"><p>the scheme such as <code>http</code> or <code>https</code>.</p></dd><dt class="param">content</dt><dd class="cmt"><p>the request content.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>the HTTP headers.</p></dd><dt class="param">protocol</dt><dd class="cmt"><p>the protocol version.</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -474,6 +474,8 @@ can be consumed lazily if needed.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -530,28 +532,6 @@ already been consumed.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <span class="permalink">
-      <a href="../../lol/http/Request.html#finalize():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="symbol">classOf[java.lang.Throwable]</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -567,7 +547,10 @@ already been consumed.
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="lol.http.Request#headers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="headers:Map[lol.http.HttpString,lol.http.HttpString]"></a><a id="headers:Map[HttpString,HttpString]"></a>
       <span class="permalink">
@@ -647,7 +630,10 @@ already been consumed.
         <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
@@ -663,7 +649,10 @@ already been consumed.
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="lol.http.Request#path" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="path:String"></a>
       <span class="permalink">
@@ -680,6 +669,22 @@ already been consumed.
       </span>
       
       <p class="shortcomment cmt">The path part of the URL (ie.</p><div class="fullcomment"><div class="comment cmt"><p>The path part of the URL (ie. without the queryString).</p></div></div>
+    </li><li name="lol.http.Request#protocol" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="protocol:String"></a>
+      <span class="permalink">
+      <a href="../../lol/http/Request.html#protocol:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">protocol</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
     </li><li name="lol.http.Request#queryString" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="queryString:Option[String]"></a>
       <span class="permalink">
@@ -708,7 +713,7 @@ already been consumed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">read</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="effect">effect: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<span class="extype" name="cats.effect.IO">IO</span>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <span class="extype" name="cats.effect.IO">IO</span>[<span class="extype" name="lol.http.Request.read.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Request.read.A">A</span>]</span>
+        <span class="name">read</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="effect">effect: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>[<span class="extype" name="lol.http.Request.read.A">A</span>]</span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="lol.http.Request.read.A">A</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Consume the content attached to this request by evaluating the provided effect function.</p><div class="fullcomment"><div class="comment cmt"><p>Consume the content attached to this request by evaluating the provided effect function.</p></div><dl class="paramcmts block"><dt class="param">effect</dt><dd class="cmt"><p>the function to use to consume the stream.</p></dd><dt>returns</dt><dd class="cmt"><p>eventually a value of type <code>A</code>.</p></dd></dl></div>
@@ -864,7 +869,36 @@ already been consumed.
 
         
 
-        
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../lol/http/Request.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+                <span class="name">@deprecated</span>
+              
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">

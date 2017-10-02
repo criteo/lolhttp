@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.6.1 - lol.json.JsonContent</title>
-          <meta name="description" content="lolhttp 0.6.1 - lol.json.JsonContent" />
-          <meta name="keywords" content="lolhttp 0.6.1 lol.json.JsonContent" />
+          <title>lolhttp 0.7.0 - lol.json.JsonContent</title>
+          <meta name="description" content="lolhttp 0.7.0 - lol.json.JsonContent" />
+          <meta name="keywords" content="lolhttp 0.7.0 lol.json.JsonContent" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.6.1</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.7.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -290,6 +290,8 @@ for <code>io.circe.Json</code> values.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -308,7 +310,7 @@ for <code>io.circe.Json</code> values.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">decoder</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="../index.html">ContentDecoder.MaxSize</a></span></span></span>, <span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
+        <span class="name">decoder</span><span class="params">(<span name="maxSize">maxSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="symbol"><span class="name"><a href="../index.html">ContentDecoder.MaxSize</a></span></span></span>, <span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Creates JSON decoders.</p><div class="fullcomment"><div class="comment cmt"><p>Creates JSON decoders.</p></div><dl class="paramcmts block"><dt class="param">maxSize</dt><dd class="cmt"><p>the maximum amout of byte to read in memory.</p></dd><dt class="param">codec</dt><dd class="cmt"><p>the charset to use to read the JSON text. Default to <code>UTF-8</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>a <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a> for <code>io.circe.JSON</code>.</p></dd></dl></div>
@@ -324,7 +326,7 @@ for <code>io.circe.Json</code> values.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">encoder</span><span class="params">(<span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
+        <span class="name">encoder</span><span class="params">(<span name="codec">codec: <a href="https://www.scala-lang.org/api/current/index.html#scala.io.Codec" class="extype" target="_top">Codec</a> = <span class="symbol">Codec.UTF8</span></span>)</span><span class="result">: <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Creates JSON encoders.</p><div class="fullcomment"><div class="comment cmt"><p>Creates JSON encoders.</p></div><dl class="paramcmts block"><dt class="param">codec</dt><dd class="cmt"><p>the charset to use to read the JSON text. Default to <code>UTF-8</code>.</p></dd><dt>returns</dt><dd class="cmt"><p>a <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> for <code>io.circe.JSON</code>.</p></dd></dl></div>
@@ -360,28 +362,6 @@ for <code>io.circe.Json</code> values.
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <span class="permalink">
-      <a href="../../lol/json/JsonContent$.html#finalize():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="symbol">classOf[java.lang.Throwable]</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -397,7 +377,10 @@ for <code>io.circe.Json</code> values.
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -413,7 +396,10 @@ for <code>io.circe.Json</code> values.
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
@@ -461,7 +447,10 @@ for <code>io.circe.Json</code> values.
         <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
@@ -477,7 +466,10 @@ for <code>io.circe.Json</code> values.
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="lol.json.JsonContent#sseEventDecoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sseEventDecoder:lol.http.ServerSentEvents.EventDecoder[io.circe.Json]"></a><a id="sseEventDecoder:EventDecoder[Json]"></a>
       <span class="permalink">
@@ -490,7 +482,7 @@ for <code>io.circe.Json</code> values.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sseEventDecoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
+        <span class="name">sseEventDecoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">A decoder for Server Sent Events.</p>
@@ -506,7 +498,7 @@ for <code>io.circe.Json</code> values.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sseEventEncoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<span class="extype" name="io.circe.Json">Json</span>]</span>
+        <span class="name">sseEventEncoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">A encoder for Server Sent Events.</p>
@@ -614,7 +606,36 @@ for <code>io.circe.Json</code> values.
 
         
 
-        
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../lol/json/JsonContent$.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+                <span class="name">@deprecated</span>
+              
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">

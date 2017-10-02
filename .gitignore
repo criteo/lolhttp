@@ -4,4 +4,6 @@ project/target
 stuff/
 .idea/
 api/
-sync
+alpn-boot.jar
+.travis/pubring.gpg
+.travis/secring.gpg

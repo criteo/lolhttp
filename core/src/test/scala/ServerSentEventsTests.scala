@@ -20,44 +20,50 @@ class ServerSentEventsTests extends Tests {
   }
 
   test("Valid string events stream") {
-    withServer(Server.listen()(App)) { server =>
-      await() {
-        Client("localhost", server.port).runAndStop { client =>
-          client.run(Get("/stream")) { response =>
-            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeToFuture
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+        await() {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            client.run(Get("/stream")) { response =>
+              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+                eventStream.runLog.map(_.toList).unsafeToFuture
+              }
             }
           }
-        }
-      } should be (List(Event("Hello"), Event("World")))
+        } should be (List(Event("Hello"), Event("World")))
+      }
     }
   }
 
   test("Not an events stream") {
-    withServer(Server.listen()(App)) { server =>
-      the [Error] thrownBy await() {
-        Client("localhost", server.port).runAndStop { client =>
-          client.run(Get("/")) { response =>
-            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeToFuture
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+        the [Error] thrownBy await() {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            client.run(Get("/")) { response =>
+              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+                eventStream.runLog.map(_.toList).unsafeToFuture
+              }
             }
           }
-        }
-      } should be (Error.UnexpectedContentType())
+        } should be (Error.UnexpectedContentType())
+      }
     }
   }
 
   test("Invalid events stream ") {
-    withServer(Server.listen()(App)) { server =>
-      await() {
-        Client("localhost", server.port).runAndStop { client =>
-          client.run(Get("/fakeStream")) { response =>
-            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeToFuture
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+        await() {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            client.run(Get("/fakeStream")) { response =>
+              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+                eventStream.runLog.map(_.toList).unsafeToFuture
+              }
             }
           }
-        }
-      } should be (Nil)
+        } should be (Nil)
+      }
     }
   }
 

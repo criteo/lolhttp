@@ -2,15 +2,36 @@ package lol.http
 
 import java.net.{ InetSocketAddress }
 
-import io.netty.channel.{ ChannelInitializer }
+import io.netty.channel.{
+  ChannelHandlerContext,
+  ChannelInitializer }
 import io.netty.channel.nio.{ NioEventLoopGroup }
 import io.netty.bootstrap.{ ServerBootstrap }
 import io.netty.channel.socket.nio.{ NioServerSocketChannel }
-import io.netty.util.concurrent.{ GenericFutureListener, Future => NettyFuture }
+import io.netty.util.concurrent.{
+  GenericFutureListener,
+  Future => NettyFuture }
 import io.netty.channel.socket.{ SocketChannel }
-import io.netty.handler.logging.{ LogLevel, LoggingHandler }
+import io.netty.handler.logging.{
+  LogLevel,
+  LoggingHandler }
+import io.netty.buffer.{
+  ByteBuf,
+  ByteBufUtil,
+  Unpooled
+}
+import io.netty.handler.codec.{ ByteToMessageDecoder }
+import io.netty.handler.ssl.{
+  ApplicationProtocolNames,
+  ApplicationProtocolConfig,
+  ApplicationProtocolNegotiationHandler }
+import io.netty.handler.codec.http2.{ Http2CodecUtil }
+
 import scala.util.{ Try }
-import scala.concurrent.{ ExecutionContext, Promise, Future }
+import scala.concurrent.{
+  ExecutionContext,
+  Promise,
+  Future }
 import scala.concurrent.duration._
 
 import cats.{ Eval }
@@ -22,12 +43,15 @@ import internal.NettySupport._
   * @param ioThreads the number of threads used for the IO work. Default to `max(availableProcessors, 2)`.
   * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
   * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
+  * @param protocols the allowed protocols (HTTP, HTTP2 or both). If SSL enabled the protocol is negociated using ALPN.
+  *                  Without SSL enabled only direct HTTP2 connections with prior knowledge are supported.
   * @param debug if defined log the TCP traffic with the provided logger name. Default to `None`.
   */
 case class ServerOptions(
   ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 2),
   tcpNoDelay: Boolean = true,
   bufferSize: Option[Int] = None,
+  protocols: Set[String] = Set(HTTP),
   debug: Option[String] = None
 )
 
@@ -122,8 +146,8 @@ object Server {
     }
 
     // Setup an HTTP connection on the channel, and loop over incoming requests
-    def newConnection(channel: SocketChannel): Unit = {
-      val connection = Netty.serverConnection(channel, options.debug)
+    def newConnection(channel: SocketChannel, protocol: String): Unit = {
+      val connection = Netty.serverConnection(channel, options.debug, protocol)
       val asyncResult: PartialFunction[Either[Throwable,Unit],Unit] = {
         case Right(_) =>
         case Left(e) =>
@@ -163,14 +187,71 @@ object Server {
       group(eventLoop).
       channel(classOf[NioServerSocketChannel]).
       childHandler(new ChannelInitializer[SocketChannel] {
+        val HTTP2_PREFACE = Unpooled.unreleasableBuffer(Http2CodecUtil.connectionPrefaceBuf)
         override def initChannel(channel: SocketChannel) = {
           channel.config.setTcpNoDelay(options.tcpNoDelay)
           options.bufferSize.foreach { size =>
             channel.config.setReceiveBufferSize(size)
             channel.config.setSendBufferSize(size)
           }
-          ssl.foreach(ssl => channel.pipeline.addLast("SSL", ssl.ctx.newHandler(channel.alloc())))
-          newConnection(channel)
+          ssl match {
+            // SSL with APLN
+            case Some(ssl) if options.protocols.contains(HTTP2) =>
+              val ctx = ssl.builder.
+                applicationProtocolConfig(new ApplicationProtocolConfig(
+                  ApplicationProtocolConfig.Protocol.ALPN,
+                  ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
+                  ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
+                  (Seq(ApplicationProtocolNames.HTTP_2) ++
+                  (if(options.protocols.contains(HTTP)) Seq(ApplicationProtocolNames.HTTP_1_1) else Nil)): _*)).
+                build()
+              channel.pipeline.addLast("SSL", ctx.newHandler(channel.alloc()))
+              channel.pipeline.addLast("APLN", new ApplicationProtocolNegotiationHandler(
+                if(options.protocols.contains(HTTP)) ApplicationProtocolNames.HTTP_1_1 else ApplicationProtocolNames.HTTP_2) {
+                def configurePipeline(ctx: ChannelHandlerContext, protocol: String) =
+                  newConnection(channel, protocol match {
+                    case "h2" => HTTP2
+                    case _ => HTTP
+                  })
+              })
+            // SSL, no protocol negotiation
+            case Some(ssl) if options.protocols.contains(HTTP) =>
+              val ctx = ssl.builder.build()
+              channel.pipeline.addLast("SSL", ctx.newHandler(channel.alloc()))
+              newConnection(channel, HTTP)
+            // No SSL but peek inbound messages to detect HTTP2 protocol
+            case None if options.protocols.contains(HTTP2) =>
+              channel.pipeline.addLast("HTTP2", new ByteToMessageDecoder {
+                override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: java.util.List[Object]): Unit = {
+                    val prefaceLength = HTTP2_PREFACE.readableBytes
+                    val bytesRead = Math.min(in.readableBytes, prefaceLength)
+                    if(!ByteBufUtil.equals(
+                      HTTP2_PREFACE,
+                      HTTP2_PREFACE.readerIndex,
+                      in,
+                      in.readerIndex(),
+                      bytesRead
+                    )) {
+                      if(options.protocols.contains(HTTP)) {
+                        newConnection(channel, HTTP)
+                        ctx.pipeline.remove(this)
+                      }
+                      else {
+                        channel.close()
+                      }
+                    }
+                    else if(bytesRead == prefaceLength) {
+                      newConnection(channel, HTTP2)
+                      ctx.pipeline.remove(this)
+                    }
+                }
+              })
+            // Simple HTTP connection
+            case None if options.protocols.contains(HTTP) =>
+              newConnection(channel, HTTP)
+            case _ =>
+              channel.close()
+          }
         }
       })
     options.debug.foreach { logger =>

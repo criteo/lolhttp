@@ -1,27 +1,25 @@
 package lol.http
 
+import java.io.{ File }
 import java.security.{ KeyStore }
 import javax.net.ssl.{ TrustManagerFactory }
 
-import io.netty.buffer.{ ByteBufAllocator }
-import io.netty.handler.ssl.{ SslContext, SslContextBuilder }
-import io.netty.handler.ssl.util.{ InsecureTrustManagerFactory, SelfSignedCertificate }
+import io.netty.handler.ssl.{ SslContextBuilder }
+import io.netty.handler.ssl.util.{
+  InsecureTrustManagerFactory,
+  SelfSignedCertificate }
 
 /** lol SSL. */
 object SSL {
 
-  private[http] class NettySslContext(private val ctx: SslContext) {
-    def newHandler(alloc: ByteBufAllocator) = ctx.newHandler(alloc)
-  }
-
   /** SSL configuration for clients.  */
-  class ClientConfiguration private[http] (private[http] val ctx: NettySslContext, name: String) {
-    override def toString = s"ClientConfiguration($ctx, $name)"
+  class ClientConfiguration private[http] (private[http] val builder: SslContextBuilder, name: String) {
+    override def toString = s"ClientConfiguration($name)"
   }
 
   /** SSL configuration for servers.  */
-  class ServerConfiguration private[http] (private[http] val ctx: NettySslContext, name: String) {
-    override def toString = s"ServerConfiguration($ctx, $name)"
+  class ServerConfiguration private[http] (private[http] val builder: SslContextBuilder, name: String) {
+    override def toString = s"ServerConfiguration($name)"
   }
 
   /** Provides the default client SSL configuration. */
@@ -30,7 +28,7 @@ object SSL {
     implicit lazy val default = new ClientConfiguration({
       val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
       trustManagerFactory.init(null: KeyStore)
-      new NettySslContext(SslContextBuilder.forClient.trustManager(trustManagerFactory).build())
+      SslContextBuilder.forClient.trustManager(trustManagerFactory)
     }, "default")
   }
 
@@ -39,7 +37,7 @@ object SSL {
     * insecure server.
     */
   lazy val trustAll = new ClientConfiguration({
-    new NettySslContext(SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE).build())
+    SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE)
   }, "trustAll")
 
   /** Generate an SSL server configuration with a self-signed certificate.
@@ -48,7 +46,15 @@ object SSL {
     */
   def selfSigned(fqdn: String = "localhost") = new ServerConfiguration({
     val ssc = new SelfSignedCertificate(fqdn)
-    new NettySslContext(SslContextBuilder.forServer(ssc.certificate, ssc.privateKey).build())
+    SslContextBuilder.forServer(ssc.certificate, ssc.privateKey)
   }, s"selfSigned for $fqdn")
+
+  def serverCertificate(certificate: File, privateKey: File, privateKeyPassword: String): ServerConfiguration =
+    new ServerConfiguration({
+      SslContextBuilder.forServer(certificate, privateKey, privateKeyPassword)
+    }, s"serverCertificate from $certificate")
+
+  def serverCertificate(certificatePath: String, privateKeyPath: String, privateKeyPassword: String): ServerConfiguration =
+    serverCertificate(new File(certificatePath), new File(privateKeyPath), privateKeyPassword)
 
 }

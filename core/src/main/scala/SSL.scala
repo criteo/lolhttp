@@ -12,13 +12,16 @@ import io.netty.handler.ssl.util.{
 /** lol SSL. */
 object SSL {
 
+  private[http] trait SslContext { def builder: SslContextBuilder }
+  private[http] object SslContext { def apply(b0: SslContextBuilder) = new SslContext { val builder = b0 } }
+
   /** SSL configuration for clients.  */
-  class ClientConfiguration private[http] (private[http] val builder: SslContextBuilder, name: String) {
+  class ClientConfiguration private[http] (private[http] val ctx: SslContext, name: String) {
     override def toString = s"ClientConfiguration($name)"
   }
 
   /** SSL configuration for servers.  */
-  class ServerConfiguration private[http] (private[http] val builder: SslContextBuilder, name: String) {
+  class ServerConfiguration private[http] (private[http] val ctx: SslContext, name: String) {
     override def toString = s"ServerConfiguration($name)"
   }
 
@@ -28,7 +31,7 @@ object SSL {
     implicit lazy val default = new ClientConfiguration({
       val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
       trustManagerFactory.init(null: KeyStore)
-      SslContextBuilder.forClient.trustManager(trustManagerFactory)
+      SslContext(SslContextBuilder.forClient.trustManager(trustManagerFactory))
     }, "default")
   }
 
@@ -37,7 +40,7 @@ object SSL {
     * insecure server.
     */
   lazy val trustAll = new ClientConfiguration({
-    SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE)
+    SslContext(SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE))
   }, "trustAll")
 
   /** Generate an SSL server configuration with a self-signed certificate.
@@ -46,12 +49,12 @@ object SSL {
     */
   def selfSigned(fqdn: String = "localhost") = new ServerConfiguration({
     val ssc = new SelfSignedCertificate(fqdn)
-    SslContextBuilder.forServer(ssc.certificate, ssc.privateKey)
+    SslContext(SslContextBuilder.forServer(ssc.certificate, ssc.privateKey))
   }, s"selfSigned for $fqdn")
 
   def serverCertificate(certificate: File, privateKey: File, privateKeyPassword: String): ServerConfiguration =
     new ServerConfiguration({
-      SslContextBuilder.forServer(certificate, privateKey, privateKeyPassword)
+      SslContext(SslContextBuilder.forServer(certificate, privateKey, privateKeyPassword))
     }, s"serverCertificate from $certificate")
 
   def serverCertificate(certificatePath: String, privateKeyPath: String, privateKeyPassword: String): ServerConfiguration =

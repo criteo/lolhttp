@@ -197,7 +197,7 @@ object Server {
           ssl match {
             // SSL with APLN
             case Some(ssl) if options.protocols.contains(HTTP2) =>
-              val ctx = ssl.builder.
+              val ctx = ssl.ctx.builder.
                 applicationProtocolConfig(new ApplicationProtocolConfig(
                   ApplicationProtocolConfig.Protocol.ALPN,
                   ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
@@ -216,7 +216,7 @@ object Server {
               })
             // SSL, no protocol negotiation
             case Some(ssl) if options.protocols.contains(HTTP) =>
-              val ctx = ssl.builder.build()
+              val ctx = ssl.ctx.builder.build()
               channel.pipeline.addLast("SSL", ctx.newHandler(channel.alloc()))
               newConnection(channel, HTTP)
             // No SSL but peek inbound messages to detect HTTP2 protocol

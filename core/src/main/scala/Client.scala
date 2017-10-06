@@ -95,7 +95,7 @@ trait Client extends Service {
           channel.config.setSendBufferSize(size)
         }
         Option(scheme).filter(_ == "https").foreach { _ =>
-          channel.pipeline.addLast("SSL", ssl.builder.build().newHandler(channel.alloc()))
+          channel.pipeline.addLast("SSL", ssl.ctx.builder.build().newHandler(channel.alloc()))
         }
       }
     })

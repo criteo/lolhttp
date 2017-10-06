@@ -3,4 +3,5 @@ project/target
 .DS_Store
 stuff/
 .idea/
+.travis
 sync

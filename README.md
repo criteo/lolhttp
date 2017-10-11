@@ -2,7 +2,7 @@
 
 # lolhttp
 
-A scala HTTP & HTTP/2 server and client library.
+An HTTP & HTTP/2 server and client library for Scala.
 
 ## About the library
 

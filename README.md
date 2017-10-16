@@ -1,5 +1,3 @@
-<img src="https://criteo.github.io/lolhttp/images/lolhttp.png" width="70">
-
 # lolhttp
 
 An HTTP & HTTP/2 server and client library for Scala.

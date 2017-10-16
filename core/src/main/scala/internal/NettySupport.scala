@@ -115,23 +115,10 @@ private[http] object NettySupport {
   }
 
   implicit class NettyChannel(channel: Channel) {
-    def runInEventLoop[A](thunk: () => A): A = {
-      val latch = new java.util.concurrent.CountDownLatch(1)
-      @volatile var result: Option[A] = None
-      channel.eventLoop.submit(new Runnable() {
-        def run = {
-          result = Some(thunk())
-          latch.countDown
-        }
-      })
-      latch.await
-      result.get
-    }
-
-    def runInEventLoopAsync[A](thunk: () => A): IO[A] = {
+    def runInEventLoop[A](thunk: => A): IO[A] = {
       IO.async(k => channel.eventLoop.submit(new Runnable() {
         def run = try {
-          k(Right(thunk()))
+          k(Right(thunk))
         } catch {
           case e: Throwable => k(Left(e))
         }
@@ -413,6 +400,7 @@ private[http] object NettySupport {
                   }
                   // Write the HTTP response
                   for {
+                    _ <- if(response.status == 101) http1xConnection.prepareUpgrade() else IO.unit
                     _ <- http1xConnection.write(nettyResponse, response.content.stream)
                     _ <- {
                       if(response.status == 101) {
@@ -479,7 +467,7 @@ private[http] object NettySupport {
     // socket that we are ready to receive new data.
     val contentStream =
       content.dequeue.evalMap { chunk =>
-        if(chunk.isDefined) channel.runInEventLoopAsync(() => channel.read()).map(_ => chunk) else IO.pure(chunk)
+        if(chunk.isDefined) channel.runInEventLoop(channel.read()).map(_ => chunk) else IO.pure(chunk)
       }
 
     channel.pipeline.addLast("HttpStreamHandler", new SimpleChannelInboundHandler[HttpObject]() {
@@ -632,22 +620,32 @@ private[http] object NettySupport {
         _ <- IO(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
       } yield ()
 
+    // Stop accepting HTTP messages
+    def prepareUpgrade(): IO[Unit] =
+      channel.runInEventLoop {
+        client match {
+          case true => channel.pipeline.remove("HttpResponseEncoder")
+          case false => channel.pipeline.remove("HttpRequestDecoder")
+        }
+      }
+
     // Upgrade the connection to a plain TCP connection: we deregister
     // all the netty HTTP pipeline.
     def upgrade(): IO[Stream[IO,Byte]] =
       for {
         _ <- permits.decrement
         _ <- messages.enqueue1(None)
-        in <- IO {
-          channel.runInEventLoop[Stream[IO,Byte]] { () =>
-            channel.pipeline.names.asScala.filter(_.startsWith("Http")).foreach(channel.pipeline.remove)
-            // Read the next message
-            channel.read()
-            // The incoming stream
-            contentStream.
-              takeWhile(_.isDefined).
-              flatMap(chunk => Stream.chunk(chunk.get))
-          }
+        in <- channel.runInEventLoop[Stream[IO,Byte]] {
+          // Remove all HTTP handler (some have been already removed during prepareUpgrade )
+          channel.pipeline.names.asScala.filter(_.startsWith("Http")).foreach(channel.pipeline.remove)
+          // Read the next message
+          channel.read()
+          // Stop reading automatically now, user code will pull the stream.
+          channel.config.setAutoRead(false)
+          // The incoming stream
+          contentStream.
+            takeWhile(_.isDefined).
+            flatMap(chunk => Stream.chunk(chunk.get))
         }
       } yield (in)
 
@@ -708,7 +706,7 @@ private[http] object NettySupport {
                 evalMap(chunk => eosReached.set(chunk.isEmpty).map(_ => chunk)).
                 takeWhile(_.isDefined).
                 evalMap(chunk =>
-                  channel.runInEventLoopAsync { () =>
+                  channel.runInEventLoop {
                     if(handler.decoder.flowController.consumeBytes(handler.connection.stream(stream), chunk.get.size)) {
                       handler.flush(ctx)
                     }
@@ -793,7 +791,7 @@ private[http] object NettySupport {
         case Some((chunk, h)) =>
           Pull.eval(
             if(channel.isOpen) {
-              channel.runInEventLoopAsync { () =>
+              channel.runInEventLoop {
                 val f = handler.encoder.writeData(ctx, stream, chunk.toByteBuf, 0, false, ctx.newPromise)
                 handler.flush(ctx)
                 f.toIO
@@ -805,7 +803,7 @@ private[http] object NettySupport {
         case None =>
           Pull.eval(
             if(channel.isOpen) {
-              channel.runInEventLoopAsync { () =>
+              channel.runInEventLoop {
                 val f = handler.encoder.writeData(ctx, stream, Chunk.empty[Byte].toByteBuf, 0, true, ctx.newPromise)
                 handler.flush(ctx)
                 f.toIO
@@ -821,7 +819,7 @@ private[http] object NettySupport {
     def write(stream: Int, message: Http2Headers, contentStream: Stream[IO,Byte]): IO[Int] = {
       for {
         streamId <- if(channel.isOpen) {
-          channel.runInEventLoopAsync { () =>
+          channel.runInEventLoop {
             val streamId = if(stream == -1) streamCounter.addAndGet(2) else stream
             val f = handler.encoder.writeHeaders(ctx, streamId, message, 0, false, ctx.newPromise)
             handler.flush(ctx)

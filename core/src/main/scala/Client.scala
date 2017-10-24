@@ -1,8 +1,8 @@
 package lol.http
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Try }
 import scala.collection.JavaConverters._
-import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.concurrent.{ ExecutionContext }
 import scala.concurrent.duration._
 
 import io.netty.channel.{ ChannelInitializer }
@@ -14,8 +14,11 @@ import io.netty.channel.socket.nio.{ NioSocketChannel }
 import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
+import cats.implicits._
+import cats.effect.{ IO }
+
 import internal.NettySupport._
-import internal.{ withTimeout, KillableFuture }
+import internal.{ withTimeout, Cancellable }
 
 /** Allow to configure an HTTP client.
   * @param ioThreads the number of threads used for the IO work. Default to `min(availableProcessors, 2)`.
@@ -99,7 +102,7 @@ trait Client extends Service {
         }
       }
     })
-    def connect() = bootstrap.connect().toFuture
+    def connect() = bootstrap.connect().toIO
     def shutdown() = {
       eventLoop.shutdownGracefully()
     }
@@ -111,7 +114,7 @@ trait Client extends Service {
   private lazy val liveConnections = new AtomicLong(0)
   private lazy val connections = new ArrayBlockingQueue[ClientConnection](maxConnections)
   private lazy val availableConnections = new ArrayBlockingQueue[ClientConnection](maxConnections)
-  private lazy val waiters = new LinkedBlockingQueue[Promise[ClientConnection]]()
+  private lazy val waiters = new LinkedBlockingQueue[(Either[Throwable, ClientConnection]) => Unit]()
 
   /** The number of TCP connections currently opened with the remote server. */
   def openedConnections: Int = liveConnections.intValue
@@ -120,103 +123,131 @@ trait Client extends Service {
   /** Check if this client is already closed (ie. it does not accept any more requests). */
   def isClosed: Boolean = closed.get
 
-  private def waitConnection(): KillableFuture[ClientConnection] = {
-    val p = Promise[ClientConnection]
-    waiters.offer(p)
-    KillableFuture(
-      p.future,
-      () => waiters.remove(p)
-    )
-  }
-
-  private def destroyConnection(c: ClientConnection): Unit = {
-    availableConnections.remove(c)
-    if(!connections.remove(c)) Panic.!!!()
-    liveConnections.decrementAndGet()
-  }
+  private def destroyConnection(c: ClientConnection): Unit =
+    this.synchronized {
+      availableConnections.remove(c)
+      if(!connections.remove(c)) Panic.!!!()
+      liveConnections.decrementAndGet()
+      pollWaiters()
+    }
 
   private def releaseConnection(c: ClientConnection): Unit = {
     if(c.isOpen) Option(waiters.poll).fold {
       if(!availableConnections.offer(c)) Panic.!!!()
-    } { _.success(c) }
+      pollWaiters()
+    } { waiter => waiter(Right(c)) }
   }
 
-  private def acquireConnection(): KillableFuture[ClientConnection] =
-    if(closed.get) KillableFuture(Future.failed(Error.ClientAlreadyClosed)) else
-    Option(availableConnections.poll).filter(_.isOpen).map(c => KillableFuture(Future.successful(c))).getOrElse {
-      if(liveConnections.get < maxConnections) {
-        liveConnections.incrementAndGet()
-        KillableFuture(
-          nettyClient.connect().
-            map { channel =>
-              Netty.clientConnection(
-                channel.asInstanceOf[SocketChannel],
-                options.debug,
-                if(options.protocols.contains(HTTP2) && !options.protocols.contains(HTTP)) HTTP2 else HTTP
-              )
-            }.
-            andThen {
-              case Success(c) =>
-                if(!connections.offer(c)) Panic.!!!()
-                c.closed.unsafeToFuture().andThen { case _ => destroyConnection(c) }
-              case Failure(e) =>
-                liveConnections.decrementAndGet()
-                // If we fail obtaining a connection for any reason, let's fail all
-                // the waiters with the same exception. This is because otherwise there
-                // is no guarantee that we will be able to obtain a connection later and
-                // thus the waiters will wait forever (up to their timeout at least); we
-                // prefer having them failing fast.
-                waiters.asScala.toList.foreach { waiter =>
-                  waiters.remove(waiter)
-                  waiter.tryFailure(e)
-                }
+  private def pollWaiters(): Unit =
+    this.synchronized {
+      Option(availableConnections.poll).filter(_.isOpen) match {
+        case Some(availableConnection) =>
+          Option(waiters.poll) match {
+            case Some(waiter) =>
+              waiter(Right(availableConnection))
+            case None =>
+              if(!availableConnections.offer(availableConnection)) Panic.!!!()
+          }
+        case None =>
+          if(liveConnections.get < maxConnections) {
+            Option(waiters.poll) match {
+              case Some(waiter) =>
+                liveConnections.incrementAndGet()
+                nettyClient.connect().map { channel =>
+                  Netty.clientConnection(
+                    channel.asInstanceOf[SocketChannel],
+                    options.debug,
+                    if(options.protocols.contains(HTTP2) && !options.protocols.contains(HTTP)) HTTP2 else HTTP
+                  )
+                }.attempt.map {
+                  case Right(c) =>
+                    if(!connections.offer(c)) Panic.!!!()
+                    c.closed.map { case _ => destroyConnection(c) }.unsafeRunAsync(_ => ())
+                    waiter(Right(c))
+                  case Left(e) =>
+                    liveConnections.decrementAndGet()
+                    // If we fail obtaining a connection for any reason, let's fail all
+                    // the waiters with the same exception. This is because otherwise there
+                    // is no guarantee that we will be able to obtain a connection later and
+                    // thus the waiters will wait forever (up to their timeout at least); we
+                    // prefer having them failing fast.
+                    waiter(Left(e))
+                    waiters.asScala.toList.foreach { waiter =>
+                      waiters.remove(waiter)
+                      waiter(Left(e))
+                    }
+                }.unsafeRunAsync(_ => ())
+              case None =>
             }
-        )
+          }
       }
-      else {
-        waitConnection()
-      }
+    }
+
+  private def acquireConnection(): Cancellable[ClientConnection] =
+    if(closed.get) {
+      Cancellable(IO.raiseError(Error.ClientAlreadyClosed))
+    } else {
+      @volatile var cb = Option.empty[(Either[Throwable, ClientConnection]) => Unit]
+      Cancellable(
+        IO.async(k => {
+          cb = Some(k)
+          waiters.offer(k)
+          pollWaiters()
+        }),
+        () => {
+          cb.foreach { cb =>
+            waiters.remove(cb)
+            cb(Left(new Exception))
+          }
+        }
+      )
     }
 
   /** Stop the client and kill all current and waiting requests.
-    * @return a Future resolved as soon as the client is shutdown.
+    * This operation returns an `IO` and is lazy. If you want to stop
+    * the client immediatly and synchronously use [[stopSync]] instead.
+    * @return a IO effect resolved as soon as the client is shutdown.
     */
-  def stop(): Future[Unit] = {
-    closed.compareAndSet(false, true)
-    waiters.asScala.toList.foreach { waiter =>
-      waiters.remove(waiter)
-      waiter.tryFailure(Error.ClientAlreadyClosed)
+  def stop(): IO[Unit] =
+    (for {
+      _ <- IO {
+        closed.compareAndSet(false, true)
+        waiters.asScala.toList.foreach { waiter =>
+          waiters.remove(waiter)
+          waiter(Left(Error.ClientAlreadyClosed))
+        }
+      }
+      _ <- connections.asScala.map(_.close).toList.sequence
+      _ <- IO(nettyClient.shutdown())
+    } yield ()).onError { case e =>
+      IO(nettyClient.shutdown()).flatMap(_ => IO.raiseError(e))
     }
-    Future.sequence(connections.asScala.map(_.close.unsafeToFuture)).map { _ =>
-      if(liveConnections.intValue != 0) Panic.!!!()
-    }.andThen { case _ =>
-      nettyClient.shutdown()
-    }
+
+  /** Stop the client and kill all current and waiting requests right away. */
+  def stopSync(): Unit = stop().unsafeRunSync
+
+  def apply0(request: Request): Cancellable[Response] = {
+    @volatile var underlyingConnection: Option[ClientConnection] = None
+    val eventuallyConnection = acquireConnection()
+    Cancellable(
+      eventuallyConnection.io.flatMap { connection =>
+        underlyingConnection = Some(connection)
+        // (automatically add the Host header if not specified in the incoming request)
+        val requestWithHost = if(request.headers.contains(h"Host")) request else request.addHeaders(h"Host" -> h"${this.host}")
+        connection(requestWithHost, () => releaseConnection(connection))
+      },
+      () => {
+        eventuallyConnection.cancel()
+        underlyingConnection.foreach(_.close.unsafeRunAsync(_ => ()))
+      }
+    )
   }
 
   /** Send a request to the server and eventually give back the response.
     * @param request the HTTP request to be sent to the server.
     * @return eventually the HTTP response.
     */
-  def apply(request: Request): Future[Response] = {
-    @volatile var underlyingConnection: Option[ClientConnection] = None
-    val eventuallyConnection = acquireConnection()
-    KillableFuture(
-      eventuallyConnection.flatMap { connection =>
-        underlyingConnection = Some(connection)
-        // (automatically add the Host header if not specified in the incoming request)
-        val requestWithHost =
-          if(request.headers.contains(h"Host")) request else request.addHeaders(h"Host" -> h"${this.host}")
-        (for {
-          response <- connection(requestWithHost, () => releaseConnection(connection))
-        } yield response).unsafeToFuture()
-      },
-      () => {
-        eventuallyConnection.cancel()
-        underlyingConnection.foreach(_.close.unsafeRunSync)
-      }
-    )
-  }
+  def apply(request: Request): IO[Response] = apply0(request).io
 
   /** Send a request to the server and eventually give back the response.
     * @param request the HTTP request to be sent to the server.
@@ -224,33 +255,26 @@ trait Client extends Service {
     * @param timeout maximum amount of time allowed to retrieve the response.
     * @return eventually the HTTP response.
     */
-  def apply(request: Request, followRedirects: Boolean = true, timeout: FiniteDuration = FiniteDuration(30, "seconds")): Future[Response] = {
-    val eventuallyResponse = apply(request)
+  def apply(request: Request, followRedirects: Boolean = true, timeout: FiniteDuration = FiniteDuration(30, "seconds")): IO[Response] = {
+    val eventuallyResponse = apply0(request)
     withTimeout(
-      eventuallyResponse.flatMap { response =>
+      eventuallyResponse.io.flatMap { response =>
         if(response.isRedirect && followRedirects) {
           request match {
             case GET at _ =>
               response.drain.flatMap { _ =>
                 response.headers.get(Headers.Location).map { location =>
                   apply(request.copy(url = location.toString)(Content.empty), followRedirects = true)
-                }.getOrElse(Future.successful(response))
+                }.getOrElse(IO.pure(response))
               }
             case _ =>
-              Future.failed(Error.AutoRedirectNotSupported)
+              IO.raiseError(Error.AutoRedirectNotSupported)
           }
         }
-        else Future.successful(response)
+        else IO.pure(response)
       },
       timeout,
-      () => {
-        eventuallyResponse match {
-          case KillableFuture(_, cancel) =>
-            cancel()
-          case _ =>
-            Panic.!!!()
-        }
-      }
+      () => eventuallyResponse.cancel()
     )
   }
 
@@ -260,31 +284,54 @@ trait Client extends Service {
     * @param request the HTTP request to be sent to the server.
     * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
     * @param timeout maximum amount of time allowed to retrieve the response and extract the return value.
-    * @param thunk a function that eventually receive the response and transform it to a value of type `A`.
+    * @param f a function that eventually receive the response and transform it to a value of type `A`.
     * @return eventually a value of type `A`.
     */
   def run[A](request: Request, followRedirects: Boolean = true, timeout: FiniteDuration = FiniteDuration(30, "seconds"))
-    (thunk: Response => Future[A] = (_: Response) => Future.successful(())): Future[A] = {
-    withTimeout(
-      apply(request, followRedirects, timeout).
-        flatMap { response =>
-          thunk(response).
-            flatMap(s => response.drain.map(_ => s)).
-            recoverWith { case e =>
-              response.drain.flatMap(_ => Future.failed(e))
-            }
-        },
-      timeout
-    )
-  }
+    (f: Response => IO[A] = (_: Response) => IO.unit): IO[A] =
+    apply(request, followRedirects, timeout).
+      flatMap { response =>
+        f(response).
+          flatMap(s => response.drain.map(_ => s)).
+          attempt.flatMap {
+            case Left(e) =>
+              response.drain.flatMap(_ => IO.raiseError(e))
+            case Right(response) =>
+              IO.pure(response)
+          }
+      }
+
+  /** Send this request to the server, eventually run the given function and return the result.
+    * This operation ensures that the response content stream is fully read even if the provided
+    * user code do not consume it. The response is drained as soon as the `f` function returns.
+    * This operation is block and the calling thread will wait for the call to be completed.
+    * @param request the HTTP request to be sent to the server.
+    * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
+    * @param timeout maximum amount of time allowed to retrieve the response and extract the return value.
+    * @param f a function that eventually receive the response and transform it to a value of type `A`.
+    * @return a value of type `A`.
+    */
+  def runSync[A](request: Request, followRedirects: Boolean = true, timeout: FiniteDuration = FiniteDuration(30, "seconds"))
+    (f: Response => IO[A] = (_: Response) => IO.unit): A = run(request, followRedirects, timeout)(f).unsafeRunSync
 
   /** Run the given function and close the client.
-    * @param thunk a function that take a client and eventually return a value of type `A`.
+    * @param f a function that take a client and eventually return a value of type `A`.
     * @return eventually a value of type `A`.
     */
-  def runAndStop[A](thunk: Client => Future[A]): Future[A] = {
-    thunk(this).andThen { case _ => this.stop() }
-  }
+  def runAndStop[A](f: Client => IO[A]): IO[A] =
+    (for {
+      result <- f(this)
+      _ <- stop()
+    } yield result).onError { case e =>
+      stop().flatMap(_ => IO.raiseError(e))
+    }
+
+  /** Run the given function and close the client. This operation is blocking and the calling
+    * thread will wait for the call to be completed.
+    * @param f a function that take a client and eventually return a value of type `A`.
+    * @return a value of type `A`.
+    */
+  def runAndStopSync[A](f: Client => IO[A]): A = runAndStop(f).unsafeRunSync
 
   override def toString = {
     s"Client(host=$host, port=$port, ssl=$ssl, options=$options, maxConnections=$maxConnections, " +
@@ -296,8 +343,12 @@ trait Client extends Service {
   *
   * {{{
   * val client = Client("github.com")
-  * val homePage = client.run(Get("/"))(_.readAs[String])
-  * client.stop()
+  * val fetchGithubHomePage: IO[String] =
+  *   for {
+  *     homePage <- client.run(Get("/"))(_.readAs[String])
+  *     _ <- client.stop()
+  *   } yield (homePage)
+  * println(fetchGithubHomePage.unsafeRunSync)
   * }}}
   *
   * Once created an HTTP client maintains several TCP connections to the remote server, and
@@ -350,12 +401,12 @@ object Client {
     }
   }
 
-  /** Run the provided request with a temporary client, and apply the thunk function to the response.
+  /** Run the provided request with a temporary client, and apply the f function to the response.
     * @param request the request to run. It must include a proper `Host` header.
     * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
     * @param timeout maximum amount of time allowed to retrieve the response and extract the return value.
     * @param options the client options to use for the temporary client.
-    * @param thunk a function that eventually receive the response and transform it to a value of type `A`.
+    * @param f a function that eventually receive the response and transform it to a value of type `A`.
     * @return eventually a value of type `A`.
     */
   def run[A](
@@ -364,8 +415,8 @@ object Client {
     timeout: FiniteDuration = FiniteDuration(30, "seconds"),
     options: ClientOptions = ClientOptions(ioThreads = 1)
   )
-  (thunk: Response => Future[A] = (_: Response) => Future.successful(()))
-  (implicit executor: ExecutionContext, ssl: SSL.ClientConfiguration): Future[A] = {
+  (f: Response => IO[A] = (_: Response) => IO.unit)
+  (implicit executor: ExecutionContext, ssl: SSL.ClientConfiguration): IO[A] = {
     request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.toString.split("[:]").toList match {
         case host :: port :: Nil if Try(port.toInt).isSuccess =>
@@ -376,12 +427,32 @@ object Client {
       withTimeout(
         (for {
           response <- client(request, followRedirects, timeout)
-          result <- thunk(response)
-        } yield result).
-        andThen { case _ => client.stop() },
+          result <- f(response)
+          _ <- client.stop()
+        } yield result).onError { case e =>
+          client.stop().flatMap(_ => IO.raiseError(e))
+        },
         timeout
       )
     }.
-    getOrElse(Future.failed(Error.HostHeaderMissing))
+    getOrElse(IO.raiseError(Error.HostHeaderMissing))
   }
+
+  /** Run the provided request with a temporary client, and apply the f function to the response.
+    * This operation is blocking and the calling thread will wait for the request to be completed.
+    * @param request the request to run. It must include a proper `Host` header.
+    * @param followRedirects if true follow the intermediate HTTP redirects. Default to true.
+    * @param timeout maximum amount of time allowed to retrieve the response and extract the return value.
+    * @param options the client options to use for the temporary client.
+    * @param f a function that eventually receive the response and transform it to a value of type `A`.
+    * @return synchronously a value of type `A`.
+    */
+  def runSync[A](
+    request: Request,
+    followRedirects: Boolean = true,
+    timeout: FiniteDuration = FiniteDuration(30, "seconds"),
+    options: ClientOptions = ClientOptions(ioThreads = 1)
+  )
+  (f: Response => IO[A] = (_: Response) => IO.unit)
+  (implicit executor: ExecutionContext, ssl: SSL.ClientConfiguration): A = run(request, followRedirects, timeout, options)(f).unsafeRunSync
 }

@@ -27,6 +27,8 @@ import io.netty.handler.ssl.{
   ApplicationProtocolNegotiationHandler }
 import io.netty.handler.codec.http2.{ Http2CodecUtil }
 
+import cats.{ Eval }
+
 import scala.util.{ Try }
 import scala.concurrent.{
   ExecutionContext,
@@ -34,7 +36,6 @@ import scala.concurrent.{
   Future }
 import scala.concurrent.duration._
 
-import cats.{ Eval }
 import cats.effect.{ IO }
 
 import internal.NettySupport._
@@ -90,7 +91,7 @@ trait Server extends Service {
     * @param timeout The maximum amount of time to wait until the server is shutdown regardless of the quiet period.
     * @return a Future resolved as soon as the server is shutdown.
     */
-  def stop(quietPeriod: Duration = 2 seconds, timeout: Duration = 15 seconds): Future[Unit]
+  def stop(quietPeriod: Duration = 2.seconds, timeout: Duration = 15.seconds): Future[Unit]
 
   override def toString() = s"Server(socketAddress=$socketAddress, ssl=$ssl, options=$options)"
 }
@@ -139,11 +140,11 @@ object Server {
     onError: (Throwable => Response) = defaultErrorHandler
   )(service: Service)(implicit executor: ExecutionContext): Server = {
 
-    def serveRequest(request: Request) = {
-      Future(try { service(request) } catch { case e: Throwable => Future.failed(e) })(executor).
-        flatMap(identity).
-        recoverWith { case e: Throwable => Try(onError(e)).toOption.getOrElse(defaultErrorResponse) }
-    }
+    def serveRequest(request: Request) =
+      IO.fromFuture(Eval.always(service(request).unsafeToFuture)).attempt.map {
+        case Left(e) => Try(onError(e)).toOption.getOrElse(defaultErrorResponse)
+        case Right(x) => x
+      }
 
     // Setup an HTTP connection on the channel, and loop over incoming requests
     def newConnection(channel: SocketChannel, protocol: String): Unit = {
@@ -164,7 +165,7 @@ object Server {
         // or HTTP/2.0)
         _ = (for {
           // Apply user code and retrieve the response
-          response <- IO.fromFuture(Eval.always(serveRequest(request)))
+          response <- serveRequest(request)
           // If the user code did not open the content stream
           // we need to drain it now
           _ <- request.content.stream.drain.run.attempt.flatMap {

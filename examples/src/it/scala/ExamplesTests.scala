@@ -18,8 +18,10 @@ object ExamplesTests {
     System.exit(0)
   }
 
-  def runExample(className: String): Process =
+  def runExample(className: String): Process = {
+    println(s"*** RUNNNING $className")
     new ProcessBuilder("java", "-cp", System.getProperty("java.class.path"), className).inheritIO.start()
+  }
 
 }
 
@@ -29,9 +31,11 @@ import lol.json._
 import fs2._
 import io.circe._
 
-import scala.concurrent._
+import cats.implicits._
+import cats.effect.{ IO }
+
 import scala.concurrent.duration._
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ExamplesTests extends Tests  {
   import ExamplesTests.runExample
@@ -43,9 +47,7 @@ class ExamplesTests extends Tests  {
     try {
       val responses = eventually(await() {
         Client("localhost", 8888).runAndStop { client =>
-          Future.sequence {
-            (1 to requests).map(_ => client.run(Get("/"))(_.readAs[String]))
-          }
+          (1 to requests).map(_ => client.run(Get("/"))(_.readAs[String])).toList.sequence
         }
       }, timeout = 30 seconds)
 
@@ -64,16 +66,14 @@ class ExamplesTests extends Tests  {
 
     try {
       val responses = eventually(await() {
-        Client.run(Get("http://localhost:8888/"))(res => Future.successful(res.status).filter(_ == 200)).flatMap { _ =>
+        Client.run(Get("http://localhost:8888/"))(res => IO {if(res.status != 200) sys.error("Invalid status code")}).flatMap { _ =>
           Client("localhost", 8888, maxConnections = 1).runAndStop { client =>
-            Future.sequence {
-              sizes.map { i =>
-                val fakeContent = Content(
-                  Stream.chunk(message) ++ (Stream.chunk(chunk).repeat.take(i * chunk.size))
-                ).addHeaders(h"Content-Length" -> h"${message.size + (i * chunk.size)}")
-                client.run(Post("/upload", fakeContent))(_.readAs[String])
-              }
-            }
+            sizes.map { i =>
+              val fakeContent = Content(
+                Stream.chunk(message) ++ (Stream.chunk(chunk).repeat.take(i * chunk.size))
+              ).addHeaders(h"Content-Length" -> h"${message.size + (i * chunk.size)}")
+              client.run(Post("/upload", fakeContent))(_.readAs[String])
+            }.sequence
           }
         }
       }, timeout = 30 seconds)
@@ -103,7 +103,7 @@ class ExamplesTests extends Tests  {
             }
           booStatus <-
             Client.run(Get("http://localhost:8888/assets/images/boo.gif")) { res =>
-              Future.successful(res.status)
+              IO.pure(res.status)
             }
           lol <-
             Client.run(Get("http://localhost:8888/assets/lol.txt")) { res =>
@@ -111,7 +111,7 @@ class ExamplesTests extends Tests  {
             }
           brokenStatus <-
             Client.run(Get("http://localhost:8888/assets/../secure.txt")) { res =>
-              Future.successful(res.status)
+              IO.pure(res.status)
             }
         } yield (index, favicon, booStatus, lol, brokenStatus)
       }, timeout = 30 seconds)
@@ -131,11 +131,9 @@ class ExamplesTests extends Tests  {
     val forked = runExample("ReverseProxy")
     try {
       val responses = eventually(await() {
-        Future.sequence {
-          (1 to 15).map { _ =>
-            Client.run(Get("http://localhost:8888/"), followRedirects = true)(_.readAs[String])
-          }
-        }
+        (1 to 15).map { _ =>
+          Client.run(Get("http://localhost:8888/"), followRedirects = true)(_.readAs[String])
+        }.toList.sequence
       }, timeout = 30 seconds)
 
       responses.foreach(_ should include ("<title>Criteo - Wikipedia</title>"))

@@ -7,8 +7,7 @@ import lol.http._
 // We need to have an `ExecutionContext` context in the scope.
 // It will be used to execute the user code. We can use
 // the default Scala global one.
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object HelloWorld {
   def main(args: Array[String]): Unit = {

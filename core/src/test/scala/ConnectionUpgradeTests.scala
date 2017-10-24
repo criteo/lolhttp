@@ -3,8 +3,7 @@ package lol.http
 import fs2.{ Stream }
 import fs2.text.{ lines, utf8Decode, utf8Encode }
 
-import scala.concurrent.{ ExecutionContext }
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ConnectionUpgradeTests extends Tests {
 
@@ -45,7 +44,7 @@ class ConnectionUpgradeTests extends Tests {
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.unsafeToFuture()
+          downstream.runLog
         }
       } should contain inOrderOnly (
         "dlrow olleH",
@@ -66,7 +65,7 @@ class ConnectionUpgradeTests extends Tests {
             result <- client.run(Get(url).addHeaders(Headers.Upgrade -> h"Push")) { response =>
               Thread.sleep(1000)
               (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
-                runLog.unsafeToFuture()
+                runLog
             }
             _ = eventually(client.openedConnections should be (0))
           } yield result
@@ -87,9 +86,7 @@ class ConnectionUpgradeTests extends Tests {
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.unsafeToFuture().flatMap { _ =>
-            downstream.runLog.unsafeToFuture()
-          }
+          downstream.runLog.flatMap { _ => downstream.runLog }
         }
       } should be (Error.StreamAlreadyConsumed)
     }
@@ -108,9 +105,7 @@ class ConnectionUpgradeTests extends Tests {
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
           val downstream2 = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.unsafeToFuture().flatMap { _ =>
-            downstream2.runLog.unsafeToFuture()
-          }
+          downstream.runLog.flatMap { _ => downstream2.runLog }
         }
       } should be (Error.StreamAlreadyConsumed)
     }
@@ -129,7 +124,7 @@ class ConnectionUpgradeTests extends Tests {
           val upstream = Stream("lol").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream)
 
-          downstream.run.unsafeToFuture()
+          downstream.run
         }
       } should be (Error.UpgradeRefused)
     }

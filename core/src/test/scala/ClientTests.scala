@@ -1,15 +1,13 @@
 package lol.http
 
-import cats.effect.IO
+import cats.effect.{ IO }
+import cats.implicits._
+
 import fs2.{ Chunk, Stream }
 
-import java.util.concurrent.{ TimeoutException }
-
 import scala.util._
-import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration._
-
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ClientTests extends Tests {
 
@@ -24,7 +22,7 @@ class ClientTests extends Tests {
           data.get(key).map(Ok(_)).getOrElse(NotFound(s"No data for key: $key"))
         ).getOrElse(
           BadRequest(s"Invalid key format: $key")
-        )
+        ): Response
       }
       case req => {
         NotFound(s"Endpoint does not exist, ${req.url}")
@@ -38,16 +36,15 @@ class ClientTests extends Tests {
             for {
               keys <- client.run(Get("/keys"))(_.readAs[String])
               _ = keys should be ("1,2,3")
-              oops <- client.run(Get("/blah"))(res => success(res.status))
+              oops <- client.run(Get("/blah"))(res => IO.pure(res.status))
               _ = oops should be (404)
-              results <- Future.sequence(
+              results <-
                 keys.split("[,]").toList.map { key =>
                   client.run(Get(s"/data/$key"))(_.readAs[String])
-                }
-              )
-              (status, content) <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
-              _ = status should be (400)
-              _ = content should be ("Invalid key format: coco")
+                }.sequence
+              x <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
+              _ = x._1 should be (400)
+              _ = x._2 should be ("Invalid key format: coco")
             } yield results
           }
         } should contain theSameElementsInOrderAs data.values
@@ -77,7 +74,7 @@ class ClientTests extends Tests {
             for {
               response <- client(Get("/huge"))
               _ = response.status should be (200)
-              length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size).unsafeToFuture()
+              length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size)
             } yield length
           }
         } should be (1024 * 1024)
@@ -122,11 +119,10 @@ class ClientTests extends Tests {
   test("Connection leak") {
     withServer(Server.listen() { _ => Ok("World" * 1024 * 100) }) { server =>
 
-      def makeCalls(client: Client, x: Int) = Future.sequence {
-        (1 to x).map { i =>
+      def makeCalls(client: Client, x: Int) =
+        fs2.async.parallelSequence((1 to x).map { i =>
           client(Get("/"), timeout = 1.second).map(_ => "OK").recover { case _ => "REJECTED"}
-        }
-      }
+        }.toList)
 
       await() {
         Client("localhost", server.port, maxConnections = 2).runAndStop { client =>
@@ -155,16 +151,16 @@ class ClientTests extends Tests {
           for {
             response <- client(Get("/Hello"))
             _ = response.status should be (200)
-            helloBytes <- response.content.stream.take(8).runLog.unsafeToFuture()
+            helloBytes <- response.content.stream.take(8).runLog
             _ = new String(helloBytes.toArray, "us-ascii") should be ("HelloHel")
 
             // illegal to reopen the stream
-            _ <- response.content.stream.runLog.unsafeToFuture()
+            _ <- response.content.stream.runLog
           } yield ()
         }
       } should be (Error.StreamAlreadyConsumed)
 
-      a [TimeoutException] should be thrownBy await(2 seconds) {
+      a [java.util.concurrent.TimeoutException] should be thrownBy await(2.seconds) {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
           for {
             response <- client(Get("/Hello"))
@@ -181,20 +177,20 @@ class ClientTests extends Tests {
   }
 
   test("Timeouts", Slow) {
-    val app: Service = _ => internal.timeout(Ok, 5 seconds)
+    val app: Service = _ => timeout(Ok, 5.seconds)
     foreachProtocol(HTTP, HTTP2) { protocol =>
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(app)) { server =>
         val client = Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol)))
 
         try {
           the [Error] thrownBy await() {
-            client.run(Get("/"), timeout = 1 second)(res => Future.successful(res.status))
-          } should be (Error.Timeout(1 second))
+            client.run(Get("/"), timeout = 1.second)(res => IO.pure(res.status))
+          } should be (Error.Timeout(1.second))
 
-          eventually(client.openedConnections should be (0), timeout = 5 seconds)
+          eventually(client.openedConnections should be (0), timeout = 5.seconds)
         }
         finally {
-          client.stop()
+          client.stopSync()
         }
 
       }
@@ -207,30 +203,30 @@ class ClientTests extends Tests {
     def send(id: Int) = {
       val req = Get("/")
       client.run(req) { _ =>
-        Future.successful(1)
+        IO.pure(1)
       } recoverWith {
         case t: Throwable =>
-          Future.successful(0)
+          IO.pure(0)
       }
     }
 
     try {
-      await(5 seconds) { send(1) } should be (0)
+      await(5.seconds) { send(1) } should be (0)
 
-      await(5 seconds) { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      await(5.seconds) { (1 to requests).map(send).toList.sequence }.sum should be (0)
       eventually(client.openedConnections should be (0))
       eventually(client.waitingConnections should be (0))
 
-      await(5 seconds) { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      await(5.seconds) { (1 to requests).map(send).toList.sequence }.sum should be (0)
       eventually(client.openedConnections should be (0))
       eventually(client.waitingConnections should be (0))
 
-      await(5 seconds) { Future.sequence((1 to requests).map(send)) }.sum should be (0)
+      await(5.seconds) { (1 to requests).map(send).toList.sequence }.sum should be (0)
       eventually(client.openedConnections should be (0))
       eventually(client.waitingConnections should be (0))
     }
     finally {
-      client.stop()
+      client.stopSync()
     }
 
   }

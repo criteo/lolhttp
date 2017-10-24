@@ -78,16 +78,15 @@ class ContentTests extends Tests {
     b != null should be (true)
 
     val bRealContent = Source.fromInputStream(b)(Codec.UTF8).mkString
-    val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-    getBytes(ContentEncoder.inputStream(blockingExecutor = ec).apply(a)) should contain theSameElementsInOrderAs "LOL\n".getBytes("utf-8")
-    getString(ContentEncoder.inputStream(blockingExecutor = ec).apply(b)) should be (bRealContent)
+    getBytes(ContentEncoder.inputStream().apply(a)) should contain theSameElementsInOrderAs "LOL\n".getBytes("utf-8")
+    getString(ContentEncoder.inputStream().apply(b)) should be (bRealContent)
 
-    ContentEncoder.inputStream(chunkSize = 1, blockingExecutor = ec).apply(a).stream.chunks.map(c => new String(c.toArray)).
+    ContentEncoder.inputStream(chunkSize = 1).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
       runLog.unsafeRunSync().mkString should be ("L_O_L_\n_")
 
-    ContentEncoder.inputStream(chunkSize = 2, blockingExecutor = ec).apply(a).stream.chunks.map(c => new String(c.toArray)).
+    ContentEncoder.inputStream(chunkSize = 2).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
       runLog.unsafeRunSync().mkString should be ("LO_L\n_")
   }

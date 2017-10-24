@@ -5,8 +5,6 @@ import Headers._
 import scala.io.{ Codec }
 import scala.util.{ Try }
 
-import scala.concurrent.{ blocking, ExecutionContext }
-
 import java.io.{ File, InputStream }
 import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.channels.{ AsynchronousFileChannel, CompletionHandler }
@@ -307,29 +305,25 @@ object ContentEncoder {
   /** Default text encoder, using `UTF-8` as charset. */
   implicit val defaultText = text(Codec.UTF8)
 
-  /** Create a content encoder for java blocking `java.io.InputStream`. Creating this encoder requires to
-    * provide an [[scala.concurrent.ExecutionContext ExecutionContext]] that will be used to run the blocking code.
+  /** Create a content encoder for java blocking `java.io.InputStream`.
     *
     * Note that the inputStream is read lazily and is not buffered in memory. Therefore the content length is not known
     * and no corresponding HTTP header is produced.
     *
-    * @param blockingExecutor an execution context that will be used to run the blocking IO operations.
     * @param chunkSize the size of chunks that will be produced in the content stream. Default to `16KB`.
     * @return an encoder for `java.io.InputStream`.
     */
-  def inputStream(blockingExecutor: ExecutionContext, chunkSize: Int = 16 * 1024) = new ContentEncoder[InputStream] {
+  def inputStream(chunkSize: Int = 16 * 1024) = new ContentEncoder[InputStream] {
     def apply(data: InputStream) = {
       val stream = Stream.eval(IO.async[Option[Chunk[Byte]]] { cb =>
         try {
-          blocking {
-            val buffer = Array.ofDim[Byte](chunkSize)
-            val read = data.read(buffer)
-            if(read > -1) {
-              cb(Right(Some(Chunk.bytes(buffer, 0, read))))
-            }
-            else {
-              cb(Right(None))
-            }
+          val buffer = Array.ofDim[Byte](chunkSize)
+          val read = data.read(buffer)
+          if(read > -1) {
+            cb(Right(Some(Chunk.bytes(buffer, 0, read))))
+          }
+          else {
+            cb(Right(None))
           }
         }
         catch {
@@ -449,10 +443,10 @@ object ClasspathResource {
   /** A [[ContentEncoder]] for a [[ClasspathResource]].
     * Produces a failing stream if the resource is missing.
     */
-  implicit def encoder(implicit executor: ExecutionContext) = new ContentEncoder[ClasspathResource] {
+  implicit val encoder = new ContentEncoder[ClasspathResource] {
     def apply(data: ClasspathResource) = {
       data.inputStream.fold(Content(Stream.fail(Error.ClasspathResourceMissing))) { is =>
-        ContentEncoder.inputStream(executor)(is).addHeaders(
+        ContentEncoder.inputStream()(is).addHeaders(
           ContentType -> HttpString(internal.guessContentType(data.path)),
           TransferEncoding -> h"chunked"
         )

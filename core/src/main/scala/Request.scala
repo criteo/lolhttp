@@ -1,9 +1,6 @@
 package lol.http
 
-import scala.concurrent.{ Future }
-
-import cats.effect.IO
-
+import cats.effect.{ IO }
 import fs2.{ Stream }
 
 /** An HTTP request.
@@ -56,18 +53,18 @@ case class Request(
     * @param decoder the [[ContentDecoder]] to use to read the content.
     * @return eventually a value of type `A`.
     */
-  def readAs[A](implicit decoder: ContentDecoder[A]): Future[A] = content.as[A].unsafeToFuture
+  def readAs[A](implicit decoder: ContentDecoder[A]): IO[A] = content.as[A]
 
   /** Consume the content attached to this request by evaluating the provided effect function.
     * @param effect the function to use to consume the stream.
     * @return eventually a value of type `A`.
     */
-  def read[A](effect: Stream[IO,Byte] => IO[A]): Future[A] = effect(content.stream).unsafeToFuture
+  def read[A](effect: Stream[IO,Byte] => IO[A]): IO[A] = effect(content.stream)
 
   /** Drain the content attached to this request. It is safe to call this operation even if the stream has
     * already been consumed.
     */
-  def drain: Future[Unit] = read(_.onError {
+  def drain: IO[Unit] = read(_.onError {
     case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
     case e: Throwable => Stream.fail(e)
   }.drain.run)

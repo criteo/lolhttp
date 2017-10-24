@@ -5,8 +5,7 @@ import ServerSentEvents._
 import cats.effect.IO
 import fs2.{ Stream }
 
-import scala.concurrent.{ ExecutionContext }
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ServerSentEventsTests extends Tests {
 
@@ -26,7 +25,7 @@ class ServerSentEventsTests extends Tests {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             client.run(Get("/stream")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map(_.toList).unsafeToFuture
+                eventStream.runLog.map(_.toList)
               }
             }
           }
@@ -42,7 +41,7 @@ class ServerSentEventsTests extends Tests {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             client.run(Get("/")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map(_.toList).unsafeToFuture
+                eventStream.runLog.map(_.toList)
               }
             }
           }
@@ -58,7 +57,7 @@ class ServerSentEventsTests extends Tests {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             client.run(Get("/fakeStream")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map(_.toList).unsafeToFuture
+                eventStream.runLog.map(_.toList)
               }
             }
           }

@@ -5,10 +5,8 @@ import lol.http._
 import cats.effect.{ IO }
 import fs2.{ Chunk, Pipe, Pull, Stream, Scheduler }
 
-import scala.concurrent.{ ExecutionContext }
 import scala.concurrent.duration._
-
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class StreamingTests extends Tests {
 

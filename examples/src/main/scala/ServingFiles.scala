@@ -7,8 +7,7 @@
 import lol.http._
 import lol.html._
 
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object ServingFiles {
   def main(args: Array[String]): Unit = {

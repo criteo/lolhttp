@@ -39,10 +39,10 @@ case class Request(
   /** The queryString part of the URL. */
   lazy val queryString = qs
 
-  /** The queryString parsed as a sequence og key=value parameters. */
+  /** The queryString parsed as a sequence of key=value parameters. */
   lazy val parsedQueryString: List[(String,String)] = qs.map(internal.Url.parseQueryString).getOrElse(Nil)
 
-  /** The queryString parameters. Duplicated parameters are ignored, and only the first value is available. */
+  /** The queryString parameters. Duplicated parameters are ignored, only the first value is available. */
   lazy val queryStringParameters: Map[String,String] = parsedQueryString.toMap
 
   /** Set the content of this request.

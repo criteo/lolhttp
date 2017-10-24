@@ -39,4 +39,13 @@ class UrlsTests extends Tests {
     "/?name=jean-claude" match { case url"/?name=$first-$last" => (first,last) should be ("jean" -> "claude") }
   }
 
+  test("QueryString in request") {
+    Get("/").parsedQueryString should be (Nil)
+    Get("/").queryStringParameters should be (Map.empty)
+    Get("/?sort=asc&page=2").parsedQueryString should be (List("sort" -> "asc", "page" -> "2"))
+    Get("/?sort=asc&page=2").queryStringParameters should be (Map("sort" -> "asc", "page" -> "2"))
+    Get("/?sort=asc&page=2&sort=desc").parsedQueryString should be (List("sort" -> "asc", "page" -> "2", "sort" -> "desc"))
+    Get("/?sort=asc&page=2").queryStringParameters should be (Map("sort" -> "asc", "page" -> "2"))
+  }
+
 }

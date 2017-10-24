@@ -37,7 +37,7 @@ case class Request(
   lazy val path: String = p
 
   /** The queryString part of the URL. */
-  lazy val queryString: String = qs
+  lazy val queryString: Option[String] = qs
 
   /** The queryString parsed as a sequence of key=value parameters. */
   lazy val parsedQueryString: List[(String,String)] = qs.map(internal.Url.parseQueryString).getOrElse(Nil)

@@ -137,7 +137,7 @@ lazy val loljson =
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser",
       "io.circe" %% "circe-optics"
-    ).map(_ % "0.9.0-M1"),
+    ).map(_ % "0.9.0-M2"),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")

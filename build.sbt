@@ -94,7 +94,7 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.10.0-M6",
+      "co.fs2" %% "fs2-core" % "0.10.0-M10",
       "io.netty" % "netty-codec-http2" % "4.1.16.Final",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     ),
@@ -137,7 +137,7 @@ lazy val loljson =
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser",
       "io.circe" %% "circe-optics"
-    ).map(_ % "0.9.0-M1"),
+    ).map(_ % "0.9.0-M2"),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")

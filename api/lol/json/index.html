@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.7.3 - lol.json</title>
-          <meta name="description" content="lolhttp 0.7.3 - lol.json" />
-          <meta name="keywords" content="lolhttp 0.7.3 lol.json" />
+          <title>lolhttp 0.8.0 - lol.json</title>
+          <meta name="description" content="lolhttp 0.8.0 - lol.json" />
+          <meta name="keywords" content="lolhttp 0.8.0 lol.json" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.7.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.8.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -65,9 +65,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../../index.html">
-              <span class="name">root</span>
-            </a>
+        <a title="" href="../../index.html"><span class="name">root</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
@@ -83,9 +81,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="This is the documentation for the lolhttp library." href="../index.html">
-              <span class="name">lol</span>
-            </a>
+        <a title="This is the documentation for the lolhttp library." href="../index.html"><span class="name">lol</span></a>
       </span>
       
       <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="../http/index.html" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="../http/Client.html" class="extype" name="lol.http.Client">Client</a> and <a href="../http/Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="../html/index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
@@ -102,9 +98,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="HTML templating." href="../html/index.html">
-              <span class="name">html</span>
-            </a>
+        <a title="HTML templating." href="../html/index.html"><span class="name">html</span></a>
       </span>
       
       <p class="shortcomment cmt">HTML templating.</p><div class="fullcomment"><div class="comment cmt"><p>HTML templating.</p><pre><span class="kw">val</span> items: <span class="std">List</span>[Item] = ???
@@ -136,9 +130,7 @@ They will be encoded as <a href="../http/Content.html" class="extype" name="lol.
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="The core module for lolhttp." href="../http/index.html">
-              <span class="name">http</span>
-            </a>
+        <a title="The core module for lolhttp." href="../http/index.html"><span class="name">http</span></a>
       </span>
       
       <p class="shortcomment cmt">The core module for lolhttp.</p><div class="fullcomment"><div class="comment cmt"><p>The core module for lolhttp.</p><pre>Server.listen(<span class="num">8888</span>) { request <span class="kw">=&gt;</span>
@@ -147,10 +139,10 @@ They will be encoded as <a href="../http/Content.html" class="extype" name="lol.
 
 Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>Provides an HTTP <a href="../http/Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="../http/Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="../http/index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
+}</pre><p>Provides an HTTP <a href="../http/Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="../http/Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="../http/index.html#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
 A service function takes a <a href="../http/Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="../http/Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
-of <a href="../http/HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="../http/Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
+of <a href="../http/HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="../http/Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html" class="extype" name="fs2.Stream">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/index.html" class="extype" name="fs2">fs2</a> and can be lazily consumed if needed.
 It can be encoded and decoded using the appropriate <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="../http/SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
     </li><li name="lol.json" visbl="pub" class="indented2 current" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="json"></a><a id="json:json"></a>
@@ -177,12 +169,8 @@ encoder/decoder (or treating JSON as string).
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
     </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="object" href="JsonContent$.html" title="Provides ContentEncoder and ContentDecoder
-for io.circe.Json values."></a>
-                        <a href="JsonContent$.html" title="Provides ContentEncoder and ContentDecoder
-for io.circe.Json values.">
-                          JsonContent
-                        </a>
+                        <a class="object" href="JsonContent$.html" title="Provides ContentEncoder and ContentDecoder for io.circe.Json values."></a>
+                        <a href="JsonContent$.html" title="Provides ContentEncoder and ContentDecoder for io.circe.Json values.">JsonContent</a>
                       </li>
               </ul>
             </div>
@@ -222,7 +210,7 @@ encoder/decoder (or treating JSON as string).
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
         </div></div>
         
 
@@ -287,7 +275,7 @@ encoder/decoder (or treating JSON as string).
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">defaultJsonDecoder</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
+        <span class="name">defaultJsonDecoder</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Default decoder for JSON values, using <code>UTF-8</code> as charset and <a href="../http/ContentDecoder$.html#MaxSize:Int" class="extmbr" name="lol.http.ContentDecoder#MaxSize">MaxSize</a> as
@@ -304,7 +292,7 @@ maximum amount of bytes to read in memory.</p>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">defaultJsonEncoder</span><span class="result">: <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
+        <span class="name">defaultJsonEncoder</span><span class="result">: <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Default encoder for JSON values, using <code>UTF-8</code> as charset.</p>
@@ -320,7 +308,7 @@ maximum amount of bytes to read in memory.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">json</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="jsonDecoder">jsonDecoder: <a href="https://circe.github.io/circe/api/index.html#io.circe.Decoder" class="extype" target="_top">Decoder</a>[<span class="extype" name="lol.json.json.A">A</span>]</span>)</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="lol.json.json.A">A</span>]</span>
+        <span class="name">json</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="jsonDecoder">jsonDecoder: <a href="https://circe.github.io/circe/api/io/circe/Decoder.html#io.circe.Decoder" class="extype" name="io.circe.Decoder">Decoder</a>[<span class="extype" name="lol.json.json.A">A</span>]</span>)</span><span class="result">: <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<span class="extype" name="lol.json.json.A">A</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Creates a <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a> for any type <code>A</code> given that there is an available
@@ -338,7 +326,7 @@ circe JSON decoder for <code>A</code>.</p></div><dl class="paramcmts block"><dt 
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">sseJsonEventDecoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
+        <span class="name">sseJsonEventDecoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">JSON support for Server Sent Events.</p>
@@ -354,7 +342,7 @@ circe JSON decoder for <code>A</code>.</p></div><dl class="paramcmts block"><dt 
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">sseJsonEventEncoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<a href="https://circe.github.io/circe/api/index.html#io.circe.Json" class="extype" target="_top">Json</a>]</span>
+        <span class="name">sseJsonEventEncoder</span><span class="result">: <a href="../http/ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<a href="https://circe.github.io/circe/api/io/circe/Json.html#io.circe.Json" class="extype" name="io.circe.Json">Json</a>]</span>
       </span>
       
       <p class="shortcomment cmt">JSON support for Server Sent Events.</p>
@@ -370,10 +358,7 @@ circe JSON decoder for <code>A</code>.</p></div><dl class="paramcmts block"><dt 
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Provides ContentEncoder and ContentDecoder
-for io.circe.Json values." href="JsonContent$.html">
-              <span class="name">JsonContent</span>
-            </a>
+        <a title="Provides ContentEncoder and ContentDecoder for io.circe.Json values." href="JsonContent$.html"><span class="name">JsonContent</span></a>
       </span>
       
       <p class="shortcomment cmt">Provides <a href="../http/ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="../http/ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>
@@ -389,9 +374,9 @@ for <code>io.circe.Json</code> values.</p>
 
         <div id="inheritedMembers">
         <div class="parent" name="scala.AnyRef">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
+              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></h3>
+              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></h3>
             </div>
         
         </div>

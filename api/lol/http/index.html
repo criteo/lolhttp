@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.7.3 - lol.http</title>
-          <meta name="description" content="lolhttp 0.7.3 - lol.http" />
-          <meta name="keywords" content="lolhttp 0.7.3 lol.http" />
+          <title>lolhttp 0.8.0 - lol.http</title>
+          <meta name="description" content="lolhttp 0.8.0 - lol.http" />
+          <meta name="keywords" content="lolhttp 0.8.0 lol.http" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.7.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.8.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -65,9 +65,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../../index.html">
-              <span class="name">root</span>
-            </a>
+        <a title="" href="../../index.html"><span class="name">root</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
@@ -83,9 +81,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="This is the documentation for the lolhttp library." href="../index.html">
-              <span class="name">lol</span>
-            </a>
+        <a title="This is the documentation for the lolhttp library." href="../index.html"><span class="name">lol</span></a>
       </span>
       
       <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and <a href="Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="../json/index.html" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="../html/index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
@@ -102,9 +98,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="HTML templating." href="../html/index.html">
-              <span class="name">html</span>
-            </a>
+        <a title="HTML templating." href="../html/index.html"><span class="name">html</span></a>
       </span>
       
       <p class="shortcomment cmt">HTML templating.</p><div class="fullcomment"><div class="comment cmt"><p>HTML templating.</p><pre><span class="kw">val</span> items: <span class="std">List</span>[Item] = ???
@@ -145,133 +139,107 @@ They will be encoded as <a href="Content.html" class="extype" name="lol.http.Con
 
 Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
+}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
 A service function takes a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
-of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
+of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html" class="extype" name="fs2.Stream">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/index.html" class="extype" name="fs2">fs2</a> and can be lazily consumed if needed.
 It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
+    </li><li name="lol.http.internal" visbl="pub" class="indented3 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="internal"></a><a id="internal:internal"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#internal" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="internal/index.html"><span class="name">internal</span></a>
+      </span>
+      
+      
     </li><li class="current-entities indented2">
                         <a class="object" href="ClasspathResource$.html" title="Define the implicit encoder for ClasspathResource."></a>
                         <a class="class" href="ClasspathResource.html" title="A resource than can be read from the classpath."></a>
-                        <a href="ClasspathResource.html" title="A resource than can be read from the classpath.">
-                          ClasspathResource
-                        </a>
+                        <a href="ClasspathResource.html" title="A resource than can be read from the classpath.">ClasspathResource</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Client$.html" title="Build HTTP clients."></a>
                         <a class="trait" href="Client.html" title="An HTTP client."></a>
-                        <a href="Client.html" title="An HTTP client.">
-                          Client
-                        </a>
+                        <a href="Client.html" title="An HTTP client.">Client</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="ClientOptions.html" title="Allow to configure an HTTP client."></a>
-                        <a href="ClientOptions.html" title="Allow to configure an HTTP client.">
-                          ClientOptions
-                        </a>
+                        <a href="ClientOptions.html" title="Allow to configure an HTTP client.">ClientOptions</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Content$.html" title="Build HTTP message content body."></a>
                         <a class="class" href="Content.html" title="An HTTP message content body."></a>
-                        <a href="Content.html" title="An HTTP message content body.">
-                          Content
-                        </a>
+                        <a href="Content.html" title="An HTTP message content body.">Content</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="ContentDecoder$.html" title="Library of built-in content decoders."></a>
                         <a class="trait" href="ContentDecoder.html" title="An HTTP content decoder."></a>
-                        <a href="ContentDecoder.html" title="An HTTP content decoder.">
-                          ContentDecoder
-                        </a>
+                        <a href="ContentDecoder.html" title="An HTTP content decoder.">ContentDecoder</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="ContentEncoder$.html" title="Library of built-in content encoders."></a>
                         <a class="trait" href="ContentEncoder.html" title="A HTTP content encoder."></a>
-                        <a href="ContentEncoder.html" title="A HTTP content encoder.">
-                          ContentEncoder
-                        </a>
+                        <a href="ContentEncoder.html" title="A HTTP content encoder.">ContentEncoder</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Error$.html" title="All expected errors."></a>
                         <a class="class" href="Error.html" title="Expected errors."></a>
-                        <a href="Error.html" title="Expected errors.">
-                          Error
-                        </a>
+                        <a href="Error.html" title="Expected errors.">Error</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="Headers$.html" title="A collection of HTTP header names."></a>
-                        <a href="Headers$.html" title="A collection of HTTP header names.">
-                          Headers
-                        </a>
+                        <a href="Headers$.html" title="A collection of HTTP header names.">Headers</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="HttpMethod$.html" title="HTTP method matcher."></a>
                         <a class="class" href="HttpMethod.html" title="An HTTP method such as GET or POST."></a>
-                        <a href="HttpMethod.html" title="An HTTP method such as GET or POST.">
-                          HttpMethod
-                        </a>
+                        <a href="HttpMethod.html" title="An HTTP method such as GET or POST.">HttpMethod</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="HttpString$.html" title="HttpString builders."></a>
                         <a class="class" href="HttpString.html" title="An case insensitive string."></a>
-                        <a href="HttpString.html" title="An case insensitive string.">
-                          HttpString
-                        </a>
+                        <a href="HttpString.html" title="An case insensitive string.">HttpString</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values."></a>
-                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">
-                          LiteralHttpString
-                        </a>
+                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">LiteralHttpString</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Panic$.html" title="Allows to panic."></a>
                         <a class="class" href="Panic.html" title="Panics are errors that should not occur or should not be handled."></a>
-                        <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">
-                          Panic
-                        </a>
+                        <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">Panic</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Request.html" title="An HTTP request."></a>
-                        <a href="Request.html" title="An HTTP request.">
-                          Request
-                        </a>
+                        <a href="Request.html" title="An HTTP request.">Request</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Response.html" title="An HTTP response."></a>
-                        <a href="Response.html" title="An HTTP response.">
-                          Response
-                        </a>
+                        <a href="Response.html" title="An HTTP response.">Response</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="SSL$.html" title="lol SSL."></a>
-                        <a href="SSL$.html" title="lol SSL.">
-                          SSL
-                        </a>
+                        <a href="SSL$.html" title="lol SSL.">SSL</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Server$.html" title="Build and start HTTP servers."></a>
                         <a class="trait" href="Server.html" title="An HTTP server."></a>
-                        <a href="Server.html" title="An HTTP server.">
-                          Server
-                        </a>
+                        <a href="Server.html" title="An HTTP server.">Server</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="ServerOptions.html" title="Allow to configure an HTTP server."></a>
-                        <a href="ServerOptions.html" title="Allow to configure an HTTP server.">
-                          ServerOptions
-                        </a>
+                        <a href="ServerOptions.html" title="Allow to configure an HTTP server.">ServerOptions</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="ServerSentEvents$.html" title="Support for Server Sent Events content."></a>
-                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">
-                          ServerSentEvents
-                        </a>
+                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">ServerSentEvents</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates."></a>
-                        <a href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates.">
-                          UrlMatcher
-                        </a>
+                        <a class="class" href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates."></a>
+                        <a href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates.">UrlMatcher</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="at$.html" title="Request extractor."></a>
-                        <a href="at$.html" title="Request extractor.">
-                          at
-                        </a>
+                        <a href="at$.html" title="Request extractor.">at</a>
                       </li><li name="lol.json" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="json"></a><a id="json:json"></a>
       <span class="permalink">
@@ -284,9 +252,7 @@ dynamic parameters in URL templates.">
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="Provides integration with the circe JSON library." href="../json/index.html">
-              <span class="name">json</span>
-            </a>
+        <a title="Provides integration with the circe JSON library." href="../json/index.html"><span class="name">json</span></a>
       </span>
       
       <p class="shortcomment cmt">Provides integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</p><div class="fullcomment"><div class="comment cmt"><p>Provides integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</p><pre>Server.listen(<span class="num">8888</span>) { request <span class="kw">=&gt;</span>
@@ -331,15 +297,15 @@ encoder/decoder (or treating JSON as string).
 
 Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
+}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
 A service function takes a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
-of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
+of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html" class="extype" name="fs2.Stream">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/index.html" class="extype" name="fs2">fs2</a> and can be lazily consumed if needed.
 It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/package.scala" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
         </div></div>
         
 
@@ -399,9 +365,7 @@ It can be encoded and decoded using the appropriate <a href="ContentEncoder.html
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="A resource than can be read from the classpath." href="ClasspathResource.html">
-              <span class="name">ClasspathResource</span>
-            </a><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="A resource than can be read from the classpath." href="ClasspathResource.html"><span class="name">ClasspathResource</span></a><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">A resource than can be read from the classpath.</p><div class="fullcomment"><div class="comment cmt"><p>A resource than can be read from the classpath.</p><pre>Ok(ClasspathResource(<span class="lit">"/public/index.html"</span>))</pre><p>A common use case is to serve static resources (html, js, images files) from the classpath.
@@ -420,14 +384,12 @@ is allowed. For example <code>ClasspathResource(&quot;/public/../public/index.ht
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP client." href="Client.html">
-              <span class="name">Client</span>
-            </a><span class="result"> extends <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a></span>
+        <a title="An HTTP client." href="Client.html"><span class="name">Client</span></a><span class="result"> extends <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP client.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP client.</p><pre><span class="kw">val</span> eventuallyContent = client(Get(<span class="lit">"/hello"</span>)).flatMap { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>An HTTP client is a <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> function. It handles HTTP requests
+}</pre><p>An HTTP client is a <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> function. It handles HTTP requests
 and eventually returns HTTP responses.</p><p>A client maintains several TCP connections to the remote server. These connections
 are used to send requests and are blocked until the corresponding response has been
 received. If no connection is available when a new request comes, it waits for one
@@ -448,9 +410,7 @@ and set to the value of the client <code>host</code>.
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="Allow to configure an HTTP client." href="ClientOptions.html">
-              <span class="name">ClientOptions</span>
-            </a><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="defval" name="Math.min(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a>] = <span class="symbol">None</span></span>, <span name="protocols">protocols: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="#HTTP:String">Set(HTTP)</a></span></span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Allow to configure an HTTP client." href="ClientOptions.html"><span class="name">ClientOptions</span></a><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="defval" name="Math.min(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a>] = <span class="symbol">None</span></span>, <span name="protocols">protocols: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="#HTTP:String">Set(HTTP)</a></span></span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Allow to configure an HTTP client.</p><div class="fullcomment"><div class="comment cmt"><p>Allow to configure an HTTP client.</p></div><dl class="paramcmts block"><dt class="param">ioThreads</dt><dd class="cmt"><p>the number of threads used for the IO work. Default to <code>min(availableProcessors, 2)</code>.</p></dd><dt class="param">tcpNoDelay</dt><dd class="cmt"><p>if true disable Nagle's algorithm. Default <code>true</code>.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>if defined used as a hint for the TCP buffer size. If none use the system default. Default to <code>None</code>.</p></dd><dt class="param">protocols</dt><dd class="cmt"><p>the protocols to use to connect to the server. If SSL enabled the protocol is negociated using ALPN.
@@ -469,14 +429,12 @@ and set to the value of the client <code>host</code>.
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP message content body." href="Content.html">
-              <span class="name">Content</span>
-            </a><span class="params">(<span name="stream">stream: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="An HTTP message content body." href="Content.html"><span class="name">Content</span></a><span class="params">(<span name="stream">stream: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="https://www.scala-lang.org/api/current/scala/Byte.html#scala.Byte" class="extype" name="scala.Byte">Byte</a>]</span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP message content body.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP message content body.</p><p>It is used to represent the content body for both HTTP requests &amp; responses. It is composed
 of a lazy stream of byte that can be consumed if needed, and a set of content-related HTTP headers
-(such as <code>Content-Length</code>, <code>Content-Type</code>, etc.).</p><p>The provided stream is not pure and can only be consumed once.</p></div><dl class="paramcmts block"><dt class="param">stream</dt><dd class="cmt"><p>an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">fs2.Stream</a> of <code>Byte</code>.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>a set of content-related HTTP headers.</p></dd></dl></div>
+(such as <code>Content-Length</code>, <code>Content-Type</code>, etc.).</p><p>The provided stream is not pure and can only be consumed once.</p></div><dl class="paramcmts block"><dt class="param">stream</dt><dd class="cmt"><p>an <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html" class="extype" name="fs2.Stream">fs2.Stream</a> of <code>Byte</code>.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>a set of content-related HTTP headers.</p></dd></dl></div>
     </li><li name="lol.http.ContentDecoder" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="ContentDecoder[+A]extendsAnyRef"></a><a id="ContentDecoder[+A]:ContentDecoder[A]"></a>
       <span class="permalink">
@@ -489,9 +447,7 @@ of a lazy stream of byte that can be consumed if needed, and a set of content-re
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP content decoder." href="ContentDecoder.html">
-              <span class="name">ContentDecoder</span>
-            </a><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <a title="An HTTP content decoder." href="ContentDecoder.html"><span class="name">ContentDecoder</span></a><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP content decoder.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP content decoder.</p><pre><span class="kw">val</span> textContent: Content = ???
@@ -512,9 +468,7 @@ a scala value.
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="A HTTP content encoder." href="ContentEncoder.html">
-              <span class="name">ContentEncoder</span>
-            </a><span class="tparams">[<span name="A">-A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <a title="A HTTP content encoder." href="ContentEncoder.html"><span class="name">ContentEncoder</span></a><span class="tparams">[<span name="A">-A</span>]</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
       <p class="shortcomment cmt">A HTTP content encoder.</p><div class="fullcomment"><div class="comment cmt"><p>A HTTP content encoder.</p><pre><span class="kw">val</span> text = <span class="lit">"Hello, world"</span>
@@ -534,9 +488,7 @@ a stream of bytes and the set of required HTTP headers like <code>Content-Length
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="Expected errors." href="Error.html">
-              <span class="name">Error</span>
-            </a><span class="params">(<span name="code">code: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.RuntimeException">RuntimeException</span> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Expected errors." href="Error.html"><span class="name">Error</span></a><span class="params">(<span name="code">code: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.RuntimeException">RuntimeException</span> with <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Expected errors.</p><div class="fullcomment"><div class="comment cmt"><p>Expected errors.</p><p>See the companion object for all defined errors.
@@ -553,9 +505,7 @@ a stream of bytes and the set of required HTTP headers like <code>Content-Length
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP method such as GET or POST." href="HttpMethod.html">
-              <span class="name">HttpMethod</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <a title="An HTTP method such as GET or POST." href="HttpMethod.html"><span class="name">HttpMethod</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP method such as GET or POST.</p>
@@ -571,9 +521,7 @@ a stream of bytes and the set of required HTTP headers like <code>Content-Length
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="An case insensitive string." href="HttpString.html">
-              <span class="name">HttpString</span>
-            </a><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Ordered">Ordered</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] with <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="An case insensitive string." href="HttpString.html"><span class="name">HttpString</span></a><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Ordered">Ordered</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] with <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">An case insensitive string.</p><div class="fullcomment"><div class="comment cmt"><p>An case insensitive string.</p><pre><span class="kw">val</span> contentType: HttpString = h<span class="lit">"text/plain"</span></pre><p>HTTP strings are case insensitive. The <code>h</code> string interpolation allows to create <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>
@@ -591,9 +539,7 @@ easily.
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="The h interpolation creates HttpString values." href="package$$LiteralHttpString.html">
-              <span class="name">LiteralHttpString</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <a title="The h interpolation creates HttpString values." href="package$$LiteralHttpString.html"><span class="name">LiteralHttpString</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
       <p class="shortcomment cmt">The <code>h</code> interpolation creates <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> values.</p><div class="fullcomment"><div class="comment cmt"><p>The <code>h</code> interpolation creates <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> values. You can use it as a matcher too.</p><pre><span class="kw">val</span> header = h<span class="lit">"LOCATION"</span>
@@ -613,16 +559,14 @@ header <span class="kw">match</span> {
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="Panics are errors that should not occur or should not be handled." href="Panic.html">
-              <span class="name">Panic</span>
-            </a><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.RuntimeException">RuntimeException</span> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Panics are errors that should not occur or should not be handled." href="Panic.html"><span class="name">Panic</span></a><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.RuntimeException">RuntimeException</span> with <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Panics are errors that should not occur or should not be handled.</p><div class="fullcomment"><div class="comment cmt"><p>Panics are errors that should not occur or should not be handled.</p></div><dl class="paramcmts block"><dt class="param">msg</dt><dd class="cmt"><p>the error message.</p></dd></dl></div>
     </li><li name="lol.http.PartialService" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="PartialService=PartialFunction[lol.http.Request,scala.concurrent.Future[lol.http.Response]]"></a><a id="PartialService:PartialService"></a>
+      <a id="PartialService=PartialFunction[lol.http.Request,cats.effect.IO[lol.http.Response]]"></a><a id="PartialService:PartialService"></a>
       <span class="permalink">
-      <a href="../../lol/http/index.html#PartialService=PartialFunction[lol.http.Request,scala.concurrent.Future[lol.http.Response]]" title="Permalink">
+      <a href="../../lol/http/index.html#PartialService=PartialFunction[lol.http.Request,cats.effect.IO[lol.http.Response]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -631,7 +575,7 @@ header <span class="kw">match</span> {
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">PartialService</span><span class="result alias"> = <a href="https://www.scala-lang.org/api/current/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<a href="Request.html" class="extype" name="lol.http.Request">Request</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]]</span>
+        <span class="name">PartialService</span><span class="result alias"> = <a href="https://www.scala-lang.org/api/current/scala/PartialFunction.html#scala.PartialFunction" class="extype" name="scala.PartialFunction">PartialFunction</a>[<a href="Request.html" class="extype" name="lol.http.Request">Request</a>, <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]]</span>
       </span>
       
       <p class="shortcomment cmt">A partial service is not defined for all <a href="Request.html" class="extype" name="lol.http.Request">Request</a>.</p>
@@ -647,18 +591,16 @@ header <span class="kw">match</span> {
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP request." href="Request.html">
-              <span class="name">Request</span>
-            </a><span class="params">(<span name="method">method: <a href="HttpMethod.html" class="extype" name="lol.http.HttpMethod">HttpMethod</a></span>, <span name="url">url: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;/&quot;</span></span>, <span name="scheme">scheme: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;http&quot;</span></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="protocol">protocol: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol"><span class="name"><a href="#HTTP:String">HTTP</a></span></span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="An HTTP request." href="Request.html"><span class="name">Request</span></a><span class="params">(<span name="method">method: <a href="HttpMethod.html" class="extype" name="lol.http.HttpMethod">HttpMethod</a></span>, <span name="url">url: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;/&quot;</span></span>, <span name="scheme">scheme: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;http&quot;</span></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="protocol">protocol: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol"><span class="name"><a href="#HTTP:String">HTTP</a></span></span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP request.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP request.</p><p>Represent all the data available in the HTTP request headers, and the request content that
 can be consumed lazily if needed.
 </p></div><dl class="paramcmts block"><dt class="param">method</dt><dd class="cmt"><p>the HTTP method such as GET or POST.</p></dd><dt class="param">url</dt><dd class="cmt"><p>the resource URL.</p></dd><dt class="param">scheme</dt><dd class="cmt"><p>the scheme such as <code>http</code> or <code>https</code>.</p></dd><dt class="param">content</dt><dd class="cmt"><p>the request content.</p></dd><dt class="param">headers</dt><dd class="cmt"><p>the HTTP headers.</p></dd><dt class="param">protocol</dt><dd class="cmt"><p>the protocol version.</p></dd></dl></div>
     </li><li name="lol.http.Response" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="ResponseextendsFutureLikeResponsewithProductwithSerializable"></a><a id="Response:Response"></a>
+      <a id="ResponseextendsProductwithSerializable"></a><a id="Response:Response"></a>
       <span class="permalink">
-      <a href="../../lol/http/index.html#ResponseextendsFutureLikeResponsewithProductwithSerializable" title="Permalink">
+      <a href="../../lol/http/index.html#ResponseextendsProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -667,9 +609,7 @@ can be consumed lazily if needed.
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP response." href="Response.html">
-              <span class="name">Response</span>
-            </a><span class="params">(<span name="status">status: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="upgradeConnection">upgradeConnection: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>] = <span class="symbol">_ =&gt; Stream.empty</span></span>)</span><span class="result"> extends <span class="extype" name="lol.http.internal.FutureLikeResponse">FutureLikeResponse</span> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="An HTTP response." href="Response.html"><span class="name">Response</span></a><span class="params">(<span name="status">status: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>, <span name="content">content: <a href="Content.html" class="extype" name="lol.http.Content">Content</a> = <span class="symbol"><span class="name"><a href="Content$.html">Content.empty</a></span></span></span>, <span name="headers">headers: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>, <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a>] = <span class="symbol">Map.empty</span></span>, <span name="upgradeConnection">upgradeConnection: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="https://www.scala-lang.org/api/current/scala/Byte.html#scala.Byte" class="extype" name="scala.Byte">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="https://www.scala-lang.org/api/current/scala/Byte.html#scala.Byte" class="extype" name="scala.Byte">Byte</a>] = <span class="symbol">_ =&gt; Stream.empty</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP response.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP response.</p><p>Represent all the data available in the HTTP response headers, and the response content that
@@ -691,14 +631,12 @@ return you will get the downstream.
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="An HTTP server." href="Server.html">
-              <span class="name">Server</span>
-            </a><span class="result"> extends <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a></span>
+        <a title="An HTTP server." href="Server.html"><span class="name">Server</span></a><span class="result"> extends <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a></span>
       </span>
       
       <p class="shortcomment cmt">An HTTP server.</p><div class="fullcomment"><div class="comment cmt"><p>An HTTP server.</p><pre><span class="kw">val</span> eventuallyContent = server(Get(<span class="lit">"/hello"</span>)).flatMap { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>An HTTP server is a <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">service</a> function. It handles HTTP requests
+}</pre><p>An HTTP server is a <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">service</a> function. It handles HTTP requests
 and eventually returns HTTP responses.</p><p>The server listen for HTTP connections on the <a href="Server.html#socketAddress:java.net.InetSocketAddress" class="extmbr" name="lol.http.Server#socketAddress">socketAddress</a> TCP socket. If <a href="Server.html#ssl:Option[lol.http.SSL.ServerConfiguration]" class="extmbr" name="lol.http.Server#ssl">ssl</a> is defined,
 it supports TLS connections. Calling the <a href="Server.html#stop(quietPeriod:scala.concurrent.duration.Duration,timeout:scala.concurrent.duration.Duration):scala.concurrent.Future[Unit]" class="extmbr" name="lol.http.Server#stop">stop</a> operation asks for a graceful shutdown.
 </p></div></div>
@@ -714,17 +652,15 @@ it supports TLS connections. Calling the <a href="Server.html#stop(quietPeriod:s
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="Allow to configure an HTTP server." href="ServerOptions.html">
-              <span class="name">ServerOptions</span>
-            </a><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a> = <span class="defval" name="Math.max(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a>] = <span class="symbol">None</span></span>, <span name="protocols">protocols: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="#HTTP:String">Set(HTTP)</a></span></span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Allow to configure an HTTP server." href="ServerOptions.html"><span class="name">ServerOptions</span></a><span class="params">(<span name="ioThreads">ioThreads: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="defval" name="Math.max(Runtime.getRuntime.availableProcessors, 2)">...</span></span>, <span name="tcpNoDelay">tcpNoDelay: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">true</span></span>, <span name="bufferSize">bufferSize: <a href="https://www.scala-lang.org/api/current/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a>] = <span class="symbol">None</span></span>, <span name="protocols">protocols: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol"><span class="name"><a href="#HTTP:String">Set(HTTP)</a></span></span></span>, <span name="debug">debug: <a href="https://www.scala-lang.org/api/current/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Allow to configure an HTTP server.</p><div class="fullcomment"><div class="comment cmt"><p>Allow to configure an HTTP server.</p></div><dl class="paramcmts block"><dt class="param">ioThreads</dt><dd class="cmt"><p>the number of threads used for the IO work. Default to <code>max(availableProcessors, 2)</code>.</p></dd><dt class="param">tcpNoDelay</dt><dd class="cmt"><p>if true disable Nagle's algorithm. Default <code>true</code>.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>if defined used as a hint for the TCP buffer size. If none use the system default. Default to <code>None</code>.</p></dd><dt class="param">protocols</dt><dd class="cmt"><p>the allowed protocols (HTTP, HTTP2 or both). If SSL enabled the protocol is negociated using ALPN.
                  Without SSL enabled only direct HTTP2 connections with prior knowledge are supported.</p></dd><dt class="param">debug</dt><dd class="cmt"><p>if defined log the TCP traffic with the provided logger name. Default to <code>None</code>.</p></dd></dl></div>
     </li><li name="lol.http.Service" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]"></a><a id="Service:Service"></a>
+      <a id="Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]"></a><a id="Service:Service"></a>
       <span class="permalink">
-      <a href="../../lol/http/index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" title="Permalink">
+      <a href="../../lol/http/index.html#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -733,7 +669,7 @@ it supports TLS connections. Calling the <a href="Server.html#stop(quietPeriod:s
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">Service</span><span class="result alias"> = (<a href="Request.html" class="extype" name="lol.http.Request">Request</a>) ⇒ <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
+        <span class="name">Service</span><span class="result alias"> = (<a href="Request.html" class="extype" name="lol.http.Request">Request</a>) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
       </span>
       
       <p class="shortcomment cmt">A service is a function from <a href="Request.html" class="extype" name="lol.http.Request">Request</a> to eventually a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p>
@@ -749,10 +685,7 @@ it supports TLS connections. Calling the <a href="Server.html#stop(quietPeriod:s
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates." href="package$$UrlMatcher.html">
-              <span class="name">UrlMatcher</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <a title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates." href="package$$UrlMatcher.html"><span class="name">UrlMatcher</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
       <p class="shortcomment cmt">The <code>url</code> interpolation is mainly useful in pattern matching to match and extract
@@ -1062,7 +995,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">Redirect</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="permanent">permanent: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
+        <span class="name">Redirect</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="permanent">permanent: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
       </span>
       
       <p class="shortcomment cmt">Create 30x HTTP redirects.</p><div class="fullcomment"><div class="comment cmt"><p>Create 30x HTTP redirects.</p></div><dl class="paramcmts block"><dt class="param">url</dt><dd class="cmt"><p>will be used as <code>Location</code> header value.</p></dd><dt class="param">permanent</dt><dd class="cmt"><p>308 if true, otherwise 307.</p></dd><dt>returns</dt><dd class="cmt"><p>a 30x <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></dd></dl></div>
@@ -1078,7 +1011,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">SwitchingProtocol</span><span class="params">(<span name="protocol">protocol: <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a></span>, <span name="upgradeConnection">upgradeConnection: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>)</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
+        <span class="name">SwitchingProtocol</span><span class="params">(<span name="protocol">protocol: <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a></span>, <span name="upgradeConnection">upgradeConnection: (<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="https://www.scala-lang.org/api/current/scala/Byte.html#scala.Byte" class="extype" name="scala.Byte">Byte</a>]) ⇒ <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="https://www.scala-lang.org/api/current/scala/Byte.html#scala.Byte" class="extype" name="scala.Byte">Byte</a>]</span>)</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
       </span>
       
       <p class="shortcomment cmt">Create a 101 Switching protocol <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Create a 101 Switching protocol <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></div><dl class="paramcmts block"><dt class="param">protocol</dt><dd class="cmt"><p>the new protocol the server accepts to switch to.</p></dd><dt class="param">upgradeConnection</dt><dd class="cmt"><p>this function will be called with the upstream as parameter and must retun the downstream.</p></dd><dt>returns</dt><dd class="cmt"><p>a 101 <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></dd></dl></div>
@@ -1098,6 +1031,22 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
       </span>
       
       <p class="shortcomment cmt">Create a 426 Upgrade required <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Create a 426 Upgrade required <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></div><dl class="paramcmts block"><dt class="param">protocol</dt><dd class="cmt"><p>the new protocol the server want to switch to.</p></dd></dl></div>
+    </li><li name="lol.http#pureResponse" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="pureResponse(response:lol.http.Response):cats.effect.IO[lol.http.Response]"></a><a id="pureResponse(Response):IO[Response]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#pureResponse(response:lol.http.Response):cats.effect.IO[lol.http.Response]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pureResponse</span><span class="params">(<span name="response">response: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>)</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>[<a href="Response.html" class="extype" name="lol.http.Response">Response</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Automatically convert a <a href="Response.html" class="extype" name="lol.http.Response">Response</a> into a pure <span class="extype" name="IO[Response">IO[Response</span>] if needed.</p>
     </li><li name="lol.http#sseDecoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sseDecoder[A](impliciteventDecoder:lol.http.ServerSentEvents.EventDecoder[A]):lol.http.ContentDecoder[fs2.Stream[cats.effect.IO,lol.http.ServerSentEvents.Event[A]]]"></a><a id="sseDecoder[A](EventDecoder[A]):ContentDecoder[Stream[IO,Event[A]]]"></a>
       <span class="permalink">
@@ -1110,7 +1059,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sseDecoder</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="eventDecoder">eventDecoder: <a href="ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<span class="extype" name="lol.http.sseDecoder.A">A</span>]</span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="ServerSentEvents$$Event.html" class="extype" name="lol.http.ServerSentEvents.Event">Event</a>[<span class="extype" name="lol.http.sseDecoder.A">A</span>]]]</span>
+        <span class="name">sseDecoder</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="eventDecoder">eventDecoder: <a href="ServerSentEvents$$EventDecoder.html" class="extype" name="lol.http.ServerSentEvents.EventDecoder">EventDecoder</a>[<span class="extype" name="lol.http.sseDecoder.A">A</span>]</span>)</span><span class="result">: <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="ServerSentEvents$$Event.html" class="extype" name="lol.http.ServerSentEvents.Event">Event</a>[<span class="extype" name="lol.http.sseDecoder.A">A</span>]]]</span>
       </span>
       
       <p class="shortcomment cmt">Support for Server Sent Events decoding.</p>
@@ -1126,10 +1075,26 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sseEncoder</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="eventEncoder">eventEncoder: <a href="ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<span class="extype" name="lol.http.sseEncoder.A">A</span>]</span>)</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/index.html#cats.effect.IO" class="extype" target="_top">IO</a>, <a href="ServerSentEvents$$Event.html" class="extype" name="lol.http.ServerSentEvents.Event">Event</a>[<span class="extype" name="lol.http.sseEncoder.A">A</span>]]]</span>
+        <span class="name">sseEncoder</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="eventEncoder">eventEncoder: <a href="ServerSentEvents$$EventEncoder.html" class="extype" name="lol.http.ServerSentEvents.EventEncoder">EventEncoder</a>[<span class="extype" name="lol.http.sseEncoder.A">A</span>]</span>)</span><span class="result">: <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html#fs2.Stream" class="extype" name="fs2.Stream">Stream</a>[<a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>, <a href="ServerSentEvents$$Event.html" class="extype" name="lol.http.ServerSentEvents.Event">Event</a>[<span class="extype" name="lol.http.sseEncoder.A">A</span>]]]</span>
       </span>
       
       <p class="shortcomment cmt">Support for Server Sent Events encoding.</p>
+    </li><li name="lol.http#timeout" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="timeout[A](a:=&gt;A,delay:scala.concurrent.duration.FiniteDuration)(implicitec:scala.concurrent.ExecutionContext):cats.effect.IO[A]"></a><a id="timeout[A](⇒A,FiniteDuration)(ExecutionContext):IO[A]"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#timeout[A](a:=&gt;A,delay:scala.concurrent.duration.FiniteDuration)(implicitec:scala.concurrent.ExecutionContext):cats.effect.IO[A]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">timeout</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="a">a: ⇒ <span class="extype" name="lol.http.timeout.A">A</span></span>, <span name="delay">delay: <a href="https://www.scala-lang.org/api/current/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <a href="https://www.scala-lang.org/api/current/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span><span class="result">: <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#cats.effect.IO" class="extype" name="cats.effect.IO">IO</a>[<span class="extype" name="lol.http.timeout.A">A</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Wrap a pure value a into an async effect that will be available after the <code>delay</code>.</p>
     </li><li name="lol.http.ClasspathResource" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ClasspathResource"></a><a id="ClasspathResource:ClasspathResource"></a>
       <span class="permalink">
@@ -1142,9 +1107,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Define the implicit encoder for ClasspathResource." href="ClasspathResource$.html">
-              <span class="name">ClasspathResource</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Define the implicit encoder for ClasspathResource." href="ClasspathResource$.html"><span class="name">ClasspathResource</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Define the implicit encoder for ClasspathResource.</p>
@@ -1160,17 +1123,19 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Build HTTP clients." href="Client$.html">
-              <span class="name">Client</span>
-            </a>
+        <a title="Build HTTP clients." href="Client$.html"><span class="name">Client</span></a>
       </span>
       
       <p class="shortcomment cmt">Build HTTP clients.</p><div class="fullcomment"><div class="comment cmt"><p>Build HTTP clients.</p><pre><span class="kw">val</span> client = Client(<span class="lit">"github.com"</span>)
-<span class="kw">val</span> homePage = client.run(Get(<span class="lit">"/"</span>))(_.readAs[<span class="std">String</span>])
-client.stop()</pre><p>Once created an HTTP client maintains several TCP connections to the remote server, and
+<span class="kw">val</span> fetchGithubHomePage: IO[<span class="std">String</span>] =
+  <span class="kw">for</span> {
+    homePage <span class="kw">&lt;-</span> client.run(Get(<span class="lit">"/"</span>))(_.readAs[<span class="std">String</span>])
+    _ <span class="kw">&lt;-</span> client.stop()
+  } <span class="kw">yield</span> (homePage)
+println(fetchGithubHomePage.unsafeRunSync)</pre><p>Once created an HTTP client maintains several TCP connections to the remote server, and
 can be reused to run several requests. It is better to create a dedicated client this way if
 you plan to send many requests to the same server.</p><p>However there are some situations where you have a single request to run, or you have a batch
-of requests to send over an unknown set of servers. In this case you can use the <a href="Client$.html#run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration,options:lol.http.ClientOptions)(thunk:lol.http.Response=&gt;scala.concurrent.Future[A])(implicitexecutor:scala.concurrent.ExecutionContext,implicitssl:lol.http.SSL.ClientConfiguration):scala.concurrent.Future[A]" class="extmbr" name="lol.http.Client#run">run</a> operation
+of requests to send over an unknown set of servers. In this case you can use the <a href="Client$.html#run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration,options:lol.http.ClientOptions)(f:lol.http.Response=&gt;cats.effect.IO[A])(implicitexecutor:scala.concurrent.ExecutionContext,implicitssl:lol.http.SSL.ClientConfiguration):cats.effect.IO[A]" class="extmbr" name="lol.http.Client#run">run</a> operation
 that automatically create a temporary HTTP client to run the request and trash it after the exchange
 completion.</p><pre><span class="kw">val</span> homePage = Client.run(Get(<span class="lit">"http://github.com/"</span>))(_.readAs[<span class="std">String</span>])</pre><p>Note that in this case, for each request, a new client (including the whole IO
 infrastructure) will to be created, and a new TCP connection will be opened to the server.
@@ -1187,9 +1152,7 @@ infrastructure) will to be created, and a new TCP connection will be opened to t
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Build HTTP message content body." href="Content$.html">
-              <span class="name">Content</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Build HTTP message content body." href="Content$.html"><span class="name">Content</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Build HTTP message content body.</p><div class="fullcomment"><div class="comment cmt"><p>Build HTTP message content body.</p><pre><span class="kw">val</span> textContent: Content = Content.of(<span class="lit">"Hello world!"</span>)</pre><p>Given an existing <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a> for a type <code>A</code>, this object allows to create
@@ -1208,9 +1171,7 @@ set of appropriate HTTP headers.
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Library of built-in content decoders." href="ContentDecoder$.html">
-              <span class="name">ContentDecoder</span>
-            </a>
+        <a title="Library of built-in content decoders." href="ContentDecoder$.html"><span class="name">ContentDecoder</span></a>
       </span>
       
       <p class="shortcomment cmt">Library of built-in content decoders.</p><div class="fullcomment"><div class="comment cmt"><p>Library of built-in content decoders.</p><p>This provides content decoder functions for the common scala types, and implicit decoder
@@ -1231,9 +1192,7 @@ you can just pass the content decoder yourself instead of relying on implicit re
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Library of built-in content encoders." href="ContentEncoder$.html">
-              <span class="name">ContentEncoder</span>
-            </a>
+        <a title="Library of built-in content encoders." href="ContentEncoder$.html"><span class="name">ContentEncoder</span></a>
       </span>
       
       <p class="shortcomment cmt">Library of built-in content encoders.</p><div class="fullcomment"><div class="comment cmt"><p>Library of built-in content encoders.</p><p>This provides content encoder functions for the common scala types, and implicit encoder
@@ -1251,9 +1210,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="All expected errors." href="Error$.html">
-              <span class="name">Error</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="All expected errors." href="Error$.html"><span class="name">Error</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">All expected errors.</p>
@@ -1269,9 +1226,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="A collection of HTTP header names." href="Headers$.html">
-              <span class="name">Headers</span>
-            </a>
+        <a title="A collection of HTTP header names." href="Headers$.html"><span class="name">Headers</span></a>
       </span>
       
       <p class="shortcomment cmt">A collection of HTTP header names.</p>
@@ -1287,9 +1242,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="HTTP method matcher." href="HttpMethod$.html">
-              <span class="name">HttpMethod</span>
-            </a>
+        <a title="HTTP method matcher." href="HttpMethod$.html"><span class="name">HttpMethod</span></a>
       </span>
       
       <p class="shortcomment cmt">HTTP method matcher.</p><div class="fullcomment"><div class="comment cmt"><p>HTTP method matcher.</p><pre>request.method <span class="kw">match</span> {
@@ -1309,9 +1262,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="HttpString builders." href="HttpString$.html">
-              <span class="name">HttpString</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="HttpString builders." href="HttpString$.html"><span class="name">HttpString</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt"><a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> builders.</p>
@@ -1327,9 +1278,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Allows to panic." href="Panic$.html">
-              <span class="name">Panic</span>
-            </a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a title="Allows to panic." href="Panic$.html"><span class="name">Panic</span></a><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       
       <p class="shortcomment cmt">Allows to panic.</p>
@@ -1345,9 +1294,7 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="lol SSL." href="SSL$.html">
-              <span class="name">SSL</span>
-            </a>
+        <a title="lol SSL." href="SSL$.html"><span class="name">SSL</span></a>
       </span>
       
       <p class="shortcomment cmt">lol SSL.</p>
@@ -1363,15 +1310,13 @@ implicit resolution:</p><pre><span class="kw">val</span> response = Ok(<span cla
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Build and start HTTP servers." href="Server$.html">
-              <span class="name">Server</span>
-            </a>
+        <a title="Build and start HTTP servers." href="Server$.html"><span class="name">Server</span></a>
       </span>
       
       <p class="shortcomment cmt">Build and start HTTP servers.</p><div class="fullcomment"><div class="comment cmt"><p>Build and start HTTP servers.</p><pre>Server.listen(<span class="num">8888</span>) { request <span class="kw">=&gt;</span>
   Ok(<span class="lit">"Hello world!"</span>)
-}</pre><p>Starting an HTTP server require a <a href="#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">service</a> function. The service
-function will be run on the provided <a href="https://www.scala-lang.org/api/current/index.html#scala.concurrent.ExecutionContext" class="extype" target="_top">ExecutionContext</a>.
+}</pre><p>Starting an HTTP server require a <a href="#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">service</a> function. The service
+function will be run on the provided <a href="https://www.scala-lang.org/api/current/scala/concurrent/ExecutionContext.html" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a>.
 This function should be non-blocking, but you can also decide to go with a blocking service
 if you provide an appropriate ExecutionContext (just note that if the ExecutionContext is fully
 blocked, the HTTP server is fully blocked).</p><p>The service function will be called by the server as soon as new HTTP request header has been received.
@@ -1390,9 +1335,7 @@ if needed. Otherwise it will be drained after exchange completion (ie. when the 
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Support for Server Sent Events content." href="ServerSentEvents$.html">
-              <span class="name">ServerSentEvents</span>
-            </a>
+        <a title="Support for Server Sent Events content." href="ServerSentEvents$.html"><span class="name">ServerSentEvents</span></a>
       </span>
       
       <p class="shortcomment cmt">Support for Server Sent Events content.</p><div class="fullcomment"><div class="comment cmt"><p>Support for Server Sent Events content. It allows a server to stream
@@ -1411,9 +1354,7 @@ events to a client. Events are string (utf-8) encoded, and a proper
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="Request extractor." href="at$.html">
-              <span class="name">at</span>
-            </a>
+        <a title="Request extractor." href="at$.html"><span class="name">at</span></a>
       </span>
       
       <p class="shortcomment cmt">Request extractor.</p><div class="fullcomment"><div class="comment cmt"><p>Request extractor.</p><pre><span class="kw">val</span> app: PartialService = {
@@ -1434,9 +1375,9 @@ events to a client. Events are string (utf-8) encoded, and a proper
 
         <div id="inheritedMembers">
         <div class="parent" name="scala.AnyRef">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
+              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></h3>
+              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></h3>
             </div>
         
         </div>

@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.7.3 - lol.http.UrlMatcher</title>
-          <meta name="description" content="lolhttp 0.7.3 - lol.http.UrlMatcher" />
-          <meta name="keywords" content="lolhttp 0.7.3 lol.http.UrlMatcher" />
+          <title>lolhttp 0.8.0 - lol.http.UrlMatcher</title>
+          <meta name="description" content="lolhttp 0.8.0 - lol.http.UrlMatcher" />
+          <meta name="keywords" content="lolhttp 0.8.0 lol.http.UrlMatcher" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.7.3</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">0.8.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -65,9 +65,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../../index.html">
-              <span class="name">root</span>
-            </a>
+        <a title="" href="../../index.html"><span class="name">root</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
@@ -83,9 +81,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="This is the documentation for the lolhttp library." href="../index.html">
-              <span class="name">lol</span>
-            </a>
+        <a title="This is the documentation for the lolhttp library." href="../index.html"><span class="name">lol</span></a>
       </span>
       
       <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="index.html" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and <a href="Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="../json/index.html" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="../html/index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
@@ -102,9 +98,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="The core module for lolhttp." href="index.html">
-              <span class="name">http</span>
-            </a>
+        <a title="The core module for lolhttp." href="index.html"><span class="name">http</span></a>
       </span>
       
       <p class="shortcomment cmt">The core module for lolhttp.</p><div class="fullcomment"><div class="comment cmt"><p>The core module for lolhttp.</p><pre>Server.listen(<span class="num">8888</span>) { request <span class="kw">=&gt;</span>
@@ -113,133 +107,107 @@
 
 Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <span class="kw">=&gt;</span>
   response.readAs[<span class="std">String</span>]
-}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="index.html#Service=lol.http.Request=&gt;scala.concurrent.Future[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
+}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="index.html#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
 A service function takes a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
 are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
-of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.Stream" class="extype" target="_top">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/index.html#fs2.package" class="extype" target="_top">fs2</a> and can be lazily consumed if needed.
+of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html" class="extype" name="fs2.Stream">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/index.html" class="extype" name="fs2">fs2</a> and can be lazily consumed if needed.
 It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
+    </li><li name="lol.http.internal" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="internal"></a><a id="internal:internal"></a>
+      <span class="permalink">
+      <a href="../../lol/http/index.html#internal" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="internal/index.html"><span class="name">internal</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="lol.http">http</a></dd></dl></div>
     </li><li class="current-entities indented2">
                         <a class="object" href="ClasspathResource$.html" title="Define the implicit encoder for ClasspathResource."></a>
                         <a class="class" href="ClasspathResource.html" title="A resource than can be read from the classpath."></a>
-                        <a href="ClasspathResource.html" title="A resource than can be read from the classpath.">
-                          ClasspathResource
-                        </a>
+                        <a href="ClasspathResource.html" title="A resource than can be read from the classpath.">ClasspathResource</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Client$.html" title="Build HTTP clients."></a>
                         <a class="trait" href="Client.html" title="An HTTP client."></a>
-                        <a href="Client.html" title="An HTTP client.">
-                          Client
-                        </a>
+                        <a href="Client.html" title="An HTTP client.">Client</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="ClientOptions.html" title="Allow to configure an HTTP client."></a>
-                        <a href="ClientOptions.html" title="Allow to configure an HTTP client.">
-                          ClientOptions
-                        </a>
+                        <a href="ClientOptions.html" title="Allow to configure an HTTP client.">ClientOptions</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Content$.html" title="Build HTTP message content body."></a>
                         <a class="class" href="Content.html" title="An HTTP message content body."></a>
-                        <a href="Content.html" title="An HTTP message content body.">
-                          Content
-                        </a>
+                        <a href="Content.html" title="An HTTP message content body.">Content</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="ContentDecoder$.html" title="Library of built-in content decoders."></a>
                         <a class="trait" href="ContentDecoder.html" title="An HTTP content decoder."></a>
-                        <a href="ContentDecoder.html" title="An HTTP content decoder.">
-                          ContentDecoder
-                        </a>
+                        <a href="ContentDecoder.html" title="An HTTP content decoder.">ContentDecoder</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="ContentEncoder$.html" title="Library of built-in content encoders."></a>
                         <a class="trait" href="ContentEncoder.html" title="A HTTP content encoder."></a>
-                        <a href="ContentEncoder.html" title="A HTTP content encoder.">
-                          ContentEncoder
-                        </a>
+                        <a href="ContentEncoder.html" title="A HTTP content encoder.">ContentEncoder</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Error$.html" title="All expected errors."></a>
                         <a class="class" href="Error.html" title="Expected errors."></a>
-                        <a href="Error.html" title="Expected errors.">
-                          Error
-                        </a>
+                        <a href="Error.html" title="Expected errors.">Error</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="Headers$.html" title="A collection of HTTP header names."></a>
-                        <a href="Headers$.html" title="A collection of HTTP header names.">
-                          Headers
-                        </a>
+                        <a href="Headers$.html" title="A collection of HTTP header names.">Headers</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="HttpMethod$.html" title="HTTP method matcher."></a>
                         <a class="class" href="HttpMethod.html" title="An HTTP method such as GET or POST."></a>
-                        <a href="HttpMethod.html" title="An HTTP method such as GET or POST.">
-                          HttpMethod
-                        </a>
+                        <a href="HttpMethod.html" title="An HTTP method such as GET or POST.">HttpMethod</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="HttpString$.html" title="HttpString builders."></a>
                         <a class="class" href="HttpString.html" title="An case insensitive string."></a>
-                        <a href="HttpString.html" title="An case insensitive string.">
-                          HttpString
-                        </a>
+                        <a href="HttpString.html" title="An case insensitive string.">HttpString</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values."></a>
-                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">
-                          LiteralHttpString
-                        </a>
+                        <a href="package$$LiteralHttpString.html" title="The h interpolation creates HttpString values.">LiteralHttpString</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Panic$.html" title="Allows to panic."></a>
                         <a class="class" href="Panic.html" title="Panics are errors that should not occur or should not be handled."></a>
-                        <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">
-                          Panic
-                        </a>
+                        <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">Panic</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Request.html" title="An HTTP request."></a>
-                        <a href="Request.html" title="An HTTP request.">
-                          Request
-                        </a>
+                        <a href="Request.html" title="An HTTP request.">Request</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Response.html" title="An HTTP response."></a>
-                        <a href="Response.html" title="An HTTP response.">
-                          Response
-                        </a>
+                        <a href="Response.html" title="An HTTP response.">Response</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="SSL$.html" title="lol SSL."></a>
-                        <a href="SSL$.html" title="lol SSL.">
-                          SSL
-                        </a>
+                        <a href="SSL$.html" title="lol SSL.">SSL</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Server$.html" title="Build and start HTTP servers."></a>
                         <a class="trait" href="Server.html" title="An HTTP server."></a>
-                        <a href="Server.html" title="An HTTP server.">
-                          Server
-                        </a>
+                        <a href="Server.html" title="An HTTP server.">Server</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="ServerOptions.html" title="Allow to configure an HTTP server."></a>
-                        <a href="ServerOptions.html" title="Allow to configure an HTTP server.">
-                          ServerOptions
-                        </a>
+                        <a href="ServerOptions.html" title="Allow to configure an HTTP server.">ServerOptions</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="ServerSentEvents$.html" title="Support for Server Sent Events content."></a>
-                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">
-                          ServerSentEvents
-                        </a>
+                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">ServerSentEvents</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="" title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates."></a>
-                        <a href="" title="The url interpolation is mainly useful in pattern matching to match and extract
-dynamic parameters in URL templates.">
-                          UrlMatcher
-                        </a>
+                        <a class="class" href="" title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates."></a>
+                        <a href="" title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates.">UrlMatcher</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="at$.html" title="Request extractor."></a>
-                        <a href="at$.html" title="Request extractor.">
-                          at
-                        </a>
+                        <a href="at$.html" title="Request extractor.">at</a>
                       </li>
               </ul>
             </div>
@@ -263,7 +231,7 @@ dynamic parameters in URL templates.">
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">UrlMatcher</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <span class="name">UrlMatcher</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       </h4>
 
@@ -285,7 +253,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a>, <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></div>
         </div></div>
         
 
@@ -343,7 +311,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">UrlMatcher</span><span class="params">(<span name="ctx">ctx: <a href="https://www.scala-lang.org/api/current/index.html#scala.StringContext" class="extype" target="_top">StringContext</a></span>)</span>
+        <span class="name">UrlMatcher</span><span class="params">(<span name="ctx">ctx: <a href="https://www.scala-lang.org/api/current/scala/StringContext.html#scala.StringContext" class="extype" name="scala.StringContext">StringContext</a></span>)</span>
       </span>
       
       
@@ -369,7 +337,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -385,7 +353,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -401,7 +369,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -433,10 +401,12 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -455,7 +425,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -471,7 +441,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -487,10 +457,10 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[java.lang.Throwable]</span>
@@ -512,7 +482,10 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -525,10 +498,13 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
@@ -541,7 +517,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
@@ -557,7 +533,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -573,10 +549,13 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
@@ -589,10 +568,13 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
@@ -653,7 +635,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -675,7 +657,7 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.Long" class="extype" target="_top">Long</a></span>, <span name="arg1">arg1: <a href="https://www.scala-lang.org/api/current/index.html#scala.Int" class="extype" target="_top">Int</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>, <span name="arg1">arg1: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -697,10 +679,12 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/index.html#scala.Long" class="extype" target="_top">Long</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="https://www.scala-lang.org/api/current/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>)</span><span class="result">: <a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
@@ -718,9 +702,9 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
 
         <div id="inheritedMembers">
         <div class="parent" name="scala.AnyRef">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
+              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
-              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/index.html#scala.Any" class="extype" target="_top">Any</a></h3>
+              <h3>Inherited from <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.Any" class="extype" name="scala.collection.immutable.List">Any</a></h3>
             </div>
         
         </div>

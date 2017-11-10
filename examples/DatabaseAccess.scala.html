@@ -266,115 +266,116 @@ hr {
 </style>
           
           <section id="header">
-            <div class="comment"><h1>A Github API client</h1></div>
+            <div class="comment"><h1>Accessing an SQL Database</h1></div>
             <div class="code"></div>
           </section>
           
               <section class="">
-                <div class="comment "><p>In this example we want to use the Github Json API, to retrieve
-and list all the repositories under the <strong>criteo</strong> account.</p></p></div>
-                <div class="code "><span class="keyword">import</span> <span class="identifier">lol</span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/index.html" data-tooltip="<span>lol.http</span>">http</a></span>._
-<span class="keyword">import</span> <span class="identifier">lol</span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/json/index.html" data-tooltip="<span>lol.json</span>">json</a></span>._
+                <div class="comment "><p>Let&#39;s write a Web service that talk to an SQL database. We
+will use <a href="http://tpolecat.github.io/doobie/">doobie</a> as JDBC layer.</p></p></div>
+                <div class="code ">
+<span class="keyword">import</span> <span class="identifier">lol</span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/index.html" data-tooltip="<span>lol.http</span>">http</a></span>._
+<span class="keyword">import</span> <span class="identifier">lol</span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/html/index.html" data-tooltip="<span>lol.html</span>">html</a></span>._
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>We will use <a href="https://circe.github.io/circe/">circe</a> to handle
-the Json Http requests and responses.</p></p></div>
-                <div class="code "><span class="keyword">import</span> <span class="identifier">io</span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/index.html" data-tooltip="<span>io.circe</span>">circe</a></span>._
-<span class="keyword">import</span> <span class="identifier">io</span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/index.html" data-tooltip="<span>io.circe</span>">circe</a></span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/index.html" data-tooltip="<span>io.circe.optics</span>">optics</a></span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/JsonPath$.html" data-tooltip="<span>io.circe.optics.JsonPath</span>">JsonPath</a></span>._
-
-<span class="keyword">import</span> <span class="identifier">cats</span>.<span class="identifier">implicits</span>._
-<span class="keyword">import</span> <span class="identifier">cats</span>.<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/index.html" data-tooltip="<span>cats.effect</span>">effect</a></span>.{ <span class="identifier">IO</span> }
+                <div class="comment "><p>We will configure doobie to use the cats <code>IO</code> effect,
+so it will play well with lolhttp 🎉.</p></p></div>
+                <div class="code "><span class="keyword">import</span> <span class="identifier">cats</span>.<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/index.html" data-tooltip="<span>cats.effect</span>">effect</a></span>.{ <span class="identifier">IO</span> }
+&nbsp;</div>
+              </section>
+            
+              <section class="">
+                <div class="comment "><p>Now we just import the needed package for doobie.</p></p></div>
+                <div class="code "><span class="keyword">import</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/index.html" data-tooltip="<span>doobie</span>">doobie</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/h2/index.html" data-tooltip="<span>doobie.h2</span>">h2</a></span>._
+<span class="keyword">import</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/index.html" data-tooltip="<span>doobie</span>">doobie</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/h2/index.html" data-tooltip="<span>doobie.h2</span>">h2</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/h2/package$$implicits$.html" data-tooltip="<span>doobie.h2.implicits</span>">implicits</a></span>._
+<span class="keyword">import</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/index.html" data-tooltip="<span>doobie</span>">doobie</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/package$$implicits$.html" data-tooltip="<span>doobie.implicits</span>">implicits</a></span>._
 
 <span class="keyword">import</span> <span class="identifier">scala</span>.<span class="identifier"><a target="doc" href="http://www.scala-lang.org/api/current//scala/concurrent/index.html" data-tooltip="<span>scala.concurrent</span>">concurrent</a></span>.<span class="identifier"><a target="doc" href="http://www.scala-lang.org/api/current//scala/concurrent/ExecutionContext$.html" data-tooltip="<span>scala.concurrent.ExecutionContext</span>">ExecutionContext</a></span>.<span class="identifier"><a target="doc" href="http://www.scala-lang.org/api/current//scala/concurrent/ExecutionContext$$Implicits$.html" data-tooltip="<span>scala.concurrent.ExecutionContext.Implicits</span>">Implicits</a></span>.<span class="identifier">global</span>
-&nbsp;</div>
-              </section>
-            
-              <section class="">
-                <div class="comment "><hr></p></div>
-                <div class="code ">
-<span class="keyword">object</span> <span class="identifier">GithubClient</span> {
+
+<span class="keyword">object</span> <span class="identifier">DatabaseAccess</span> {
   <span class="keyword">def</span> <span class="identifier">main</span>(<span class="identifier">args</span>: <span class="identifier">Array</span>[<span class="identifier">String</span>]): <span class="identifier">Unit</span> = {
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>Let&#39;s start by creating an Http client connected to Github.
-Because we have several requests to send to the API, it is more
-efficient to keep a client connected for the duration of the program.
-It will open and maintain a number of HTTP connections that will be reused
-accross requests.</p></p></div>
-                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">githubClient</a></span> = <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client$.html#apply(host:String,port:Int,scheme:String,ssl:lol.http.SSL.ClientConfiguration,options:lol.http.ClientOptions,maxConnections:Int)(implicitexecutor:scala.concurrent.ExecutionContext):lol.http.Client" data-tooltip="<span>lol.http.Client.apply(host: String, port: Int, scheme: String, ssl: lol.http.SSL.ClientConfiguration, options: lol.http.ClientOptions, maxConnections: Int)(implicit executor: scala.concurrent.ExecutionContext): lol.http.Client</span>">Client</a></span>(<span class="string">"api.github.com"</span>, <span class="number">443</span>, <span class="string">"https"</span>)
+                <div class="comment "><p>First create the database schema.</p></p></div>
+                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/fragment$$Fragment.html" data-tooltip="<span>doobie.util.fragment.Fragment</span>">createTable</a></span> = <span class="string">sql</span>"""<span class="string">
+      CREATE TABLE country (
+        code       character(3)  NOT NULL,
+        name       text          NOT NULL
+      );
+    """</span>
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>Github requires that we have a User-Agent for our requests.</p></p></div>
-                <div class="code ">    <span class="keyword">val</span> <span class="identifier">userAgent</span> = (<span class="string">h</span>"<span class="string">User-Agent"</span> <span class="identifier">-></span> <span class="string">h</span>"<span class="string">lolhttp"</span>)
+                <div class="comment "><p>Also we need to import fake data for the example.</p></p></div>
+                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/fragment$$Fragment.html" data-tooltip="<span>doobie.util.fragment.Fragment</span>">importData</a></span> = <span class="string">sql</span>"""<span class="string">
+      INSERT INTO country (code, name) VALUES
+        ('FR', 'France'),
+        ('US', 'United States'),
+        ('DE', 'GERMANY');
+    """</span>
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>We will compose several effects to build our program.</p></p></div>
-                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html" data-tooltip="<span>cats.effect.IO[Unit]</span>">fetchAndPrintCriteoRepositories</a></span> = (<span class="keyword">for</span> {
+                <div class="comment "><p>This is our setup script. Connect to the database, create the schema
+and import the data.</p></p></div>
+                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html" data-tooltip="<span>cats.effect.IO[doobie.h2.H2Transactor[cats.effect.IO]]</span>">setup</a></span> = <span class="keyword">for</span> {
+      <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/transactor$$Transactor$$<refinement>.html" data-tooltip="<span>doobie.h2.H2Transactor[cats.effect.IO]</span>">xa</a></span> &lt;- <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/h2/H2Transactor$.html#apply[M[_]](url:String,user:String,pass:String)(implicitevidence$1:cats.effect.Async[M]):M[doobie.h2.H2Transactor[M]]" data-tooltip="<span>doobie.h2.H2Transactor.apply[M[_]](url: String, user: String, pass: String)(implicit evidence$1: cats.effect.Async[M]): M[doobie.h2.H2Transactor[M]]</span>">H2Transactor</a></span>[<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html" data-tooltip="<span>cats.effect.IO</span>">IO</a></span>](<span class="string">"jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"</span>, <span class="string">"sa"</span>, <span class="string">""</span>)
+      _  &lt;- <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/transactor$$Transactor$$<refinement>.html" data-tooltip="<span>doobie.h2.H2Transactor[cats.effect.IO]</span>">xa</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/h2/syntax/H2TransactorOps.html#setMaxConnections(max:Int):M[Unit]" data-tooltip="<span>doobie.h2.syntax.H2TransactorOps.setMaxConnections(max: Int): M[Unit]</span>">setMaxConnections</a></span>(<span class="number">10</span>)
+      _  &lt;- (<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/fragment$$Fragment.html" data-tooltip="<span>doobie.util.fragment.Fragment</span>">createTable</a></span> <span class="identifier">++</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/fragment$$Fragment.html" data-tooltip="<span>doobie.util.fragment.Fragment</span>">importData</a></span>).<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/fragment$$Fragment.html#update(implicith:doobie.util.log.LogHandler):doobie.util.update.Update0" data-tooltip="<span>doobie.util.fragment.Fragment.update(implicit h: doobie.util.log.LogHandler): doobie.util.update.Update0</span>">update</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/update$$Update0.html#run:doobie.free.connection.ConnectionIO[Int]" data-tooltip="<span>doobie.util.update.Update0.run: doobie.free.connection.ConnectionIO[Int]</span>">run</a></span>.<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/syntax/ConnectionIOOps.html#transact[M[_]](xa:doobie.util.transactor.Transactor[M])(implicitevidence$1:cats.Monad[M]):M[A]" data-tooltip="<span>doobie.syntax.ConnectionIOOps.transact[M[_]](xa: doobie.util.transactor.Transactor[M])(implicit evidence$1: cats.Monad[M]): M[A]</span>">transact</a></span>(<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/transactor$$Transactor$$<refinement>.html" data-tooltip="<span>doobie.h2.H2Transactor[cats.effect.IO]</span>">xa</a></span>)
+    } <span class="keyword">yield</span> (<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/transactor$$Transactor$$<refinement>.html" data-tooltip="<span>doobie.h2.H2Transactor[cats.effect.IO]</span>">xa</a></span>)
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>First thing, we retrieve all the repositories for the criteo
-organization.</p>
-<p>We use the <code>run</code> operation here: it takes the HTTP
-request to process and a block that will transform the HTTP response
-into a value of your choice. After the future completion, it will
-automatically drain the unread content if needed so the connection
-is ready for the next request.</p></p></div>
-                <div class="code ">      <span class="identifier">repositories</span> &lt;- <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">githubClient</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html#run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration)(f:lol.http.Response=>cats.effect.IO[A]):cats.effect.IO[A]" data-tooltip="<span>lol.http.Client.run[A](request: lol.http.Request, followRedirects: Boolean, timeout: scala.concurrent.duration.FiniteDuration)(f: lol.http.Response => cats.effect.IO[A]): cats.effect.IO[A]</span>">run</a></span>(<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/package$.html#Get(url:String):lol.http.Request" data-tooltip="<span>lol.http.Get(url: String): lol.http.Request</span>">Get</a></span>(<span class="string">"/users/criteo/repos"</span>).<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*):lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier">userAgent</span>)) {
-        _.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#readSuccessAs[A](implicitdecoder:lol.http.ContentDecoder[A]):cats.effect.IO[A]" data-tooltip="<span>lol.http.Response.readSuccessAs[A](implicit decoder: lol.http.ContentDecoder[A]): cats.effect.IO[A]</span>">readSuccessAs</a></span>[<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/Json.html" data-tooltip="<span>io.circe.Json</span>">Json</a></span>].<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html#map[B](f:A=>B):cats.effect.IO[B]" data-tooltip="<span>cats.effect.IO.map[B](f: A => B): cats.effect.IO[B]</span>">map</a></span>(<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/JsonPath$.html#root:io.circe.optics.JsonPath" data-tooltip="<span>io.circe.optics.JsonPath.root: io.circe.optics.JsonPath</span>">root</a></span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/JsonPath.html#each:io.circe.optics.JsonTraversalPath" data-tooltip="<span>io.circe.optics.JsonPath.each: io.circe.optics.JsonTraversalPath</span>">each</a></span>.<span class="identifier">full_name</span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/JsonTraversalPath.html#string:monocle.Traversal[io.circe.Json,String]" data-tooltip="<span>io.circe.optics.JsonTraversalPath.string: monocle.Traversal[io.circe.Json,String]</span>">string</a></span>.<span class="identifier">getAll</span>)
-      }
+                <div class="comment "><p>We run our setup script to startup the database and we keep a
+reference to the Transactor.</p></p></div>
+                <div class="code ">    <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/transactor$$Transactor$$<refinement>.html" data-tooltip="<span>doobie.h2.H2Transactor[cats.effect.IO]</span>">xa</a></span> = <span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html" data-tooltip="<span>cats.effect.IO[doobie.h2.H2Transactor[cats.effect.IO]]</span>">setup</a></span>.<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html#unsafeRunSync():A" data-tooltip="<span>cats.effect.IO.unsafeRunSync(): A</span>">unsafeRunSync</a></span>
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>Next, for each repository we make an additional HTTP request to
-retrieve the repository description (It is useless since the
-description was already available in the first request, but it
-is just for the sake of the example 😊).</p></p></div>
-                <div class="code ">      <span class="identifier">descriptions</span> &lt;- <span class="identifier">repositories</span>.<span class="identifier">map</span> { <span class="identifier">repository</span> =>
-        <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">githubClient</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html#run[A](request:lol.http.Request,followRedirects:Boolean,timeout:scala.concurrent.duration.FiniteDuration)(f:lol.http.Response=>cats.effect.IO[A]):cats.effect.IO[A]" data-tooltip="<span>lol.http.Client.run[A](request: lol.http.Request, followRedirects: Boolean, timeout: scala.concurrent.duration.FiniteDuration)(f: lol.http.Response => cats.effect.IO[A]): cats.effect.IO[A]</span>">run</a></span>(<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/package$.html#Get(url:String):lol.http.Request" data-tooltip="<span>lol.http.Get(url: String): lol.http.Request</span>">Get</a></span>(<span class="string">url</span>"<span class="string">/repos/$</span><span class="identifier">repository</span><span class="string">"</span>).<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#addHeaders(headers:(lol.http.HttpString,lol.http.HttpString)*):lol.http.Request" data-tooltip="<span>lol.http.Request.addHeaders(headers: (lol.http.HttpString, lol.http.HttpString)*): lol.http.Request</span>">addHeaders</a></span>(<span class="identifier">userAgent</span>)) {
-          _.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#readSuccessAs[A](implicitdecoder:lol.http.ContentDecoder[A]):cats.effect.IO[A]" data-tooltip="<span>lol.http.Response.readSuccessAs[A](implicit decoder: lol.http.ContentDecoder[A]): cats.effect.IO[A]</span>">readSuccessAs</a></span>[<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/Json.html" data-tooltip="<span>io.circe.Json</span>">Json</a></span>].<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html#map[B](f:A=>B):cats.effect.IO[B]" data-tooltip="<span>cats.effect.IO.map[B](f: A => B): cats.effect.IO[B]</span>">map</a></span>(<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/JsonPath$.html#root:io.circe.optics.JsonPath" data-tooltip="<span>io.circe.optics.JsonPath.root: io.circe.optics.JsonPath</span>">root</a></span>.<span class="identifier">description</span>.<span class="identifier"><a target="doc" href="http://circe.github.io/circe/api//io/circe/optics/JsonPath.html#string:monocle.Optional[io.circe.Json,String]" data-tooltip="<span>io.circe.optics.JsonPath.string: monocle.Optional[io.circe.Json,String]</span>">string</a></span>.<span class="identifier">getOption</span>)
+                <div class="comment "><p>Now let&#39;s focus on the HTTP service.</p></p></div>
+                <div class="code ">    <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Server$.html" data-tooltip="<span>lol.http.Server</span>">Server</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Server$.html#listen(port:Int,address:String,ssl:Option[lol.http.SSL.ServerConfiguration],options:lol.http.ServerOptions,onError:Throwable=>lol.http.Response)(service:lol.http.Service)(implicitexecutor:scala.concurrent.ExecutionContext):lol.http.Server" data-tooltip="<span>lol.http.Server.listen(port: Int, address: String, ssl: Option[lol.http.SSL.ServerConfiguration], options: lol.http.ServerOptions, onError: Throwable => lol.http.Response)(service: lol.http.Service)(implicit executor: scala.concurrent.ExecutionContext): lol.http.Server</span>">listen</a></span>(<span class="number">8888</span>) { <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">req</a></span> =>
+&nbsp;</div>
+              </section>
+            
+              <section class="">
+                <div class="comment "><p>Here we simply use doobie to query the database. This in an <em>effect</em> and
+so the result is wrapped into an <code>IO</code>.</p></p></div>
+                <div class="code ">      <span class="string">sql</span>"<span class="string">SELECT code, name FROM country"</span>.
+        <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/fragment$$Fragment.html#query[B](implicitevidence$1:doobie.util.composite.Composite[B],implicith:doobie.util.log.LogHandler):doobie.util.query.Query0[B]" data-tooltip="<span>doobie.util.fragment.Fragment.query[B](implicit evidence$1: doobie.util.composite.Composite[B], implicit h: doobie.util.log.LogHandler): doobie.util.query.Query0[B]</span>">query</a></span>[(<span class="identifier">String</span>,<span class="identifier">String</span>)].
+        <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/query$$Query0.html#list:doobie.ConnectionIO[List[B]]" data-tooltip="<span>doobie.util.query.Query0.list: doobie.ConnectionIO[List[B]]</span>">list</a></span>.
+        <span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/syntax/ConnectionIOOps.html#transact[M[_]](xa:doobie.util.transactor.Transactor[M])(implicitevidence$1:cats.Monad[M]):M[A]" data-tooltip="<span>doobie.syntax.ConnectionIOOps.transact[M[_]](xa: doobie.util.transactor.Transactor[M])(implicit evidence$1: cats.Monad[M]): M[A]</span>">transact</a></span>(<span class="identifier"><a target="doc" href="https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8/doobie/util/transactor$$Transactor$$<refinement>.html" data-tooltip="<span>doobie.h2.H2Transactor[cats.effect.IO]</span>">xa</a></span>).
+        <span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html#map[B](f:A=>B):cats.effect.IO[B]" data-tooltip="<span>cats.effect.IO.map[B](f: A => B): cats.effect.IO[B]</span>">map</a></span> { <span class="identifier">resultSet</span> =>
+&nbsp;</div>
+              </section>
+            
+              <section class="">
+                <div class="comment "><p>Let&#39;s transform our database result set to an HTML list</p></p></div>
+                <div class="code ">        <span class="keyword">val</span> <span class="identifier">countries</span> = <span class="identifier">resultSet</span>.<span class="identifier">map</span> { <span class="keyword">case</span> (<span class="identifier">code</span>, <span class="identifier">name</span>) =>
+          <span class="string">html</span>"<span class="string">&lt;li>&lt;strong>$</span>{<span class="identifier">code</span>}<span class="string">&lt;/strong> - $</span>{<span class="identifier">name</span>}<span class="string">&lt;/li>"</span>
         }
-      }.<span class="identifier">sequence</span>
 &nbsp;</div>
               </section>
             
               <section class="">
-                <div class="comment "><p>Let&#39;s print the result</p></p></div>
-                <div class="code ">      _ &lt;- <span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO$.html#apply[A](body:=>A):cats.effect.IO[A]" data-tooltip="<span>cats.effect.IO.apply[A](body: => A): cats.effect.IO[A]</span>">IO</a></span> {
-        <span class="identifier">repositories</span>.<span class="identifier">zip</span>(<span class="identifier">descriptions</span>).<span class="identifier">foreach</span> { <span class="keyword">case</span> (<span class="identifier">repository</span>, <span class="identifier">description</span>) =>
-          <span class="identifier">println</span>(<span class="string">s</span>"""<span class="string">- $</span><span class="identifier">repository</span><span class="string">:"""</span>)
-          <span class="identifier">println</span>(<span class="string">s</span>"""<span class="string">  $</span>{<span class="identifier">description</span>.<span class="identifier">getOrElse</span>(<span class="string">"No description"</span>)}<span class="string">"""</span>)
-        }
+                <div class="comment "><p>Finally we give back an Ok HTTP response.</p></p></div>
+                <div class="code ">        <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">html</span>"""<span class="string">
+          &lt;h1>$</span>{<span class="identifier">resultSet</span>.<span class="identifier">size</span>}<span class="string"> Countries:&lt;/h1>
+          &lt;ul>
+            $</span><span class="identifier">countries</span><span class="string">
+          &lt;/ul>
+        """</span>)
       }
-&nbsp;</div>
-              </section>
-            
-              <section class="">
-                <div class="comment "><p>and then, we shutdown the HTTP client</p></p></div>
-                <div class="code ">      _ &lt;-  <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">githubClient</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html#stop():cats.effect.IO[Unit]" data-tooltip="<span>lol.http.Client.stop(): cats.effect.IO[Unit]</span>">stop</a></span>()
+    }
 
-    } <span class="keyword">yield</span> ()).<span class="identifier">onError</span> { <span class="keyword">case</span> _ => <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html" data-tooltip="<span>lol.http.Client</span>">githubClient</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Client.html#stop():cats.effect.IO[Unit]" data-tooltip="<span>lol.http.Client.stop(): cats.effect.IO[Unit]</span>">stop</a></span>() }
-&nbsp;</div>
-              </section>
-            
-              <section class="">
-                <div class="comment "><hr></p></div>
-                <div class="code empty">&nbsp;</div>
-              </section>
-            
-              <section class="">
-                <div class="comment "><p>Everything in IO is lazy, so now we can execute our program!</p></p></div>
-                <div class="code ">    <span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html" data-tooltip="<span>cats.effect.IO[Unit]</span>">fetchAndPrintCriteoRepositories</a></span>.<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!//cats/effect/IO.html#unsafeRunSync():A" data-tooltip="<span>cats.effect.IO.unsafeRunSync(): A</span>">unsafeRunSync</a></span>
+    <span class="identifier">println</span>(<span class="string">"Listening on http://localhost:8888..."</span>)
   }
 }&nbsp;</div>
               </section>

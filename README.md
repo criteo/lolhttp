@@ -6,7 +6,7 @@ An HTTP & HTTP/2 Server and Client library for Scala.
 
 ## About the library
 
-A server is built from a plain function accepting an HTTP request and eventually giving back an HTTP response. The computation is wrapped into an [effect](https://github.com/typelevel/cats-effect) and can handle pure & impure and synchronous & asynchronous scenarios. Requests and responses are just HTTP metadata along with a lazy content body based on [fs2](https://github.com/functional-streams-for-scala/fs2), making it easy to handle streaming scenarios if needed. For additional convenience, the library provides content encoders and decoders for the common scala types. Clients and Servers share the same API and the same concepts, making it easy to compose them. SSL is supported on both sides.
+A server is built from a plain function accepting an HTTP request and eventually giving back an HTTP response. The computation is wrapped into an [effect](https://github.com/typelevel/cats-effect) and can handle pure & impure and synchronous & asynchronous scenarios. Requests and responses are just HTTP metadata along with a lazy content body based on [fs2](https://github.com/functional-streams-for-scala/fs2), making it easy to handle streaming scenarios if needed. For additional convenience, the library provides content encoders and decoders for the common scala types. Clients and Servers share the same API and the same concepts, making it easy to compose them. SSL is supported on both sides. HTTP/2 too 🎷.
 
 ## Hello World
 

@@ -10,9 +10,10 @@ import lol.json._
 import io.circe._
 import io.circe.optics.JsonPath._
 
-import scala.util._
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import cats.implicits._
+import cats.effect.{ IO }
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 // - - -
 
@@ -29,7 +30,8 @@ object GithubClient {
     // Github requires that we have a User-Agent for our requests.
     val userAgent = (h"User-Agent" -> h"lolhttp")
 
-    val criteoRepositories = for {
+    // We will compose several effects to build our program.
+    val fetchAndPrintCriteoRepositories = (for {
 
       // First thing, we retrieve all the repositories for the criteo
       // organization.
@@ -47,32 +49,28 @@ object GithubClient {
       // retrieve the repository description (It is useless since the
       // description was already available in the first request, but it
       // is just for the sake of the example 😊).
-      descriptions <- Future.sequence(repositories.map { repository =>
+      descriptions <- repositories.map { repository =>
         githubClient.run(Get(url"/repos/$repository").addHeaders(userAgent)) {
           _.readSuccessAs[Json].map(root.description.string.getOption)
         }
-      })
-    } yield repositories.zip(descriptions)
+      }.sequence
+
+      // Let's print the result
+      _ <- IO {
+        repositories.zip(descriptions).foreach { case (repository, description) =>
+          println(s"""- $repository:""")
+          println(s"""  ${description.getOrElse("No description")}""")
+        }
+      }
+
+      // and then, we shutdown the HTTP client
+      _ <-  githubClient.stop()
+
+    } yield ()).onError { case _ => githubClient.stop() }
 
     // - - -
 
-    // Eventually, we can just display the result...
-    criteoRepositories.
-      andThen {
-        case Success(result) =>
-          result.foreach { case (repository, description) =>
-            println(s"""- $repository:""")
-            println(s"""  ${description.getOrElse("No description")}""")
-          }
-        case Failure(error) =>
-          println(s"Could not fetch criteo github repositories")
-          error.printStackTrace()
-          System.exit(-1)
-      }.
-      andThen { case _ =>
-
-        // and then, we shutdown the HTTP client.
-        githubClient.stop()
-      }
+    // Everything in IO is lazy, so now we can execute our program!
+    fetchAndPrintCriteoRepositories.unsafeRunSync
   }
 }

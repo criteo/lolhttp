@@ -1,10 +1,13 @@
 package lol
 
-import cats.effect.IO
-
+import cats.{ Eval }
+import cats.effect.{ IO }
 import fs2.{ Stream }
 
-import scala.concurrent.{ Future }
+import scala.concurrent.{ ExecutionContext }
+import scala.concurrent.duration.{ FiniteDuration }
+
+import scala.language.implicitConversions
 
 /** The core module for lolhttp.
   *
@@ -32,10 +35,17 @@ import scala.concurrent.{ Future }
 package object http {
 
   /** A service is a function from [[Request]] to eventually a [[Response]]. */
-  type Service = (Request) => Future[Response]
+  type Service = (Request) => IO[Response]
 
   /** A partial service is not defined for all [[Request]]. */
-  type PartialService = PartialFunction[Request,Future[Response]]
+  type PartialService = PartialFunction[Request,IO[Response]]
+
+  /** Automatically convert a [[Response]] into a pure [[IO[Response]]] if needed. */
+  implicit def pureResponse(response: Response): IO[Response] = IO.pure(response)
+
+  /** Wrap a pure value a into an async effect that will be available after the `delay`. */
+  def timeout[A](a: => A, delay: FiniteDuration)(implicit ec: ExecutionContext): IO[A] =
+    IO.fromFuture(Eval.always(internal.timeout(a, delay)))
 
   /** Protocol version for HTTP/1.1 */
   val HTTP = "HTTP/1.1"
@@ -213,5 +223,4 @@ package object http {
 
   /** Support for Server Sent Events decoding. */
   implicit def sseDecoder[A](implicit eventDecoder: ServerSentEvents.EventDecoder[A]) = ServerSentEvents.decoder(eventDecoder)
-
 }

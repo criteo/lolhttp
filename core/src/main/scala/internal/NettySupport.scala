@@ -47,7 +47,7 @@ import io.netty.handler.codec.http2.{
 
 import java.util.concurrent.atomic.{ AtomicInteger }
 
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{ Promise }
 import scala.collection.mutable.{ ListBuffer }
 import collection.JavaConverters._
 
@@ -56,20 +56,6 @@ import lol.http._
 private[http] object NettySupport {
 
   implicit class NettyChannelFuture(f: ChannelFuture) {
-    def toFuture: Future[Channel] = {
-      val p = Promise[Channel]
-      f.addListener(new GenericFutureListener[ChannelFuture] {
-        override def operationComplete(f: ChannelFuture) = {
-          if(f.isSuccess) {
-            p.success(f.channel)
-          }
-          else {
-            p.failure(f.cause)
-          }
-        }
-      })
-      p.future
-    }
     def toIO: IO[Channel] = {
       IO.async { cb =>
         try {
@@ -115,10 +101,10 @@ private[http] object NettySupport {
   }
 
   implicit class NettyChannel(channel: Channel) {
-    def runInEventLoop[A](thunk: => A): IO[A] = {
+    def runInEventLoop[A](f: => A): IO[A] = {
       IO.async(k => channel.eventLoop.submit(new Runnable() {
         def run = try {
-          k(Right(thunk))
+          k(Right(f))
         } catch {
           case e: Throwable => k(Left(e))
         }
@@ -135,7 +121,7 @@ private[http] object NettySupport {
   }
 
   object Netty {
-    def clientConnection(channel: Channel, debug: Option[String], protocol: String)(implicit ec: ExecutionContext): ClientConnection = 
+    def clientConnection(channel: Channel, debug: Option[String], protocol: String)(implicit ec: ExecutionContext): ClientConnection =
       protocol match {
         case `HTTP2` =>
           val http2xConnection = new Http2xConnection(channel, client = true, debug)
@@ -569,7 +555,11 @@ private[http] object NettySupport {
     }
 
     def isOpen: Boolean = channel.isOpen
-    def close: IO[Unit] = IO(if(channel.isOpen) channel.close())
+    def close: IO[Unit] =
+      for {
+        _ <- IO.unit
+        _ <- if(channel.isOpen) channel.close.toIO else IO.unit
+      } yield ()
 
     // Read one HTTP message along with its content stream. The
     // content stream must be read before the next message to be
@@ -663,7 +653,7 @@ private[http] object NettySupport {
             Pull.eval {
               if (channel.isOpen) channel.writeAndFlush(new DefaultLastHttpContent()).toIO
               else IO.raiseError(Error.ConnectionClosed)
-            } >> Pull.pure(None)
+            } *> Pull.pure(None)
         }
       }
     }
@@ -811,7 +801,7 @@ private[http] object NettySupport {
             }
             else
               IO.raiseError(Error.ConnectionClosed)
-          ) >> Pull.pure(None)
+          ) *> Pull.pure(None)
       })
     }
 
@@ -835,7 +825,11 @@ private[http] object NettySupport {
     }
 
     def isOpen: Boolean = channel.isOpen
-    def close: IO[Unit] = IO(if(channel.isOpen) channel.close())
+    def close: IO[Unit] =
+      for {
+        _ <- IO.unit
+        _ <- if(channel.isOpen) channel.close.toIO else IO.unit
+      } yield ()
   }
 
 }

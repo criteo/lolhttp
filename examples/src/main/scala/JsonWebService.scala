@@ -13,9 +13,11 @@ import io.circe.syntax._
 import io.circe.generic.auto._
 import io.circe.optics.JsonPath._
 
+import cats.implicits._
+import cats.effect.{ IO }
+
 import scala.util._
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 // - - -
 object JsonWebService {
@@ -90,10 +92,12 @@ object JsonWebService {
 
     // Nothing special here, but look how we handle the 404 case.
     case GET at url"/api/todos/$id" =>
-      Try(id.toInt).toOption.flatMap(todos.get).map { todo =>
-        Ok(todo.asJson)
-      }.getOrElse {
-        NotFound(Error(s"No todo found for id: `$id'"))
+      IO {
+        Try(id.toInt).toOption.flatMap(todos.get).map { todo =>
+          Ok(todo.asJson)
+        }.getOrElse {
+          NotFound(Error(s"No todo found for id: `$id'"))
+        }
       }
 
     // Again we need to keep a reference on the request in order to read the

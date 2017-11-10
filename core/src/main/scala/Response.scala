@@ -1,10 +1,7 @@
 package lol.http
 
-import cats.effect.IO
+import cats.effect.{ IO }
 import fs2.{ Stream }
-import internal.FutureLikeResponse
-
-import scala.concurrent.{ExecutionContext, Future}
 
 /** An HTTP response.
   *
@@ -29,7 +26,7 @@ case class Response(
   content: Content = Content.empty,
   headers: Map[HttpString,HttpString] = Map.empty,
   upgradeConnection: (Stream[IO,Byte]) => Stream[IO,Byte] = _ => Stream.empty
-) extends FutureLikeResponse {
+) {
 
   /** Set the content of this response.
     * @param content the content to use for this response.
@@ -42,63 +39,59 @@ case class Response(
     * @param decoder the [[ContentDecoder]] to use to read the content.
     * @return eventually a value of type `A`.
     */
-  def readAs[A](implicit decoder: ContentDecoder[A]): Future[A] = content.as[A].unsafeToFuture
+  def readAs[A](implicit decoder: ContentDecoder[A]): IO[A] = content.as[A]
 
   /** Consume the content attached to this response if the status is in the Success 2xx range. Otherwise,
-    * it consumes the response as String and report the error as a failed future.
+    * it consumes the response as String and report the error as a failed IO.
     * @param decoder the [[ContentDecoder]] to use to read the content.
     * @return eventually a value of type `A` or a failure if the status code was not 2xx.
     */
-  def readSuccessAs[A](implicit decoder: ContentDecoder[A]): Future[A] = {
-    implicit val e = internal.nonBlockingInternalExecutionContext
-    filterSuccess.flatMap(_ => readAs[A])
-  }
+  def readSuccessAs[A](implicit decoder: ContentDecoder[A]): IO[A] = filterSuccess.flatMap(_ => readAs[A])
 
   /** Consume the content attached to this response by evaluating the provided effect function.
     * @param effect the function to use to consume the stream.
     * @return eventually a value of type `A`.
     */
-  def read[A](effect: Stream[IO,Byte] => IO[A]): Future[A] = effect(content.stream).unsafeToFuture
+  def read[A](effect: Stream[IO,Byte] => IO[A]): IO[A] = effect(content.stream)
 
   /** Consume the content attached to this response by evaluating the provided effect function the status is in
-    * the Success 2xx range. Otherwise, it consumes the response as String and report the error as a failed future.
+    * the Success 2xx range. Otherwise, it consumes the response as String and report the error as a failed IO.
     * @param effect the function to use to consume the stream.
     * @return eventually a value of type `A` or a failure if the status code was not 2xx.
     */
-  def readSuccess[A](effect: Stream[IO,Byte] => IO[A]): Future[A] = {
-    implicit val e = internal.nonBlockingInternalExecutionContext
-    filterSuccess.flatMap(_ => read(effect))
-  }
+  def readSuccess[A](effect: Stream[IO,Byte] => IO[A]): IO[A] = filterSuccess.flatMap(_ => read(effect))
 
-  private def filterSuccess(implicit e: ExecutionContext): Future[Unit] =
+  private def filterSuccess: IO[Unit] =
     if(status >= 200 && status < 300) {
-      Future.successful(())
+      IO.unit
     }
     else {
       readAs[String].
         flatMap { content =>
-          Future.failed(Error.UnexpectedStatus(s"Expect success response, but got $status:\n$content"))
+          IO.raiseError(Error.UnexpectedStatus(s"Expect success response, but got $status:\n$content"))
         }.
-        recover { case e: Throwable if e == Error.StreamAlreadyConsumed =>
-          Future.failed(Error.UnexpectedStatus(s"Expect success response, but got $status"))
+        attempt.flatMap {
+          case Left(e) if e == Error.StreamAlreadyConsumed =>
+            IO.raiseError(Error.UnexpectedStatus(s"Expect success response, but got $status"))
+          case Left(e) =>
+            IO.raiseError(e)
+          case Right(_) =>
+            Panic.!!!()
         }
     }
 
   /** Drain the content attached to this response. It is safe to call this operation even if the stream has
     * already been consumed.
     */
-  def drain: Future[Unit] = read(_.onError {
+  def drain: IO[Unit] = read(_.onError {
     case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
     case e: Throwable => Stream.fail(e)
   }.drain.run)
 
-  /** Return a successful empty future if the response status is in the Success 2xx range.
-    * Otherwise, it consumes the response as String and report the error as a failed future.
+  /** Return a successful unit IO if the response status is in the Success 2xx range.
+    * Otherwise, it consumes the response as String and report the error as a failed IO.
     */
-  def assertSuccess: Future[Unit] = {
-    implicit val e = internal.nonBlockingInternalExecutionContext
-    filterSuccess
-  }
+  def assertSuccess: IO[Unit] = filterSuccess
 
   /** Add some headers to this response.
     * @param headers the new headers to add.

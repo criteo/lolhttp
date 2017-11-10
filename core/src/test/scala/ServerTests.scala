@@ -67,7 +67,7 @@ class ServerTests extends Tests {
           "user-agent: lol"
         )
 
-        val responseHeaders = await() { Client.run(Get(url), options = ClientOptions(protocols = Set(protocol)))(res => success(res.headers)) }
+        val responseHeaders = await() { Client.run(Get(url), options = ClientOptions(protocols = Set(protocol)))(res => IO.pure(res.headers)) }
 
         responseHeaders should contain allOf (
           h"X-Lol" -> h"xxx",

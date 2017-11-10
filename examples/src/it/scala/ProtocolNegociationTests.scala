@@ -2,8 +2,7 @@ package lol.http.examples
 
 import lol.http._
 
-import scala.concurrent.{ ExecutionContext }
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.sys.process._
 

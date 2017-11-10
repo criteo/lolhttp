@@ -4,7 +4,8 @@ import lol.http._
 
 import ServerSentEvents._
 
-import cats.effect.IO
+import cats.implicits._
+import cats.effect.{ IO }
 import fs2.{ Stream }
 
 import io.circe._
@@ -12,8 +13,7 @@ import io.circe.syntax._
 import io.circe.parser._
 import io.circe.generic.auto._
 
-import scala.concurrent.{ Future, ExecutionContext }
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class JsonTests extends Tests {
 
@@ -78,7 +78,7 @@ class JsonTests extends Tests {
             _ = r.size should be (3)
             _ = r.data.find(_.id == 2).map(_.label) should be (Some("Lol"))
 
-            r <- client.run(Post("/add", Stuff(8, "Bam").asJson))(res => Future.successful(res.status))
+            r <- client.run(Post("/add", Stuff(8, "Bam").asJson))(res => IO.pure(res.status))
             _ = r should be (201)
 
             r <- client.run(Get("/results"))(_.readAs(json[Payload]))
@@ -105,7 +105,7 @@ class JsonTests extends Tests {
         Client("localhost", server.port).runAndStop { client =>
           client.run(Get("/stream")) { response =>
             response.readAs[Stream[IO,Event[Json]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList).unsafeToFuture
+              eventStream.runLog.map(_.toList)
             }
           }
         }

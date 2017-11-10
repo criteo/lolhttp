@@ -1,10 +1,10 @@
-val VERSION = "0.7.4"
+val VERSION = "0.8.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
-  scalaVersion := "2.12.2",
-  crossScalaVersions := Seq("2.11.11", "2.12.3"),
+  scalaVersion := "2.12.4",
+  crossScalaVersions := Seq("2.11.11", scalaVersion.value),
   scalacOptions ++= Seq(
     "-deprecation",
     "-encoding", "UTF-8",
@@ -13,7 +13,6 @@ lazy val commonSettings = Seq(
     "-Xlint",
     "-Yno-adapted-args",
     "-Ywarn-dead-code",
-    "-language:postfixOps",
     "-Xfuture",
     "-Ywarn-unused-import"
   ),
@@ -94,9 +93,9 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.10.0-M6",
+      "co.fs2" %% "fs2-core" % "0.10.0-M8",
       "io.netty" % "netty-codec-http2" % "4.1.16.Final",
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.4" % "test"
     ),
 
     // Vendorise internal libs
@@ -137,7 +136,7 @@ lazy val loljson =
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser",
       "io.circe" %% "circe-optics"
-    ).map(_ % "0.9.0-M1"),
+    ).map(_ % "0.9.0-M2"),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")

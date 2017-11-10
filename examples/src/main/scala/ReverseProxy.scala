@@ -4,8 +4,7 @@
 // HTTP reverse proxy.
 import lol.http._
 
-import scala.concurrent._
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 // Let's proxy [www.wikipedia.org](https://www.wikipedia.org) 😼.
 object ReverseProxy {

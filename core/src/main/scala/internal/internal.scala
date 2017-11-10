@@ -5,12 +5,10 @@ import java.util.{ Timer, TimerTask }
 import scala.concurrent.{ Future, Promise, ExecutionContext }
 import scala.concurrent.duration.{ FiniteDuration }
 
-package object internal {
+import cats.{ Eval }
+import cats.effect.{ IO }
 
-  // Sometimes we don't want to pollute the API by asking an executionContext, so
-  // we will use this one internally. It will be only used for internal non-blocking operations when
-  // no user code is involved.
-  val nonBlockingInternalExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+package object internal {
 
   def extract(url: String): (String, String, Int, String, Option[String]) = {
     val url0 = new java.net.URL(url)
@@ -35,21 +33,25 @@ package object internal {
   }
 
   lazy val timer = new Timer("lol.http.internal.timer", true)
-  def timeout[A](a: => A, duration: FiniteDuration): Future[A] = {
+  def timeout[A](a: => A, duration: FiniteDuration)(implicit ec: ExecutionContext): Future[A] = {
     val e = Promise[A]
-    timer.schedule(new TimerTask { def run(): Unit = e.success(a) }, duration.toMillis)
+    timer.schedule(new TimerTask { def run(): Unit = e.completeWith(Future(a)) }, duration.toMillis)
     e.future
   }
 
-  def withTimeout[A](a: Future[A], duration: FiniteDuration, onTimeout: () => Unit = () => ())(implicit e: ExecutionContext): Future[A] = {
-    Future.firstCompletedOf(Seq(a.map(Right.apply), timeout(Left(()), duration))).
+  def withTimeout[A](a: IO[A], duration: FiniteDuration, onTimeout: () => Unit = () => ())(implicit e: ExecutionContext): IO[A] = {
+    IO.fromFuture(Eval.always(Future.firstCompletedOf(Seq(a.unsafeToFuture().map(Right.apply), timeout(Left(()), duration))))).
       flatMap {
         case Right(x) =>
-          Future.successful(x)
+          IO.pure(x)
         case Left(_) =>
           onTimeout()
-          Future.failed(Error.Timeout(duration))
+          IO.raiseError(Error.Timeout(duration))
       }
   }
 
+}
+
+package internal {
+  case class Cancellable[A](io: IO[A], cancel: () => Unit = () => ())
 }

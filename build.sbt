@@ -189,8 +189,8 @@ lazy val examples: Project =
         "-P:socco:package_lol.http:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
         "-P:socco:package_io.circe:http://circe.github.io/circe/api/",
-        "-P:socco:package_doobie:https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8",
-        "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/",
+        "-P:socco:package_doobie:https://static.javadoc.io/org.tpolecat/doobie-core_2.12/0.5.0-M8",
+        "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!",
         "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
       )
     )).getOrElse(Nil): _*

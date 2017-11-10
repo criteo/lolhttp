@@ -9,6 +9,7 @@ import lol.html._
 // We will configure doobie to use the cats `IO` effect,
 // so it will play well with lolhttp 🎉.
 import cats.effect.{ IO }
+import cats.implicits._
 
 // Now we just import the needed package for doobie.
 import doobie.h2._
@@ -26,7 +27,7 @@ object DatabaseAccess {
         code       character(3)  NOT NULL,
         name       text          NOT NULL
       );
-    """
+    """.update
 
     // Also we need to import fake data for the example.
     val importData = sql"""
@@ -34,14 +35,14 @@ object DatabaseAccess {
         ('FR', 'France'),
         ('US', 'United States'),
         ('DE', 'GERMANY');
-    """
+    """.update
 
     // This is our setup script. Connect to the database, create the schema
     // and import the data.
     val setup = for {
       xa <- H2Transactor[IO]("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "")
       _  <- xa.setMaxConnections(10)
-      _  <- (createTable ++ importData).update.run.transact(xa)
+      _  <- (createTable.run *> importData.run).transact(xa)
     } yield (xa)
 
     // We run our setup script to startup the database and we keep a

@@ -25,7 +25,7 @@ object Http2Server {
     )
 
     // By specifying the `protocols` options we allow this server to handle both HTTP/1.1 & HTTP/2.
-    Server.listen(8443, ssl = Some(ssl), options = ServerOptions(protocols = Set(HTTP, HTTP2), debug = None)) {
+    Server.listen(8443, ssl = Some(ssl), options = ServerOptions(protocols = Set(HTTP, HTTP2))) {
 
       // The home page display the current protocol using `req.protocol`.
       case req @ url"/" =>

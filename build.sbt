@@ -159,6 +159,11 @@ lazy val examples: Project =
 
     publishArtifact := false,
 
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "doobie-core",
+      "org.tpolecat" %% "doobie-h2"
+    ).map(_ % "0.5.0-M9"),
+
     fork in IntegrationTest := true,
 
     // Running integration tests with Java 8 requires to install the right version of alpn-boot.
@@ -176,7 +181,7 @@ lazy val examples: Project =
   settings(
     Option(System.getProperty("generateExamples")).map(_ => Seq(
       autoCompilerPlugins := true,
-      addCompilerPlugin("com.criteo.socco" %% "socco-plugin" % "0.1.6"),
+      addCompilerPlugin("com.criteo.socco" %% "socco-plugin" % "0.1.9"),
       scalacOptions := Seq(
         "-P:socco:out:examples/target/html",
         "-P:socco:package_lol.html:https://criteo.github.io/lolhttp/api/",
@@ -184,6 +189,7 @@ lazy val examples: Project =
         "-P:socco:package_lol.http:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
         "-P:socco:package_io.circe:http://circe.github.io/circe/api/",
+        "-P:socco:package_doobie:https://www.javadoc.io/doc/org.tpolecat/doobie-core_2.12/0.5.0-M8",
         "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/",
         "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
       )

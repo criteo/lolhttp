@@ -57,6 +57,7 @@ For those who prefer documentation by example, you can also follow these hands-o
 - [Serving files from classpath](https://criteo.github.io/lolhttp/examples/ServingFiles.scala.html).
 - [A Github API client](https://criteo.github.io/lolhttp/examples/GithubClient.scala.html).
 - [A JSON web service](https://criteo.github.io/lolhttp/examples/JsonWebService.scala.html).
+- [Accessing an SQL Database](https://criteo.github.io/lolhttp/examples/DatabaseAccess.scala.html).
 - [Reading large request streams](https://criteo.github.io/lolhttp/examples/LargeFileUpload.scala.html).
 - [A simple reverse proxy](https://criteo.github.io/lolhttp/examples/ReverseProxy.scala.html).
 - [An HTTP/2 server](https://criteo.github.io/lolhttp/examples/Http2Server.scala.html).

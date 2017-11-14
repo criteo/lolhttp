@@ -13,12 +13,12 @@ import io.netty.channel.socket.nio.{ NioSocketChannel }
 
 import java.util.concurrent.{ ArrayBlockingQueue, LinkedBlockingQueue }
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
+import java.util.concurrent.TimeUnit
 
 import cats.implicits._
-import cats.effect.{ IO }
-
+import cats.effect.IO
 import internal.NettySupport._
-import internal.{ withTimeout, Cancellable }
+import internal.{Cancellable, withTimeout}
 
 /** Allow to configure an HTTP client.
   * @param ioThreads the number of threads used for the IO work. Default to `min(availableProcessors, 2)`.
@@ -103,9 +103,7 @@ trait Client extends Service {
       }
     })
     def connect() = bootstrap.connect().toIO
-    def shutdown() = {
-      eventLoop.shutdownGracefully()
-    }
+    def shutdown() = eventLoop.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS)
   }
   private lazy val nettyClient = new NettyClient
 
@@ -203,6 +201,7 @@ trait Client extends Service {
       )
     }
 
+
   /** Stop the client and kill all current and waiting requests.
     * This operation returns an `IO` and is lazy. If you want to stop
     * the client immediatly and synchronously use [[stopSync]] instead.
@@ -217,10 +216,9 @@ trait Client extends Service {
           waiter(Left(Error.ClientAlreadyClosed))
         }
       }
-      _ <- connections.asScala.map(_.close).toList.sequence
-      _ <- IO(nettyClient.shutdown())
+      _ <- nettyClient.shutdown().toIO
     } yield ()).onError { case e =>
-      IO(nettyClient.shutdown()).flatMap(_ => IO.raiseError(e))
+      nettyClient.shutdown().toIO.flatMap(_ => IO.raiseError(e))
     }
 
   /** Stop the client and kill all current and waiting requests right away. */

@@ -3,6 +3,7 @@ package lol.http.internal
 import scala.concurrent.ExecutionContext
 
 import cats.effect.{ IO }
+import cats.implicits._
 import fs2.{ Chunk, Pull, Segment, Sink, Stream, async }
 
 import io.netty.channel.{
@@ -50,6 +51,7 @@ import java.util.concurrent.atomic.{ AtomicInteger }
 import scala.concurrent.{ Promise }
 import scala.collection.mutable.{ ListBuffer }
 import collection.JavaConverters._
+import io.netty.util.concurrent.{ Future => NFuture }
 
 import lol.http._
 
@@ -67,6 +69,27 @@ private[http] object NettySupport {
               else {
                 cb(Left(f.cause))
               }
+            }
+          })
+        }
+        catch {
+          case e: Throwable =>
+            cb(Left(e))
+        }
+      }
+    }
+  }
+
+  implicit class NettyFuture(f: NFuture[_]) {
+    def toIO: IO[Unit] = {
+      IO.async { cb =>
+        try {
+          f.addListener((f: NFuture[_]) => {
+            if(f.isSuccess) {
+              cb(Right(()))
+            }
+            else {
+              cb(Left(f.cause))
             }
           })
         }
@@ -554,6 +577,8 @@ private[http] object NettySupport {
       } yield ()
     }
 
+    lazy val streamCloses = Stream.eval(closed).map(_ => true)
+
     def isOpen: Boolean = channel.isOpen
     def close: IO[Unit] =
       for {
@@ -604,10 +629,10 @@ private[http] object NettySupport {
     // Write an HTTP message along with its content to the channel.
     def write(message: HttpMessage, contentStream: Stream[IO,Byte]): IO[Unit] =
       for {
-        _ <- if(client) permits.decrement else permits.increment
-        _ <- if(channel.isOpen) IO(channel.writeAndFlush(message)) else IO.raiseError(Error.ConnectionClosed)
-        _ <- (contentStream to httpContentSink).run
-        _ <- IO(if(message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
+        _ <- if (client) permits.decrement else permits.increment
+        _ <- if (channel.isOpen) IO(channel.writeAndFlush(message)) else IO.raiseError(Error.ConnectionClosed)
+        _ <- (contentStream to httpContentSink).interruptWhen(streamCloses).run
+        _ <- IO(if (message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
       } yield ()
 
     // Stop accepting HTTP messages
@@ -806,7 +831,7 @@ private[http] object NettySupport {
     }
 
     val streamCounter = new AtomicInteger(1)
-    def write(stream: Int, message: Http2Headers, contentStream: Stream[IO,Byte]): IO[Int] = {
+    def write(stream: Int, message: Http2Headers, contentStream: Stream[IO,Byte]): IO[Int] =
       for {
         streamId <- if(channel.isOpen) {
           channel.runInEventLoop {
@@ -816,13 +841,17 @@ private[http] object NettySupport {
             f.toIO.map(_ => streamId)
           }.flatMap(identity)
         } else IO.raiseError(Error.ConnectionClosed)
-        _ <- (contentStream to dataSink(streamId)).run
+        _ <- (contentStream to dataSink(streamId)).interruptWhen(streamCloses).run
       } yield streamId
-    }
 
-    lazy val closed: IO[Unit] = channel.closeFuture.toIO.flatMap { _ =>
-      messages.enqueue1(None)
-    }
+
+    lazy val closed: IO[Unit] = for {
+      _ <- channel.closeFuture.toIO
+      _ <- messages.enqueue1(None)
+      _ <- contentStreams.mapValues(_.enqueue1(None)).values.toList.sequence
+    } yield ()
+
+    lazy val streamCloses: Stream[IO, Boolean] = Stream.eval(closed).map(_ => { true } )
 
     def isOpen: Boolean = channel.isOpen
     def close: IO[Unit] =

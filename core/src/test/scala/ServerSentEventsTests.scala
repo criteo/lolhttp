@@ -1,11 +1,12 @@
 package lol.http
 
-import ServerSentEvents._
 
 import cats.effect.IO
-import fs2.{ Stream }
+import fs2.Stream
+import lol.http.ServerSentEvents._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 class ServerSentEventsTests extends Tests {
 
@@ -30,6 +31,37 @@ class ServerSentEventsTests extends Tests {
             }
           }
         } should be (List(Event("Hello"), Event("World")))
+      }
+    }
+  }
+
+  test("Events stream that sends nothing should be stopped by server when client closes the connection") {
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      val isRunning = fs2.async.signalOf[IO, Boolean](true).unsafeRunSync()
+
+      val App: Service = {
+        case url"/streamThatSendsNothing" =>
+          Ok(Stream.empty.repeat.onFinalize(isRunning.set(false)))
+      }
+
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+        await(5.seconds) {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            timeout(client.stopSync(), 1.seconds).unsafeRunAsync(_ => ())
+            client.run(Get("/streamThatSendsNothing")) { response =>
+              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+                eventStream.runLog.map { e =>
+                  e.toList
+                }
+              }
+            }
+          }
+        }
+
+        eventually({
+          val t = isRunning.get.unsafeRunSync()
+          t shouldBe false
+        })
       }
     }
   }

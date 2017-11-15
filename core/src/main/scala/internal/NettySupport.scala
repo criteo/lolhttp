@@ -93,6 +93,7 @@ private[http] object NettySupport {
                 cb(Left(f.cause))
               }
           }
+          println("I attach my listener")
           f.addListener(listener)
         }
         catch {

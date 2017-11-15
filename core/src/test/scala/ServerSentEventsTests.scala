@@ -45,7 +45,7 @@ class ServerSentEventsTests extends Tests {
       }
 
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        await(5.seconds) {
+        await() {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             timeout(client.stopSync(), 1.seconds).unsafeRunAsync(_ => ())
             client.run(Get("/streamThatSendsNothing")) { response =>

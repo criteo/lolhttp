@@ -80,18 +80,20 @@ private[http] object NettySupport {
     }
   }
 
-  implicit class NettyFuture(f: NFuture[_]) {
+  implicit class NettyFuture[T](f: NFuture[T]) {
     def toIO: IO[Unit] = {
       IO.async { cb =>
         try {
-          f.addListener((f: NFuture[_]) => {
-            if(f.isSuccess) {
-              cb(Right(()))
-            }
-            else {
-              cb(Left(f.cause))
-            }
-          })
+          val listener: GenericFutureListener[NFuture[T]] = new GenericFutureListener[NFuture[T]] {
+            override def operationComplete(future: NFuture[T]): Unit =
+              if(f.isSuccess) {
+                cb(Right(()))
+              }
+              else {
+                cb(Left(f.cause))
+              }
+          }
+          f.addListener(listener)
         }
         catch {
           case e: Throwable =>

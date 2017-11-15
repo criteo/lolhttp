@@ -44,10 +44,10 @@ class ServerSentEventsTests extends Tests {
           Ok(Stream.empty.repeat.onFinalize(isRunning.set(false)))
       }
 
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
+      withServer(Server.listen(port=8009, options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
         await() {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            timeout(client.stopSync(), 1.seconds).unsafeRunAsync(_ => ())
+            timeout(client.stopSync(), 5.seconds).unsafeRunAsync(_ => ())
             client.run(Get("/streamThatSendsNothing")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
                 eventStream.runLog.map { e =>

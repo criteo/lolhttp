@@ -216,7 +216,9 @@ trait Client extends Service {
           waiter(Left(Error.ClientAlreadyClosed))
         }
       }
+      _ = println("ready to shutdown")
       _ <- nettyClient.shutdown().toIO
+      _ = println("shutdown")
     } yield ()).onError { case e =>
       nettyClient.shutdown().toIO.flatMap(_ => IO.raiseError(e))
     }

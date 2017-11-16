@@ -93,7 +93,6 @@ private[http] object NettySupport {
                 cb(Left(f.cause))
               }
           }
-          println("I attach my listener")
           f.addListener(listener)
         }
         catch {
@@ -128,13 +127,19 @@ private[http] object NettySupport {
 
   implicit class NettyChannel(channel: Channel) {
     def runInEventLoop[A](f: => A): IO[A] = {
-      IO.async(k => channel.eventLoop.submit(new Runnable() {
-        def run = try {
-          k(Right(f))
+      IO.async { k =>
+        try {
+          channel.eventLoop.submit(new Runnable() {
+            def run = try {
+              k(Right(f))
+            } catch {
+              case e: Throwable => k(Left(e))
+            }
+          })
         } catch {
           case e: Throwable => k(Left(e))
         }
-      }))
+      }
     }
   }
 
@@ -479,7 +484,7 @@ private[http] object NettySupport {
     // socket that we are ready to receive new data.
     val contentStream =
       content.dequeue.evalMap { chunk =>
-        if(chunk.isDefined) channel.runInEventLoop(channel.read()).map(_ => chunk) else IO.pure(chunk)
+        if(chunk.isDefined) channel.runInEventLoop(channel.read()).attempt.map(_ => chunk) else IO.pure(chunk)
       }
 
     channel.pipeline.addLast("HttpStreamHandler", new SimpleChannelInboundHandler[HttpObject]() {

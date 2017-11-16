@@ -2,7 +2,7 @@ package lol.http
 
 
 import cats.effect.IO
-import fs2.Stream
+import fs2.{ Scheduler, Stream }
 import lol.http.ServerSentEvents._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,18 +41,21 @@ class ServerSentEventsTests extends Tests {
 
       val App: Service = {
         case url"/streamThatSendsNothing" =>
-          Ok(Stream.empty.repeat.onFinalize(isRunning.set(false)))
+          val emptyInfiniteStream: Stream[IO,Nothing] =
+            Scheduler[IO](corePoolSize = 1).flatMap { scheduler =>
+              scheduler.sleep[IO](100.milliseconds).flatMap(_ => Stream.empty).repeat
+            }
+          Ok(emptyInfiniteStream.onFinalize(isRunning.set(false)))
       }
 
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
         await() {
-          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            timeout(client.stopSync(), 5.seconds).unsafeRunAsync(_ => ())
-            client.run(Get("/streamThatSendsNothing")) { response =>
-              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map { e =>
-                  e.toList
-                }
+          val client = Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol)))
+          timeout(client.stopSync(), 1.second).unsafeRunAsync(_ => ())
+          client.run(Get("/streamThatSendsNothing")) { response =>
+            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+              eventStream.runLog.map { e =>
+                e.toList
               }
             }
           }

@@ -103,7 +103,7 @@ trait Client extends Service {
       }
     })
     def connect() = bootstrap.connect().toIO
-    def shutdown() = eventLoop.shutdownGracefully(0, 0, TimeUnit.MILLISECONDS)
+    def shutdown() = eventLoop.shutdownGracefully(100, 100, TimeUnit.MILLISECONDS)
   }
   private lazy val nettyClient = new NettyClient
 
@@ -216,11 +216,9 @@ trait Client extends Service {
           waiter(Left(Error.ClientAlreadyClosed))
         }
       }
-      _ = println("ready to shutdown")
       _ <- nettyClient.shutdown().toIO
-      _ = println("shutdown")
     } yield ()).onError { case e =>
-      nettyClient.shutdown().toIO.flatMap(_ => IO.raiseError(e))
+      nettyClient.shutdown().toIO.attempt.flatMap(_ => IO.raiseError(e))
     }
 
   /** Stop the client and kill all current and waiting requests right away. */

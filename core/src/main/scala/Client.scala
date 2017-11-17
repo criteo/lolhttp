@@ -103,7 +103,7 @@ trait Client extends Service {
       }
     })
     def connect() = bootstrap.connect().toIO
-    def shutdown() = eventLoop.shutdownGracefully(100, 100, TimeUnit.MILLISECONDS)
+    def shutdown() = eventLoop.shutdownGracefully(0, 0, TimeUnit.MILLISECONDS)
   }
   private lazy val nettyClient = new NettyClient
 

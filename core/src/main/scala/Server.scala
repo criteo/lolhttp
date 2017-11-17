@@ -28,6 +28,7 @@ import io.netty.handler.ssl.{
 import io.netty.handler.codec.http2.{ Http2CodecUtil }
 
 import cats.{ Eval }
+import fs2.{ Stream }
 
 import scala.util.{ Try }
 import scala.concurrent.{
@@ -156,14 +157,12 @@ object Server {
       }
 
       // Loop over incoming request
-      def go(): IO[Unit] = for {
-        message <- connection()
-        (request, responseHandler) = message
+      Stream.eval(connection()).evalMap { case (request, responseHandler) =>
         // Handle the request in a totally asynchronous way,
         // allowing the loop to pick the next available request ASAP
         // if the underlying protocol does allow it (HTTP/1.1 pipelining
         // or HTTP/2.0)
-        _ = (for {
+        IO((for {
           // Apply user code and retrieve the response
           response <- serveRequest(request)
           // If the user code did not open the content stream
@@ -177,10 +176,8 @@ object Server {
           }
           // Write the response message
           _ <- responseHandler(response)
-        } yield ()).unsafeRunAsync(asyncResult)
-        _ <- IO.suspend { go() }
-      } yield ()
-      go().unsafeRunAsync(asyncResult)
+        } yield ()).unsafeRunAsync(asyncResult))
+      }.repeat.run.unsafeRunAsync(asyncResult)
     }
 
     val eventLoop = new NioEventLoopGroup(options.ioThreads)

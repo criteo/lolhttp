@@ -188,6 +188,7 @@ private[http] object NettySupport {
                   )
                 case None =>
                   channel.close()
+                  throw Error.ConnectionClosed
               }
             }
           }.run.unsafeRunAsync(_ => if(channel.isOpen) channel.close())
@@ -205,8 +206,9 @@ private[http] object NettySupport {
               }
               for {
                 _ <- IO.fromFuture(cats.Now(http2xConnection.isReady))
-                stream <- http2xConnection.write(-1, requestHeaders, request.content.stream)
-                response <- IO.async[Response](cb => waitingResponses += (stream -> cb))
+                response <- IO.async[Response] { cb =>
+                  http2xConnection.write(Left(stream => waitingResponses += (stream -> cb)), requestHeaders, request.content.stream).unsafeRunAsync(_ => ())
+                }
               } yield response
             }
             def isOpen = http2xConnection.isOpen
@@ -352,10 +354,10 @@ private[http] object NettySupport {
                   }
                   if(request.method == HEAD) {
                     responseHeaders.add("content-length", "0")
-                    http2xConnection.write(stream, responseHeaders, Stream.empty).map(_ => ())
+                    http2xConnection.write(Right(stream), responseHeaders, Stream.empty).map(_ => ())
                   }
                   else {
-                    http2xConnection.write(stream, responseHeaders, response.content.stream).map(_ => ())
+                    http2xConnection.write(Right(stream), responseHeaders, response.content.stream).map(_ => ())
                   }
                 })
               }
@@ -372,9 +374,10 @@ private[http] object NettySupport {
             // For HTTP/1.1 we won't accept new requests until the response
             // for the previous one has not been totally flushed. Thus this lock.
             val lock = async.semaphore[IO](1).unsafeRunSync()
+            closed.flatMap(_ => lock.incrementBy(Long.MaxValue)).unsafeRunAsync(_ => ())
             def apply(): IO[(Request, Response => IO[Unit])] =
               for {
-                _ <- async.race(lock.decrement, http1xConnection.closed)
+                _ <- lock.decrement
                 request <- http1xConnection.read.flatMap {
                   case (nettyRequest: HttpRequest, contentStream) =>
                     for {
@@ -578,14 +581,14 @@ private[http] object NettySupport {
     // When the channel is closed we push None to the message
     // queue, to indicate the End Of Stream. We also push None
     // to the content queue to force incomplete stream to finish.
-    lazy val closed: IO[Unit] = channel.closeFuture.toIO.flatMap { _ =>
-      for {
-        _ <- messages.enqueue1(None)
-        _ <- content.enqueue1(None)
-      } yield ()
-    }
+    lazy val closed: IO[Unit] = channel.closeFuture.toIO.map(_ => ())
+    (for {
+      _ <- closed
+      _ <- messages.enqueue1(None)
+      _ <- content.enqueue1(None)
+    } yield ()).unsafeRunAsync(_ => ())
 
-    lazy val streamCloses = Stream.eval(closed).map(_ => true)
+    lazy val streamCloses: Stream[IO, Boolean] = Stream.eval(closed).map(_ => true)
 
     def isOpen: Boolean = channel.isOpen
     def close: IO[Unit] =
@@ -839,18 +842,25 @@ private[http] object NettySupport {
     }
 
     val streamCounter = new AtomicInteger(1)
-    def write(stream: Int, message: Http2Headers, contentStream: Stream[IO,Byte]): IO[Int] =
+    def write(stream: Either[Int => Unit, Int], message: Http2Headers, contentStream: Stream[IO,Byte]): IO[Unit] =
       for {
         streamId <- if(channel.isOpen) {
           channel.runInEventLoop {
-            val streamId = if(stream == -1) streamCounter.addAndGet(2) else stream
+            val streamId = stream match {
+              case Left(f) =>
+                val streamId = streamCounter.addAndGet(2)
+                f(streamId)
+                streamId
+              case Right(streamId) =>
+                streamId
+            }
             val f = handler.encoder.writeHeaders(ctx, streamId, message, 0, false, ctx.newPromise)
             handler.flush(ctx)
             f.toIO.map(_ => streamId)
           }.flatMap(identity)
         } else IO.raiseError(Error.ConnectionClosed)
         _ <- (contentStream to dataSink(streamId)).interruptWhen(streamCloses).run
-      } yield streamId
+      } yield ()
 
 
     lazy val closed: IO[Unit] = for {

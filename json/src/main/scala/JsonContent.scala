@@ -31,7 +31,7 @@ object JsonContent {
     */
   def decoder(maxSize: Int = ContentDecoder.MaxSize, codec: Codec = Codec.UTF8) = new ContentDecoder[Json] {
     def apply(content: Content) = {
-      ContentDecoder.text()(content).flatMap { text =>
+      ContentDecoder.text(maxSize)(content).flatMap { text =>
         parse(text).fold(IO.raiseError, IO.pure)
       }
     }

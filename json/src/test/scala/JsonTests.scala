@@ -119,7 +119,7 @@ class JsonTests extends Tests {
     val jsonDecoder = JsonContent.decoder(32, Codec.UTF8)
 
     // parsing 32 bytes should not throw
-    jsonDecoder(validJsonContentOfSize(32).get)
+    jsonDecoder(validJsonContentOfSize(32).get).unsafeRunSync
 
     // but parsing 33 should
     a[ParsingFailure] should be thrownBy {
@@ -142,7 +142,7 @@ class JsonTests extends Tests {
 
       val contentStream: Stream[IO, Byte] = Stream.emits(jsonLeft.getBytes(encoding )) ++
         c ++
-        Stream.emits("""" }""".getBytes(encoding))
+        Stream.emits(jsonRight.getBytes(encoding))
 
       Some(Content(contentStream))
     }

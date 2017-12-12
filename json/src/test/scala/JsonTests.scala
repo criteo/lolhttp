@@ -14,6 +14,7 @@ import io.circe.parser._
 import io.circe.generic.auto._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.io.Codec
 
 class JsonTests extends Tests {
 
@@ -113,5 +114,38 @@ class JsonTests extends Tests {
     }
   }
 
+  test("Max size is passed down to text encoder") {
+    // with a decoder of 32 bytes
+    val jsonDecoder = JsonContent.decoder(32, Codec.UTF8)
+
+    // parsing 32 bytes should not throw
+    jsonDecoder(validJsonContentOfSize(32).get)
+
+    // but parsing 33 should
+    a[ParsingFailure] should be thrownBy {
+      jsonDecoder(validJsonContentOfSize(33).get).unsafeRunSync
+    }
+  }
+
+  // generates valid JSON Content of size wantedSizeBytes
+  private def validJsonContentOfSize(wantedSizeBytes: Int, encoding: String = "UTF-8"): Option[Content] = {
+    val jsonLeft = """{"c":""""
+    val jsonRight = """"}"""
+    val templateSizeBytes = List(jsonLeft, jsonRight).map(_.getBytes(encoding).length).sum
+
+    if (wantedSizeBytes <= templateSizeBytes)
+      None
+    else {
+      val c: Stream[IO, Byte] = Stream.emit('a'.toByte)
+        .repeat
+        .take(wantedSizeBytes - templateSizeBytes)
+
+      val contentStream: Stream[IO, Byte] = Stream.emits(jsonLeft.getBytes(encoding )) ++
+        c ++
+        Stream.emits("""" }""".getBytes(encoding))
+
+      Some(Content(contentStream))
+    }
+  }
 
 }

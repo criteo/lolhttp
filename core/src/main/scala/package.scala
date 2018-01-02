@@ -45,7 +45,7 @@ package object http {
 
   /** Wrap a pure value a into an async effect that will be available after the `delay`. */
   def timeout[A](a: => A, delay: FiniteDuration)(implicit ec: ExecutionContext): IO[A] =
-    IO.fromFuture(Eval.always(internal.timeout(a, delay)))
+    IO.fromFuture(IO(internal.timeout(a, delay)))
 
   /** Protocol version for HTTP/1.1 */
   val HTTP = "HTTP/1.1"

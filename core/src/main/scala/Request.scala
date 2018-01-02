@@ -64,9 +64,9 @@ case class Request(
   /** Drain the content attached to this request. It is safe to call this operation even if the stream has
     * already been consumed.
     */
-  def drain: IO[Unit] = read(_.onError {
+  def drain: IO[Unit] = read(_.handleErrorWith {
     case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
-    case e: Throwable => Stream.fail(e)
+    case e: Throwable => Stream.raiseError(e)
   }.drain.run)
 
   /** Add some headers to this request.

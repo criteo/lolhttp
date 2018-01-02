@@ -40,7 +40,7 @@ package object internal {
   }
 
   def withTimeout[A](a: IO[A], duration: FiniteDuration, onTimeout: () => Unit = () => ())(implicit e: ExecutionContext): IO[A] = {
-    IO.fromFuture(Eval.always(Future.firstCompletedOf(Seq(a.unsafeToFuture().map(Right.apply), timeout(Left(()), duration))))).
+    IO.fromFuture(IO(Future.firstCompletedOf(Seq(a.unsafeToFuture().map(Right.apply), timeout(Left(()), duration))))).
       flatMap {
         case Right(x) =>
           IO.pure(x)

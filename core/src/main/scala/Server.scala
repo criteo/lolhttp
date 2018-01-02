@@ -27,7 +27,6 @@ import io.netty.handler.ssl.{
   ApplicationProtocolNegotiationHandler }
 import io.netty.handler.codec.http2.{ Http2CodecUtil }
 
-import cats.{ Eval }
 import fs2.{ Stream }
 
 import scala.util.{ Try }
@@ -142,7 +141,7 @@ object Server {
   )(service: Service)(implicit executor: ExecutionContext): Server = {
 
     def serveRequest(request: Request) =
-      IO.fromFuture(Eval.always(service(request).unsafeToFuture)).attempt.map {
+      IO.suspend(service(request)).attempt.map {
         case Left(e) => Try(onError(e)).toOption.getOrElse(defaultErrorResponse)
         case Right(x) => x
       }

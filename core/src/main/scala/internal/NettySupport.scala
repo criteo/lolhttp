@@ -3,6 +3,7 @@ package lol.http.internal
 import scala.concurrent.ExecutionContext
 
 import cats.effect.{ IO }
+import cats._
 import cats.implicits._
 import fs2.{ Chunk, Pull, Segment, Sink, Stream, async }
 
@@ -109,7 +110,7 @@ private[http] object NettySupport {
       while (buffer.readableBytes > 0) {
         val bytes = Array.ofDim[Byte](buffer.readableBytes)
         buffer.readBytes(bytes)
-        segments += Chunk.bytes(bytes)
+        segments += Chunk.bytes(bytes).toSegment
       }
       segments.foldLeft(Segment.empty[Byte])((acc, seg) => acc ++ seg)
     }
@@ -121,7 +122,7 @@ private[http] object NettySupport {
         buffer.readBytes(bytes)
         chunks += Chunk.bytes(bytes)
       }
-      Segment.seq(chunks).flattenChunks.toChunk
+      Segment.seq(chunks).flattenChunks.force.toChunk
     }
   }
 
@@ -144,7 +145,7 @@ private[http] object NettySupport {
   }
 
   implicit class SegmentByteBuffer(segment: Segment[Byte, Unit]) {
-    def toByteBuf: ByteBuf = Unpooled.wrappedBuffer(segment.toChunk.toArray)
+    def toByteBuf: ByteBuf = Unpooled.wrappedBuffer(segment.force.toChunk.toArray)
   }
 
   implicit class ChunkByteBuffer(chunk: Chunk[Byte]) {
@@ -176,7 +177,7 @@ private[http] object NettySupport {
                             // The content stream can be read only once
                             eval(readers.tryDecrement).flatMap {
                               case false =>
-                                Stream.fail(Error.StreamAlreadyConsumed)
+                                Stream.raiseError(Error.StreamAlreadyConsumed)
                               case true =>
                                 contentStream
                             },
@@ -205,7 +206,7 @@ private[http] object NettySupport {
                 requestHeaders.add(key.toString.toLowerCase, value.toString)
               }
               for {
-                _ <- IO.fromFuture(cats.Now(http2xConnection.isReady))
+                _ <- IO.fromFuture(IO.pure(http2xConnection.isReady))
                 response <- IO.async[Response] { cb =>
                   http2xConnection.write(Left(stream => waitingResponses += (stream -> cb)), requestHeaders, request.content.stream).unsafeRunAsync(_ => ())
                 }
@@ -254,7 +255,7 @@ private[http] object NettySupport {
                                 // The content stream can be read only once
                                 eval(readers.tryDecrement).flatMap {
                                   case false =>
-                                    Stream.fail(Error.StreamAlreadyConsumed)
+                                    Stream.raiseError(Error.StreamAlreadyConsumed)
                                   case true =>
                                     contentStream.onFinalize(
                                       if(HttpUtil.isKeepAlive(nettyRequest) && HttpUtil.isKeepAlive(nettyResponse)) {
@@ -283,7 +284,7 @@ private[http] object NettySupport {
                                 Stream.eval(upgradedReaders.tryDecrement).
                                   flatMap {
                                     case false =>
-                                      Stream.fail(Error.StreamAlreadyConsumed)
+                                      Stream.raiseError(Error.StreamAlreadyConsumed)
                                     case true =>
                                       Stream.eval(http1xConnection.upgrade()).flatMap { downstream =>
                                         downstream.
@@ -292,7 +293,7 @@ private[http] object NettySupport {
                                       }
                                   }
                               }
-                          case _ => _ => Stream.fail(Error.UpgradeRefused)
+                          case _ => _ => Stream.raiseError(Error.UpgradeRefused)
                         }
                       )
                       response
@@ -333,7 +334,7 @@ private[http] object NettySupport {
                               // The content stream can be read only once
                               eval(readers.tryDecrement).flatMap {
                                 case false =>
-                                  Stream.fail(Error.StreamAlreadyConsumed)
+                                  Stream.raiseError(Error.StreamAlreadyConsumed)
                                 case true =>
                                   contentStream
                               },
@@ -396,7 +397,7 @@ private[http] object NettySupport {
                               // The content stream can be read only once
                               eval(readers.tryDecrement).flatMap {
                                 case false =>
-                                  Stream.fail(Error.StreamAlreadyConsumed)
+                                  Stream.raiseError(Error.StreamAlreadyConsumed)
                                 case true =>
                                   contentStream
                               },
@@ -546,7 +547,7 @@ private[http] object NettySupport {
           } yield ()).unsafeRunSync()
         // A content chunk has been received. Add it to the buffer.
         case chunk: HttpContent =>
-          buffer = chunk.content.toChunk.prepend(buffer).toChunk
+          buffer = (buffer.toSegment ++ chunk.content.toSegment).force.toChunk
       }
 
       // No more data available on the socket. Enqueue the buffered
@@ -611,7 +612,7 @@ private[http] object NettySupport {
                 // The content stream can be read only once
                 eval(readers.tryDecrement).flatMap {
                 case false =>
-                  Stream.fail(Error.StreamAlreadyConsumed)
+                  Stream.raiseError(Error.StreamAlreadyConsumed)
                 case true =>
                   contentStream.
                     // We read the queue until a None, that marks
@@ -681,15 +682,15 @@ private[http] object NettySupport {
       _.repeatPull { s =>
         s.unconsChunk.flatMap {
           case Some((chunk, t)) =>
-            Pull.eval {
+            Pull.eval[IO, Channel] {
               if (channel.isOpen) channel.writeAndFlush(new DefaultHttpContent(Unpooled.wrappedBuffer(chunk.toArray))).toIO
               else IO.raiseError(Error.ConnectionClosed)
             }.as(Some(t))
           case None =>
-            Pull.eval {
+            Pull.eval[IO, Channel] {
               if (channel.isOpen) channel.writeAndFlush(new DefaultLastHttpContent()).toIO
               else IO.raiseError(Error.ConnectionClosed)
-            } *> Pull.pure(None)
+            }.map(_ => None)
         }
       }
     }
@@ -698,7 +699,7 @@ private[http] object NettySupport {
       _.repeatPull { s =>
         s.unconsChunk.flatMap {
           case Some((chunk, t)) =>
-            Pull.eval {
+            Pull.eval[IO, Channel] {
               if (channel.isOpen) channel.writeAndFlush(Unpooled.wrappedBuffer(chunk.toArray)).toIO
               else IO.raiseError(Error.ConnectionClosed)
             }.as(Some(t))
@@ -815,7 +816,7 @@ private[http] object NettySupport {
     def dataSink(stream: Int): Sink[IO,Byte] = {
       _.repeatPull(_.unconsChunk.flatMap {
         case Some((chunk, h)) =>
-          Pull.eval(
+          Pull.eval[IO, Channel](
             if(channel.isOpen) {
               channel.runInEventLoop {
                 val f = handler.encoder.writeData(ctx, stream, chunk.toByteBuf, 0, false, ctx.newPromise)
@@ -827,7 +828,7 @@ private[http] object NettySupport {
               IO.raiseError(Error.ConnectionClosed)
           ) as Some(h)
         case None =>
-          Pull.eval(
+          Pull.eval[IO, Channel](
             if(channel.isOpen) {
               channel.runInEventLoop {
                 val f = handler.encoder.writeData(ctx, stream, Chunk.empty[Byte].toByteBuf, 0, true, ctx.newPromise)
@@ -837,7 +838,7 @@ private[http] object NettySupport {
             }
             else
               IO.raiseError(Error.ConnectionClosed)
-          ) *> Pull.pure(None)
+          ).map(_ => None)
       })
     }
 

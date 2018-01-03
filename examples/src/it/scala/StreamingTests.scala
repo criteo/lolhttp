@@ -17,7 +17,7 @@ class StreamingTests extends Tests {
   def rechunk: Pipe[IO,Byte,Chunk[Byte]] =
     _.repeatPull(_.unconsN(`10Meg`, true).flatMap {
       case Some((chunks, h)) =>
-        Pull.output1(chunks.toChunk) as Some(h)
+        Pull.output1(chunks.force.toChunk) as Some(h)
       case None =>
         Pull.pure(None)
     })

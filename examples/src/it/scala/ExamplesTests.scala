@@ -1,5 +1,7 @@
 package lol.http.examples
 
+import scala.language.postfixOps
+
 object ExamplesTests {
 
   def main(args: Array[String]): Unit = {

@@ -445,7 +445,7 @@ object ClasspathResource {
     */
   implicit val encoder = new ContentEncoder[ClasspathResource] {
     def apply(data: ClasspathResource) = {
-      data.inputStream.fold(Content(Stream.fail(Error.ClasspathResourceMissing))) { is =>
+      data.inputStream.fold(Content(Stream.raiseError(Error.ClasspathResourceMissing))) { is =>
         ContentEncoder.inputStream()(is).addHeaders(
           ContentType -> HttpString(internal.guessContentType(data.path)),
           TransferEncoding -> h"chunked"

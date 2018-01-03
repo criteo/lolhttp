@@ -40,7 +40,7 @@ object DatabaseAccess {
     // This is our setup script. Connect to the database, create the schema
     // and import the data.
     val setup = for {
-      xa <- H2Transactor[IO]("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "")
+      xa <- H2Transactor.newH2Transactor[IO]("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "")
       _  <- xa.setMaxConnections(10)
       _  <- (createTable.run *> importData.run).transact(xa)
     } yield (xa)

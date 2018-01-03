@@ -1,6 +1,5 @@
 package lol
 
-import cats.{ Eval }
 import cats.effect.{ IO }
 import fs2.{ Stream }
 

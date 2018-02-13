@@ -35,12 +35,12 @@ HTTP/2 is supported on both Server and Client side. If SSL is enabled, the proto
 
 The library is cross-built for __Scala 2.11__ and __Scala 2.12__.
 
-The core module to use is `"com.criteo.lolhttp" %% "lolhttp" % "0.9.1"`.
+The core module to use is `"com.criteo.lolhttp" %% "lolhttp" % "0.9.2"`.
 
 There are also 2 optional companion libraries:
 
-- `"com.criteo.lolhttp" %% "loljson" % "0.9.1"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
-- `"com.criteo.lolhttp" %% "lolhtml" % "0.9.1"`, provides minimal HTML templating.
+- `"com.criteo.lolhttp" %% "loljson" % "0.9.2"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
+- `"com.criteo.lolhttp" %% "lolhtml" % "0.9.2"`, provides minimal HTML templating.
 
 ## Documentation
 

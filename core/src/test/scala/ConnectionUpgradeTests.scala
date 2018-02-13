@@ -44,7 +44,7 @@ class ConnectionUpgradeTests extends Tests {
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog
+          downstream.compile.toVector
         }
       } should contain inOrderOnly (
         "dlrow olleH",
@@ -65,7 +65,7 @@ class ConnectionUpgradeTests extends Tests {
             result <- client.run(Get(url).addHeaders(Headers.Upgrade -> h"Push")) { response =>
               Thread.sleep(1000)
               (response.upgradeConnection(Stream.empty) through utf8Decode through lines).
-                runLog
+                compile.toVector
             }
             _ = eventually(client.openedConnections should be (0))
           } yield result
@@ -86,7 +86,7 @@ class ConnectionUpgradeTests extends Tests {
           val upstream = Stream("Hello", " world\nlol", "\n", "wat??", "\n", "EOF\n").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.flatMap { _ => downstream.runLog }
+          downstream.compile.toVector.flatMap { _ => downstream.compile.toVector }
         }
       } should be (Error.StreamAlreadyConsumed)
     }
@@ -105,7 +105,7 @@ class ConnectionUpgradeTests extends Tests {
           val downstream = response.upgradeConnection(upstream) through utf8Decode through lines
           val downstream2 = response.upgradeConnection(upstream) through utf8Decode through lines
 
-          downstream.runLog.flatMap { _ => downstream2.runLog }
+          downstream.compile.toVector.flatMap { _ => downstream2.compile.toVector }
         }
       } should be (Error.StreamAlreadyConsumed)
     }
@@ -124,7 +124,7 @@ class ConnectionUpgradeTests extends Tests {
           val upstream = Stream("lol").through(utf8Encode)
           val downstream = response.upgradeConnection(upstream)
 
-          downstream.run
+          downstream.compile.drain
         }
       } should be (Error.UpgradeRefused)
     }

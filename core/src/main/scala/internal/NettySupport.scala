@@ -191,7 +191,7 @@ private[http] object NettySupport {
                   throw Error.ConnectionClosed
               }
             }
-          }.run.unsafeRunAsync(_ => if(channel.isOpen) channel.close())
+          }.compile.drain.unsafeRunAsync(_ => if(channel.isOpen) channel.close())
           new ClientConnection {
             def apply(request: Request, release: () => Unit): IO[Response] = {
               release()
@@ -277,7 +277,7 @@ private[http] object NettySupport {
                                 // If user code did not read the response content yet,
                                 // we need to drain the content stream before upgrading
                                 // the connection.
-                                case true => Stream.eval(contentStream.drain.run)
+                                case true => Stream.eval(contentStream.compile.drain)
                               }.
                               flatMap { _ =>
                                 Stream.eval(upgradedReaders.tryDecrement).
@@ -426,7 +426,7 @@ private[http] object NettySupport {
                       if(response.status == 101) {
                         http1xConnection.upgrade().flatMap { upstream =>
                           val downstream = response.upgradeConnection(upstream)
-                          (downstream to http1xConnection.writeBytes).drain.run
+                          (downstream to http1xConnection.writeBytes).compile.drain
                         }
                       }
                       else {
@@ -626,7 +626,7 @@ private[http] object NettySupport {
                     onFinalize {
                       for {
                         fullyRead <- eosReached.get
-                        _ <- if (fullyRead) IO.unit else contentStream.takeWhile(_.isDefined).drain.run
+                        _ <- if (fullyRead) IO.unit else contentStream.takeWhile(_.isDefined).compile.drain
                         _ <- if (client) permits.increment else permits.decrement
                       } yield ()
                     }
@@ -642,7 +642,7 @@ private[http] object NettySupport {
       for {
         _ <- if (client) permits.decrement else permits.increment
         _ <- if (channel.isOpen) IO(channel.writeAndFlush(message)) else IO.raiseError(Error.ConnectionClosed)
-        _ <- (contentStream to httpContentSink).interruptWhen(streamCloses).run
+        _ <- (contentStream to httpContentSink).interruptWhen(streamCloses).compile.drain
         _ <- IO(if (message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
       } yield ()
 
@@ -749,7 +749,7 @@ private[http] object NettySupport {
               onFinalize {
                 for {
                   fullyRead <- eosReached.get
-                  _ <- if (fullyRead) IO.unit else contentStream.takeWhile(_.isDefined).drain.run
+                  _ <- if (fullyRead) IO.unit else contentStream.takeWhile(_.isDefined).compile.drain
                 } yield ()
               }
           }).unsafeRunSync()
@@ -859,7 +859,7 @@ private[http] object NettySupport {
             f.toIO.map(_ => streamId)
           }.flatMap(identity)
         } else IO.raiseError(Error.ConnectionClosed)
-        _ <- (contentStream to dataSink(streamId)).interruptWhen(streamCloses).run
+        _ <- (contentStream to dataSink(streamId)).interruptWhen(streamCloses).compile.drain
       } yield ()
 
 

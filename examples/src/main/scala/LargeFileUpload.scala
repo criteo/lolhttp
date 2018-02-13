@@ -39,7 +39,7 @@ object LargeFileUpload {
       // In case of a __POST /upload__ request, we consume the request body with a special
       // reader that accumulates the total body size.
       case request @ POST at url"/upload" => {
-        request.read(_.chunks.runFold(0: Long)(_ + _.size)).map { size =>
+        request.read(_.chunks.compile.fold(0: Long)(_ + _.size)).map { size =>
           // Once the whole body has been read, the total size has been computed,
           // and we display it in an HTML response.
           Ok(html"<h1>Done! body size was $size</h1>")

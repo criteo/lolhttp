@@ -166,7 +166,7 @@ object Server {
           response <- serveRequest(request)
           // If the user code did not open the content stream
           // we need to drain it now
-          _ <- request.content.stream.drain.run.attempt.flatMap {
+          _ <- request.content.stream.compile.drain.attempt.flatMap {
             case Left(e) => e match {
               case Error.StreamAlreadyConsumed => IO.unit
               case _ => IO.raiseError(e)
@@ -176,7 +176,7 @@ object Server {
           // Write the response message
           _ <- responseHandler(response)
         } yield ()).unsafeRunAsync(asyncResult))
-      }.repeat.run.unsafeRunAsync(asyncResult)
+      }.repeat.compile.drain.unsafeRunAsync(asyncResult)
     }
 
     val eventLoop = new NioEventLoopGroup(options.ioThreads)

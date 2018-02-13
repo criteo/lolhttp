@@ -74,7 +74,7 @@ class ClientTests extends Tests {
             for {
               response <- client(Get("/huge"))
               _ = response.status should be (200)
-              length <- response.content.stream.chunks.runFold(0: Long)(_ + _.size)
+              length <- response.content.stream.chunks.compile.fold(0: Long)(_ + _.size)
             } yield length
           }
         } should be (1024 * 1024)
@@ -151,11 +151,11 @@ class ClientTests extends Tests {
           for {
             response <- client(Get("/Hello"))
             _ = response.status should be (200)
-            helloBytes <- response.content.stream.take(8).runLog
+            helloBytes <- response.content.stream.take(8).compile.toVector
             _ = new String(helloBytes.toArray, "us-ascii") should be ("HelloHel")
 
             // illegal to reopen the stream
-            _ <- response.content.stream.runLog
+            _ <- response.content.stream.compile.toVector
           } yield ()
         }
       } should be (Error.StreamAlreadyConsumed)

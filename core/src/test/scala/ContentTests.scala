@@ -84,11 +84,11 @@ class ContentTests extends Tests {
 
     ContentEncoder.inputStream(chunkSize = 1).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
-      runLog.unsafeRunSync().mkString should be ("L_O_L_\n_")
+      compile.toVector.unsafeRunSync().mkString should be ("L_O_L_\n_")
 
     ContentEncoder.inputStream(chunkSize = 2).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
-      runLog.unsafeRunSync().mkString should be ("LO_L\n_")
+      compile.toVector.unsafeRunSync().mkString should be ("LO_L\n_")
   }
 
   test("File") {
@@ -120,7 +120,7 @@ class ContentTests extends Tests {
 
     val x = content2.stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
-      runLog.unsafeRunSync().mkString
+      compile.toVector.unsafeRunSync().mkString
 
     x should be (realContent.zip(0 to realContent.size map(_ => '_')).map { case (a,b) => "" + a + b }.mkString)
   }

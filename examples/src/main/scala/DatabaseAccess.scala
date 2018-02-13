@@ -56,7 +56,7 @@ object DatabaseAccess {
       // so the result is wrapped into an `IO`.
       sql"SELECT code, name FROM country".
         query[(String,String)].
-        list.
+        to[List].
         transact(xa).
         map { resultSet =>
 

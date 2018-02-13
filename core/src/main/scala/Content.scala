@@ -130,7 +130,7 @@ object ContentDecoder {
 
   /** A content decoder that discard everything from the stream and returns `Unit`. */
   implicit val discard = new ContentDecoder[Unit] {
-    def apply(content: Content) = content.stream.drain.run
+    def apply(content: Content) = content.stream.compile.drain
   }
 
   /** Create binary content decoders. They read the byte stream in memory and return them as an `Array[Byte]`.
@@ -138,7 +138,7 @@ object ContentDecoder {
     * @return a content decoder for `Array[Byte]`.
     */
   def binary(maxSize: Int = MaxSize): ContentDecoder[Array[Byte]] = new ContentDecoder[Array[Byte]] {
-    def apply(content: Content) = content.stream.take(maxSize).chunks.runLog.map { arrays =>
+    def apply(content: Content) = content.stream.take(maxSize).chunks.compile.toVector.map { arrays =>
       val totalSize = arrays.foldLeft(0)(_ + _.size)
       val result = Array.ofDim[Byte](totalSize)
       arrays.foldLeft(0) {

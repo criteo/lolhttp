@@ -137,7 +137,7 @@ class ServerTests extends Tests {
     }
   }
 
-  test("Upload", Slow) {
+  ignore("Upload", Slow) {
     foreachProtocol(HTTP, HTTP2) { protocol =>
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol))) {
         case req @ POST at url"/" =>

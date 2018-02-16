@@ -106,7 +106,7 @@ class JsonTests extends Tests {
         Client("localhost", server.port).runAndStop { client =>
           client.run(Get("/stream")) { response =>
             response.readAs[Stream[IO,Event[Json]]].flatMap { eventStream =>
-              eventStream.runLog.map(_.toList)
+              eventStream.compile.toVector.map(_.toList)
             }
           }
         }

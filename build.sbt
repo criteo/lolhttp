@@ -93,7 +93,7 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.10.1",
+      "co.fs2" %% "fs2-core" % "0.10.2",
       "io.netty" % "netty-codec-http2" % "4.1.16.Final",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test"
     ),

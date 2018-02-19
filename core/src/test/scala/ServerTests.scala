@@ -141,11 +141,11 @@ class ServerTests extends Tests {
     foreachProtocol(HTTP, HTTP2) { protocol =>
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol))) {
         case req @ POST at url"/" =>
-          req.read(_.chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
+          req.read(_.chunks.compile.fold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
             Ok(s"Received $contentSize bytes")
           }
         case req @ POST at url"/take/$size" =>
-          req.read(_.take(size.toInt).chunks.runFold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
+          req.read(_.take(size.toInt).chunks.compile.fold(0)((size,chunk) => size + chunk.size)).map { contentSize =>
             Ok(s"Took $contentSize bytes")
           }
       }) { server =>

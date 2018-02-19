@@ -26,7 +26,7 @@ class ServerSentEventsTests extends Tests {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             client.run(Get("/stream")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map(_.toList)
+                eventStream.compile.toVector.map(_.toList)
               }
             }
           }
@@ -54,7 +54,7 @@ class ServerSentEventsTests extends Tests {
           timeout(client.stopSync(), 1.second).unsafeRunAsync(_ => ())
           client.run(Get("/streamThatSendsNothing")) { response =>
             response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-              eventStream.runLog.map { e =>
+              eventStream.compile.toVector.map { e =>
                 e.toList
               }
             }
@@ -76,7 +76,7 @@ class ServerSentEventsTests extends Tests {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             client.run(Get("/")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map(_.toList)
+                eventStream.compile.toVector.map(_.toList)
               }
             }
           }
@@ -92,7 +92,7 @@ class ServerSentEventsTests extends Tests {
           Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
             client.run(Get("/fakeStream")) { response =>
               response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.runLog.map(_.toList)
+                eventStream.compile.toVector.map(_.toList)
               }
             }
           }

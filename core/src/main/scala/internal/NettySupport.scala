@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.{
   DefaultLastHttpContent,
   HttpClientCodec,
   HttpContent,
+  HttpContentCompressor,
   HttpContentDecompressor,
   HttpMessage,
   HttpObject,
@@ -369,6 +370,7 @@ private[http] object NettySupport {
           debug.foreach(logger => channel.pipeline.addLast("Debug", new LoggingHandler(logger, LogLevel.INFO)))
           channel.pipeline.addLast("HttpRequestDecoder", new HttpRequestDecoder())
           channel.pipeline.addLast("HttpResponseEncoder", new HttpResponseEncoder())
+          channel.pipeline.addLast("HttpContentCompressor", new HttpContentCompressor())
           val http1xConnection = new Http1xConnection(channel, client = false)
           new ServerConnection {
             // For HTTP/1.1 we won't accept new requests until the response

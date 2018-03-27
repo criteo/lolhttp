@@ -645,7 +645,10 @@ private[http] object NettySupport {
         _ <- if (client) permits.decrement else permits.increment
         _ <- if (channel.isOpen) IO(channel.writeAndFlush(message)) else IO.raiseError(Error.ConnectionClosed)
         _ <- (contentStream to httpContentSink).interruptWhen(streamCloses).compile.drain
-        _ <- IO(if (message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0) channel.close())
+        _ <- IO {
+          if (message.isInstanceOf[HttpResponse] && HttpUtil.getContentLength(message, -1) < 0 &&
+            !HttpUtil.isTransferEncodingChunked(message)) channel.close()
+        }
       } yield ()
 
     // Stop accepting HTTP messages

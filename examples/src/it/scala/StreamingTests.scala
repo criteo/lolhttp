@@ -33,7 +33,7 @@ class StreamingTests extends Tests {
             through(rechunk).
             evalMap(c => IO(println(s"${c.size} bytes received"))).
             flatMap(_ => scheduler.sleep[IO](3.seconds))
-        }.run).map { _ =>
+        }.compile.drain).map { _ =>
           Ok(s"${now - start}")
         }
       }) { server =>
@@ -62,6 +62,39 @@ class StreamingTests extends Tests {
 
         timeToReceive should be > 30000
         timeToSend should be > 20000
+      }
+    }
+  }
+  test("Client read compressed", Slow) {
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      println(s"========= $protocol")
+
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol))) { req =>
+        Ok(Content(Stream.eval(IO {
+          println(s"sent ${`10Meg`} bytes")
+          Chunk.bytes(("." * `10Meg`).getBytes)
+        }).repeat.take(10).flatMap(c => Stream.chunk(c))))
+          .addHeaders(h"Content-Length" -> h"${10 * `10Meg`}")
+      }) { server =>
+        await(atMost = 2.minutes) {
+          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
+            for {
+              length1 <- client.run(Get("/a"))(_.readSuccess { stream =>
+                stream.chunks.map(_.size).compile.fold(0)(_ + _)
+              })
+              length2 <- client.run(Get("/b").addHeaders(h"Accept-Encoding" -> h"gzip"))(_.readSuccess { stream =>
+                stream.chunks.map(_.size).compile.fold(0)(_ + _)
+              })
+              length3 <- client.run(Get("/c").addHeaders(h"Accept-Encoding" -> h"deflate"))(_.readSuccess { stream =>
+                stream.chunks.map(_.size).compile.fold(0)(_ + _)
+              })
+            } yield {
+              length1 shouldEqual 10 * `10Meg`
+              length2 shouldEqual length1
+              length3 shouldEqual length1
+            }
+          }
+        }
       }
     }
   }

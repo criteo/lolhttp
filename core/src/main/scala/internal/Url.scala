@@ -95,7 +95,7 @@ private[http] object Url {
                 case (param, pattern) =>
                   val values = params.get(param).getOrElse(Nil)
                   if(values.size > 1) sys.error("")
-                  pattern.unapplySeq(values.headOption.getOrElse("")).get
+                  pattern.unapplySeq(values.headOption.getOrElse("\u0000")).get.map(_.replace("\u0000", ""))
               }
             }.toOption
           }

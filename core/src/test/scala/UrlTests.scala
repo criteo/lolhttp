@@ -38,6 +38,7 @@ class UrlsTests extends Tests {
     "/?sort=sort-asc&page=2" match { case url"/?sort=sort-$sort" => sort should be ("asc") }
     "/?name=jean-claude" match { case url"/?name=$first-$last" => (first,last) should be ("jean" -> "claude") }
     "/?section=&update=now" match { case url"/?section=&update=$date" => succeed }
+    "/?update=now" match { case url"/?section=&update=$date" => fail(); case _ => succeed}
     "/?section=contact&update=now" match { case url"/?section=&update=$date" => fail(); case _ => succeed }
   }
 

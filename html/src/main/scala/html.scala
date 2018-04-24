@@ -11,6 +11,9 @@ case class Html(content: String) {
 
   /** The html text size. */
   lazy val size = content.size
+
+  /** Merge this Html fragment with another one. */
+  def ++(next: Html): Html = Html(content + next.content)
 }
 
 /** Provides the [[lol.http.ContentEncoder ContentEncoder]] for HTML documents. */

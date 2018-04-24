@@ -37,6 +37,8 @@ class UrlsTests extends Tests {
     "/?page=2&page=4" match { case url"/?page=$page" => fail(); case _ => succeed }
     "/?sort=sort-asc&page=2" match { case url"/?sort=sort-$sort" => sort should be ("asc") }
     "/?name=jean-claude" match { case url"/?name=$first-$last" => (first,last) should be ("jean" -> "claude") }
+    "/?section=&update=now" match { case url"/?section=&update=$date" => succeed }
+    "/?section=contact&update=now" match { case url"/?section=&update=$date" => fail(); case _ => succeed }
   }
 
   test("QueryString in request") {

@@ -40,6 +40,8 @@ class UrlsTests extends Tests {
     "/?section=&update=now" match { case url"/?section=&update=$date" => succeed }
     "/?update=now" match { case url"/?section=&update=$date" => fail(); case _ => succeed}
     "/?section=contact&update=now" match { case url"/?section=&update=$date" => fail(); case _ => succeed }
+    "/?section=contact" match { case url"/?section=&update=$date" => fail(); case _ => succeed }
+    "/?section=" match { case url"/?section=&update=$date" => date should be ("") }
   }
 
   test("QueryString in request") {

@@ -17,8 +17,8 @@ private[http] object Url {
     val pairs = qs.split("[&]").toList.
       map {
         case "" => ("", "")
-        case string if string.head == '=' => ("", string)
-        case string if string.last == '=' => (string, "")
+        case string if string.head == '=' => ("", string.drop(1))
+        case string if string.last == '=' => (string.dropRight(1), "")
         case string if string.indexOf("=") == -1 => (string, string)
         case string =>
           val name :: rest = string.split("[=]").toList
@@ -71,7 +71,7 @@ private[http] object Url {
             case queryString :: Nil =>
               parseQueryString(queryString).map {
                 case (key, value) =>
-                  (key, value.replaceAll("\u0000", "(.*)").r)
+                  (key, ("^" + value.replaceAll("\u0000", "(.*)") + "$").r)
               }
             case _ =>
               throw Error.InvalidUrlMatcher("Several ? characters found in pattern.")
@@ -95,7 +95,7 @@ private[http] object Url {
                 case (param, pattern) =>
                   val values = params.get(param).getOrElse(Nil)
                   if(values.size > 1) sys.error("")
-                  pattern.unapplySeq(values.headOption.getOrElse("")).get
+                  pattern.unapplySeq(values.headOption.getOrElse("\u0000")).get.map(_.replace("\u0000", ""))
               }
             }.toOption
           }

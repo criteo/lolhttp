@@ -117,7 +117,7 @@ class ServerTests extends Tests {
     foreachProtocol(HTTP, HTTP2) { protocol =>
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol))) {
         case GET at "/" => Redirect("/lol")
-        case GET at "/old" => Redirect("/", permanent = true)
+        case GET at "/old" => Redirect("/", code = 308)
         case _ at "/lol" => Ok("lol")
         case _ => NotFound
       }) { server =>

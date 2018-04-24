@@ -78,11 +78,11 @@ package object http {
 
   /** Create 30x HTTP redirects.
     * @param url will be used as `Location` header value.
-    * @param permanent 308 if true, otherwise 307.
+    * @param code the actual status code to use (default to 307).
     * @return a 30x [[Response]].
     */
-  def Redirect(url: String, permanent: Boolean = false) = {
-    Response(if(permanent) 308 else 307).addHeaders(Headers.Location -> HttpString(url))
+  def Redirect(url: String, code: Int = 307) = {
+    Response(code).addHeaders(Headers.Location -> HttpString(url))
   }
 
   /** A 404 Not found [[Response]]. */

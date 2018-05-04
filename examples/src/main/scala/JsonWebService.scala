@@ -45,13 +45,13 @@ object JsonWebService {
   // because it does not respond to all the incoming requests.
   lazy val App: PartialService = {
     case GET at url"/" =>
-      // By using the `html` interpolation, we generate a very minimal UI 🎷.
-      Ok(html"""
-        <h1>${if(todos.isEmpty) "Nothing" else "A ton of things"} to do.</h1>
+      // By using the `tmpl` interpolation, we generate a very minimal UI 🎷.
+      Ok(tmpl"""
+        <h1>@if(todos.isEmpty) {Nothing} else {A ton of things} to do</h1>
         <ol>
-          ${todos.values.toSeq.sorted.map { case Todo(_, text, done) =>
-            html"""<li style="text-decoration: ${if(done) "line-through" else "none"}">$text</li>"""
-          }}
+          @todos.values.toSeq.sorted.map { case Todo(_, text, done) =>
+            <li style="text-decoration: @if(done) { "line-through" } else { "none" }">@text</li>
+          }
         <ol>
       """)
     }

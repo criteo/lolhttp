@@ -30,8 +30,8 @@ object Http2Server {
       // The home page display the current protocol using `req.protocol`.
       case req @ url"/" =>
         Ok(
-          html"""
-            <h1>Hello ${req.protocol}</h1>
+          tmpl"""
+            <h1>Hello @req.protocol</h1>
             <form action="/upload" method="POST" enctype="multipart/form-data">
               <input type="file" name="lol" />
               <input type="submit" />
@@ -43,7 +43,7 @@ object Http2Server {
       // apply here (usually up to 1MB).
       case req @ url"/upload" =>
         req.readAs[Array[Byte]].map { bytes =>
-          Ok(s"Received ${bytes.size} bytes")
+          Ok(tmpl"Received @bytes.size bytes")
         }
 
       case _ =>

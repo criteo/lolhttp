@@ -1,21 +1,33 @@
-val VERSION = "0.9.4"
+val VERSION = "10.0.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
   scalaVersion := "2.12.4",
   crossScalaVersions := Seq("2.11.11", scalaVersion.value),
-  scalacOptions ++= Seq(
-    "-deprecation",
-    "-encoding", "UTF-8",
-    "-feature",
-    "-unchecked",
-    "-Xlint",
-    "-Yno-adapted-args",
-    "-Ywarn-dead-code",
-    "-Xfuture",
-    "-Ywarn-unused-import"
-  ),
+  scalacOptions ++= {
+    Seq(
+      "-deprecation",
+      "-encoding", "UTF-8",
+      "-feature",
+      "-unchecked",
+      "-Xlint",
+      "-Yno-adapted-args",
+      "-Ywarn-dead-code",
+      "-Xfuture",
+      "-Ywarn-unused-import",
+      "-language:experimental.macros"
+    ) ++ (
+      if(scalaVersion.value.startsWith("2.11"))
+        // 2.11.x options
+        Nil
+      else if(scalaVersion.value.startsWith("2.12"))
+        // 2.12.x options
+        Seq("-Ywarn-macros:after")
+      else
+        Nil
+    )
+  },
 
   // Tests
   fork in Test := true,
@@ -146,6 +158,9 @@ lazy val lolhtml =
   settings(
     commonSettings,
 
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "fastparse" % "1.0.0"
+    ),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")

@@ -32,7 +32,7 @@ object ServingFiles {
         ClasspathResource(s"/public/$file").fold(NotFound)(r => Ok(r))
 
       case GET at url"/" =>
-        Ok(html"""
+        Ok(tmpl"""
           <head>
             <link rel="icon" href="/favicon" />
           </head>

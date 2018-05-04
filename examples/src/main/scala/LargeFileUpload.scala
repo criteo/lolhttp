@@ -25,7 +25,7 @@ object LargeFileUpload {
       // to upload a file.
       case GET at url"/" => {
         Ok(
-          html"""
+          tmpl"""
             <h1>Try to upload a very large file</h1>
             <p>And use your browser network conditions to simulate a slow client</p>
             <form action="/upload" enctype="multipart/form-data" method="POST">
@@ -42,7 +42,7 @@ object LargeFileUpload {
         request.read(_.chunks.compile.fold(0: Long)(_ + _.size)).map { size =>
           // Once the whole body has been read, the total size has been computed,
           // and we display it in an HTML response.
-          Ok(html"<h1>Done! body size was $size</h1>")
+          Ok(tmpl"<h1>Done! body size was @size</h1>")
         }
       }
     }

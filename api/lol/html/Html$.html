@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.9.4 - lol.html.Html</title>
-          <meta name="description" content="lolhttp 0.9.4 - lol.html.Html" />
-          <meta name="keywords" content="lolhttp 0.9.4 lol.html.Html" />
+          <title>lolhttp 10.0.0 - lol.html.Html</title>
+          <meta name="description" content="lolhttp 10.0.0 - lol.html.Html" />
+          <meta name="keywords" content="lolhttp 10.0.0 lol.html.Html" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.9.4</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">10.0.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -102,21 +102,20 @@
       </span>
       
       <p class="shortcomment cmt">HTML templating.</p><div class="fullcomment"><div class="comment cmt"><p>HTML templating.</p><pre><span class="kw">val</span> items: <span class="std">List</span>[Item] = ???
-<span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"
+<span class="kw">val</span> content: Html = tmpl<span class="lit">""</span><span class="lit">"
   <­h1>Items<­/h1>
-  ${if(items.isEmpty) {
-    html"</span>&lt;­em&gt;No results&lt;­/em&gt;<span class="lit">"
-  } else {
-    html"</span><span class="lit">""</span>
-      &lt;­ul&gt;
-        ${items.map { item <span class="kw">=&gt;</span>
-          html<span class="lit">"<­li>${item.name}<­/li>"</span>
-        }}
-      &lt;­/ul&gt;
-    <span class="lit">""</span><span class="lit">"
-  }}
-"</span><span class="lit">""</span></pre><p><a href="Html.html" class="extype" name="lol.html.Html">Html</a> values can be easily created from the <a href="package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
-They will be encoded as <a href="../http/Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
+  @if(items.isEmpty) {
+    <­em>No results<­/em>
+  }
+  else {
+    <­ul>
+       @items.map { item =>
+         &lt;li>@item.name&lt;/li>
+       }
+
+  }
+"</span><span class="lit">""</span></pre><p><a href="Html.html" class="extype" name="lol.html.Html">Html</a> values can also be easily created from the <a href="package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
+Conversion from Scala values is done via the <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a> type class.</p><pre><span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"Hello ${name}!"</span><span class="lit">""</span></pre><p>They will be encoded as <a href="../http/Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
     </li><li class="current-entities indented2">
                         <a class="object" href="" title="Provides the ContentEncoder for HTML documents."></a>
@@ -126,6 +125,22 @@ They will be encoded as <a href="../http/Content.html" class="extype" name="lol.
                         <span class="separator"></span>
                         <a class="class" href="package$$HtmlInterpolation.html" title="The html interpolation allows to create Html values from plain string."></a>
                         <a href="package$$HtmlInterpolation.html" title="The html interpolation allows to create Html values from plain string.">HtmlInterpolation</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="package$$SeqHtmlExtensions.html" title="Extension methods for Seq[Html]."></a>
+                        <a href="package$$SeqHtmlExtensions.html" title="Extension methods for Seq[Html].">SeqHtmlExtensions</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="package$$SeqHtmlExtensions0.html" title="Extension methods for Seq[_]."></a>
+                        <a href="package$$SeqHtmlExtensions0.html" title="Extension methods for Seq[_].">SeqHtmlExtensions0</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="package$$TemplateInterpolation.html" title="The tmpl interpolation allows to create Html values from a string template."></a>
+                        <a href="package$$TemplateInterpolation.html" title="The tmpl interpolation allows to create Html values from a string template.">TemplateInterpolation</a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="ToHtml$.html" title="Default instances for the ToHtml type class."></a>
+                        <a class="trait" href="ToHtml.html" title="A type class to provide Html rendering."></a>
+                        <a href="ToHtml.html" title="A type class to provide Html rendering.">ToHtml</a>
                       </li>
               </ul>
             </div>
@@ -317,6 +332,22 @@ They will be encoded as <a href="../http/Content.html" class="extype" name="lol.
       </span>
       
       <p class="shortcomment cmt">Default encoder for HTML document using <code>UTF-8</code> as charset.</p>
+    </li><li name="lol.html.Html#empty" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="empty:lol.html.Html"></a><a id="empty:Html"></a>
+      <span class="permalink">
+      <a href="../../lol/html/Html$.html#empty:lol.html.Html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">empty</span><span class="result">: <a href="Html.html" class="extype" name="lol.html.Html">Html</a></span>
+      </span>
+      
+      
     </li><li name="lol.html.Html#encoder" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]"></a><a id="encoder(Codec):ContentEncoder[Html]"></a>
       <span class="permalink">

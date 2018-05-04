@@ -315,8 +315,8 @@ certificate stored on disk.</p></p></div>
                 <div class="comment "><p>The home page display the current protocol using <code>req.protocol</code>.</p></p></div>
                 <div class="code ">      <span class="keyword">case</span> <span class="identifier">req</span> @ <span class="string">url</span>"<span class="string">/"</span> =>
         <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(
-          <span class="string">html</span>"""<span class="string">
-            &lt;h1>Hello $</span>{<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">req</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#protocol:String" data-tooltip="<span>lol.http.Request.protocol: String</span>">protocol</a></span>}<span class="string">&lt;/h1>
+          <span class="string">tmpl</span>"""<span class="string">
+            &lt;h1>Hello @req.protocol&lt;/h1>
             &lt;form action="/upload" method="POST" enctype="multipart/form-data">
               &lt;input type="file" name="lol" />
               &lt;input type="submit" />
@@ -331,7 +331,7 @@ certificate stored on disk.</p></p></div>
 apply here (usually up to 1MB).</p></p></div>
                 <div class="code ">      <span class="keyword">case</span> <span class="identifier">req</span> @ <span class="string">url</span>"<span class="string">/upload"</span> =>
         <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html" data-tooltip="<span>lol.http.Request</span>">req</a></span>.<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Request.html#readAs[A](implicitdecoder:lol.http.ContentDecoder[A]):cats.effect.IO[A]" data-tooltip="<span>lol.http.Request.readAs[A](implicit decoder: lol.http.ContentDecoder[A]): cats.effect.IO[A]</span>">readAs</a></span>[<span class="identifier">Array</span>[<span class="identifier">Byte</span>]].<span class="identifier"><a target="doc" href="https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/cats/effect/IO.html#map[B](f:A=>B):cats.effect.IO[B]" data-tooltip="<span>cats.effect.IO.map[B](f: A => B): cats.effect.IO[B]</span>">map</a></span> { <span class="identifier">bytes</span> =>
-          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">s</span>"<span class="string">Received $</span>{<span class="identifier">bytes</span>.<span class="identifier">size</span>}<span class="string"> bytes"</span>)
+          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">tmpl</span>"<span class="string">Received @bytes.size bytes"</span>)
         }
 
       <span class="keyword">case</span> _ =>

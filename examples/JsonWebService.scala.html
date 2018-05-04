@@ -346,13 +346,13 @@ because it does not respond to all the incoming requests.</p></p></div>
               </section>
             
               <section class="">
-                <div class="comment "><p>By using the <code>html</code> interpolation, we generate a very minimal UI 🎷.</p></p></div>
-                <div class="code ">      <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">html</span>"""<span class="string">
-        &lt;h1>$</span>{<span class="keyword">if</span>(<span class="identifier">todos</span>.<span class="identifier">isEmpty</span>) <span class="string">"Nothing"</span> <span class="keyword">else</span> <span class="string">"A ton of things"</span>}<span class="string"> to do.&lt;/h1>
+                <div class="comment "><p>By using the <code>tmpl</code> interpolation, we generate a very minimal UI 🎷.</p></p></div>
+                <div class="code ">      <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">tmpl</span>"""<span class="string">
+        &lt;h1>@if(todos.isEmpty) {Nothing} else {A ton of things} to do&lt;/h1>
         &lt;ol>
-          $</span>{<span class="identifier">todos</span>.<span class="identifier">values</span>.<span class="identifier">toSeq</span>.<span class="identifier">sorted</span>.<span class="identifier">map</span> { <span class="keyword">case</span> <span class="identifier">Todo</span>(_, <span class="identifier">text</span>, <span class="identifier">done</span>) =>
-            <span class="string">html</span>"""<span class="string">&lt;li style="text-decoration: $</span>{<span class="keyword">if</span>(<span class="identifier">done</span>) <span class="string">"line-through"</span> <span class="keyword">else</span> <span class="string">"none"</span>}<span class="string">">$</span><span class="identifier">text</span><span class="string">&lt;/li>"""</span>
-          }}<span class="string">
+          @todos.values.toSeq.sorted.map { case Todo(_, text, done) =>
+            &lt;li style="text-decoration: @if(done) { "line-through" } else { "none" }">@text&lt;/li>
+          }
         &lt;ol>
       """</span>)
     }

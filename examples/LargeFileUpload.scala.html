@@ -304,7 +304,7 @@ the incoming request.</p></p></div>
 to upload a file.</p></p></div>
                 <div class="code ">      <span class="keyword">case</span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/package$.html#GET:lol.http.HttpMethod" data-tooltip="<span>lol.http.GET: lol.http.HttpMethod</span>">GET</a></span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/at$.html" data-tooltip="<span>lol.http.at</span>">at</a></span> <span class="string">url</span>"<span class="string">/"</span> => {
         <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(
-          <span class="string">html</span>"""<span class="string">
+          <span class="string">tmpl</span>"""<span class="string">
             &lt;h1>Try to upload a very large file&lt;/h1>
             &lt;p>And use your browser network conditions to simulate a slow client&lt;/p>
             &lt;form action="/upload" enctype="multipart/form-data" method="POST">
@@ -327,7 +327,7 @@ reader that accumulates the total body size.</p></p></div>
               <section class="">
                 <div class="comment "><p>Once the whole body has been read, the total size has been computed,
 and we display it in an HTML response.</p></p></div>
-                <div class="code ">          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">html</span>"<span class="string">&lt;h1>Done! body size was $</span><span class="identifier">size</span><span class="string">&lt;/h1>"</span>)
+                <div class="code ">          <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">tmpl</span>"<span class="string">&lt;h1>Done! body size was @size&lt;/h1>"</span>)
         }
       }
     }

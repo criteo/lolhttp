@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.9.4 - lol</title>
-          <meta name="description" content="lolhttp 0.9.4 - lol" />
-          <meta name="keywords" content="lolhttp 0.9.4 lol" />
+          <title>lolhttp 10.0.0 - lol</title>
+          <meta name="description" content="lolhttp 10.0.0 - lol" />
+          <meta name="keywords" content="lolhttp 10.0.0 lol" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.9.4</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">10.0.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -102,21 +102,20 @@
       </span>
       
       <p class="shortcomment cmt">HTML templating.</p><div class="fullcomment"><div class="comment cmt"><p>HTML templating.</p><pre><span class="kw">val</span> items: <span class="std">List</span>[Item] = ???
-<span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"
+<span class="kw">val</span> content: Html = tmpl<span class="lit">""</span><span class="lit">"
   <­h1>Items<­/h1>
-  ${if(items.isEmpty) {
-    html"</span>&lt;­em&gt;No results&lt;­/em&gt;<span class="lit">"
-  } else {
-    html"</span><span class="lit">""</span>
-      &lt;­ul&gt;
-        ${items.map { item <span class="kw">=&gt;</span>
-          html<span class="lit">"<­li>${item.name}<­/li>"</span>
-        }}
-      &lt;­/ul&gt;
-    <span class="lit">""</span><span class="lit">"
-  }}
-"</span><span class="lit">""</span></pre><p><a href="html/Html.html" class="extype" name="lol.html.Html">Html</a> values can be easily created from the <a href="html/package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
-They will be encoded as <a href="http/Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="html/Html$.html#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
+  @if(items.isEmpty) {
+    <­em>No results<­/em>
+  }
+  else {
+    <­ul>
+       @items.map { item =>
+         &lt;li>@item.name&lt;/li>
+       }
+
+  }
+"</span><span class="lit">""</span></pre><p><a href="html/Html.html" class="extype" name="lol.html.Html">Html</a> values can also be easily created from the <a href="html/package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
+Conversion from Scala values is done via the <a href="html/ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a> type class.</p><pre><span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"Hello ${name}!"</span><span class="lit">""</span></pre><p>They will be encoded as <a href="http/Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="html/Html$.html#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
 </p></div></div>
     </li><li name="lol.http" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="http"></a><a id="http:http"></a>

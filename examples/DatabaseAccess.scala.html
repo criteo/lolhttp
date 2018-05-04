@@ -359,20 +359,21 @@ so the result is wrapped into an <code>IO</code>.</p></p></div>
             
               <section class="">
                 <div class="comment "><p>Let&#39;s transform our database result set to an HTML list</p></p></div>
-                <div class="code ">        <span class="keyword">val</span> <span class="identifier">countries</span> = <span class="identifier">resultSet</span>.<span class="identifier">map</span> { <span class="keyword">case</span> (<span class="identifier">code</span>, <span class="identifier">name</span>) =>
-          <span class="string">html</span>"<span class="string">&lt;li>&lt;strong>$</span>{<span class="identifier">code</span>}<span class="string">&lt;/strong> - $</span>{<span class="identifier">name</span>}<span class="string">&lt;/li>"</span>
-        }
+                <div class="code ">        <span class="keyword">val</span> <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/html/Html.html" data-tooltip="<span>lol.html.Html</span>">content</a></span> =
+          <span class="string">tmpl</span>"""<span class="string">
+            &lt;h1>@resultSet.size Countries:&lt;/h1>
+            &lt;ul>
+              @resultSet.map { case (code, name) =>
+                &lt;li>&lt;strong>@code&lt;/strong> - @name&lt;/li>
+              }
+            &lt;/ul>
+          """</span>
 &nbsp;</div>
               </section>
             
               <section class="">
                 <div class="comment "><p>Finally we give back an Ok HTTP response.</p></p></div>
-                <div class="code ">        <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="string">html</span>"""<span class="string">
-          &lt;h1>$</span>{<span class="identifier">resultSet</span>.<span class="identifier">size</span>}<span class="string"> Countries:&lt;/h1>
-          &lt;ul>
-            $</span><span class="identifier">countries</span><span class="string">
-          &lt;/ul>
-        """</span>)
+                <div class="code ">        <span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/http/Response.html#apply[A](content:A)(implicitencoder:lol.http.ContentEncoder[A]):lol.http.Response" data-tooltip="<span>lol.http.Response.apply[A](content: A)(implicit encoder: lol.http.ContentEncoder[A]): lol.http.Response</span>">Ok</a></span>(<span class="identifier"><a target="doc" href="https://criteo.github.io/lolhttp/api//lol/html/Html.html" data-tooltip="<span>lol.html.Html</span>">content</a></span>)
       }
     }
 

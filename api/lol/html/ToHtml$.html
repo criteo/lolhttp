@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 10.0.0 - lol.http.LiteralHttpString</title>
-          <meta name="description" content="lolhttp 10.0.0 - lol.http.LiteralHttpString" />
-          <meta name="keywords" content="lolhttp 10.0.0 lol.http.LiteralHttpString" />
+          <title>lolhttp 10.0.0 - lol.html.ToHtml</title>
+          <meta name="description" content="lolhttp 10.0.0 - lol.html.ToHtml" />
+          <meta name="keywords" content="lolhttp 10.0.0 lol.html.ToHtml" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -84,12 +84,12 @@
         <a title="This is the documentation for the lolhttp library." href="../index.html"><span class="name">lol</span></a>
       </span>
       
-      <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="index.html" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and <a href="Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="../json/index.html" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="../html/index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
+      <p class="shortcomment cmt">This is the documentation for the <u>lolhttp</u> library.</p><div class="fullcomment"><div class="comment cmt"><p>This is the documentation for the <u>lolhttp</u> library.</p><ul><li><a href="../http/index.html" class="extype" name="lol.http">http</a> is the core module providing HTTP <a href="../http/Client.html" class="extype" name="lol.http.Client">Client</a> and <a href="../http/Server.html" class="extype" name="lol.http.Server">Server</a>.</li><li><a href="../json/index.html" class="extype" name="lol.json">json</a> is an optional module providing integration with the <a href="https://circe.github.io/circe/" target="_blank">circe</a> JSON library.</li><li><a href="index.html" class="extype" name="lol.html">html</a> is an optional module providing HTML templating.
 </li></ul></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
-    </li><li name="lol.http" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="http"></a><a id="http:http"></a>
+    </li><li name="lol.html" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="html"></a><a id="html:html"></a>
       <span class="permalink">
-      <a href="../lol/index.html#http" title="Permalink">
+      <a href="../lol/index.html#html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -98,133 +98,80 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="The core module for lolhttp." href="index.html"><span class="name">http</span></a>
+        <a title="HTML templating." href="index.html"><span class="name">html</span></a>
       </span>
       
-      <p class="shortcomment cmt">The core module for lolhttp.</p><div class="fullcomment"><div class="comment cmt"><p>The core module for lolhttp.</p><pre>Server.listen(<span class="num">8888</span>) { request <span class="kw">=&gt;</span>
-  Ok(<span class="lit">"Hello world!"</span>)
-}
+      <p class="shortcomment cmt">HTML templating.</p><div class="fullcomment"><div class="comment cmt"><p>HTML templating.</p><pre><span class="kw">val</span> items: <span class="std">List</span>[Item] = ???
+<span class="kw">val</span> content: Html = tmpl<span class="lit">""</span><span class="lit">"
+  <­h1>Items<­/h1>
+  @if(items.isEmpty) {
+    <­em>No results<­/em>
+  }
+  else {
+    <­ul>
+       @items.map { item =>
+         &lt;li>@item.name&lt;/li>
+       }
 
-Client.run(Get(<span class="lit">"http://localhost:8888/"</span>)) { response <span class="kw">=&gt;</span>
-  response.readAs[<span class="std">String</span>]
-}</pre><p>Provides an HTTP <a href="Client.html" class="extype" name="lol.http.Client">Client</a> and an HTTP <a href="Server.html" class="extype" name="lol.http.Server">Server</a>. Both client and server are <a href="index.html#Service=lol.http.Request=&gt;cats.effect.IO[lol.http.Response]" class="extmbr" name="lol.http.Service">Service</a> functions.
-A service function takes a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> and eventually returns a <a href="Response.html" class="extype" name="lol.http.Response">Response</a>. Requests and responses
-are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
-of <a href="HttpString.html" class="extype" name="lol.http.HttpString">HTTP headers</a>, and a <a href="Content.html" class="extype" name="lol.http.Content">Content</a> body.</p><p>The content <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/Stream.html" class="extype" name="fs2.Stream">Stream</a> is based on <a href="https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/fs2/index.html" class="extype" name="fs2">fs2</a> and can be lazily consumed if needed.
-It can be encoded and decoded using the appropriate <a href="ContentEncoder.html" class="extype" name="lol.http.ContentEncoder">ContentEncoder</a> and <a href="ContentDecoder.html" class="extype" name="lol.http.ContentDecoder">ContentDecoder</a>.</p><p><a href="SSL$.html" class="extype" name="lol.http.SSL">SSL</a> is supported on both sides.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
+  }
+"</span><span class="lit">""</span></pre><p><a href="Html.html" class="extype" name="lol.html.Html">Html</a> values can also be easily created from the <a href="package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
+Conversion from Scala values is done via the <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a> type class.</p><pre><span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"Hello ${name}!"</span><span class="lit">""</span></pre><p>They will be encoded as <a href="../http/Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="Html$.html#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
     </li><li class="current-entities indented2">
-                        <a class="object" href="ClasspathResource$.html" title="Define the implicit encoder for ClasspathResource."></a>
-                        <a class="class" href="ClasspathResource.html" title="A resource than can be read from the classpath."></a>
-                        <a href="ClasspathResource.html" title="A resource than can be read from the classpath.">ClasspathResource</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Client$.html" title="Build HTTP clients."></a>
-                        <a class="trait" href="Client.html" title="An HTTP client."></a>
-                        <a href="Client.html" title="An HTTP client.">Client</a>
+                        <a class="object" href="Html$.html" title="Provides the ContentEncoder for HTML documents."></a>
+                        <a class="class" href="Html.html" title="An HTML document."></a>
+                        <a href="Html.html" title="An HTML document.">Html</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="ClientOptions.html" title="Allow to configure an HTTP client."></a>
-                        <a href="ClientOptions.html" title="Allow to configure an HTTP client.">ClientOptions</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Content$.html" title="Build HTTP message content body."></a>
-                        <a class="class" href="Content.html" title="An HTTP message content body."></a>
-                        <a href="Content.html" title="An HTTP message content body.">Content</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="ContentDecoder$.html" title="Library of built-in content decoders."></a>
-                        <a class="trait" href="ContentDecoder.html" title="An HTTP content decoder."></a>
-                        <a href="ContentDecoder.html" title="An HTTP content decoder.">ContentDecoder</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="ContentEncoder$.html" title="Library of built-in content encoders."></a>
-                        <a class="trait" href="ContentEncoder.html" title="A HTTP content encoder."></a>
-                        <a href="ContentEncoder.html" title="A HTTP content encoder.">ContentEncoder</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Error$.html" title="All expected errors."></a>
-                        <a class="class" href="Error.html" title="Expected errors."></a>
-                        <a href="Error.html" title="Expected errors.">Error</a>
+                        <a class="class" href="package$$HtmlInterpolation.html" title="The html interpolation allows to create Html values from plain string."></a>
+                        <a href="package$$HtmlInterpolation.html" title="The html interpolation allows to create Html values from plain string.">HtmlInterpolation</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="object" href="Headers$.html" title="A collection of HTTP header names."></a>
-                        <a href="Headers$.html" title="A collection of HTTP header names.">Headers</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="HttpMethod$.html" title="HTTP method matcher."></a>
-                        <a class="class" href="HttpMethod.html" title="An HTTP method such as GET or POST."></a>
-                        <a href="HttpMethod.html" title="An HTTP method such as GET or POST.">HttpMethod</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="HttpString$.html" title="HttpString builders."></a>
-                        <a class="class" href="HttpString.html" title="An case insensitive string."></a>
-                        <a href="HttpString.html" title="An case insensitive string.">HttpString</a>
+                        <a class="class" href="package$$SeqHtmlExtensions.html" title="Extension methods for Seq[Html]."></a>
+                        <a href="package$$SeqHtmlExtensions.html" title="Extension methods for Seq[Html].">SeqHtmlExtensions</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="" title="The h interpolation creates HttpString values."></a>
-                        <a href="" title="The h interpolation creates HttpString values.">LiteralHttpString</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Panic$.html" title="Allows to panic."></a>
-                        <a class="class" href="Panic.html" title="Panics are errors that should not occur or should not be handled."></a>
-                        <a href="Panic.html" title="Panics are errors that should not occur or should not be handled.">Panic</a>
+                        <a class="class" href="package$$SeqHtmlExtensions0.html" title="Extension methods for Seq[_]."></a>
+                        <a href="package$$SeqHtmlExtensions0.html" title="Extension methods for Seq[_].">SeqHtmlExtensions0</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="Request.html" title="An HTTP request."></a>
-                        <a href="Request.html" title="An HTTP request.">Request</a>
+                        <a class="class" href="package$$TemplateInterpolation.html" title="The tmpl interpolation allows to create Html values from a string template."></a>
+                        <a href="package$$TemplateInterpolation.html" title="The tmpl interpolation allows to create Html values from a string template.">TemplateInterpolation</a>
                       </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="Response.html" title="An HTTP response."></a>
-                        <a href="Response.html" title="An HTTP response.">Response</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="SSL$.html" title="lol SSL."></a>
-                        <a href="SSL$.html" title="lol SSL.">SSL</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="Server$.html" title="Build and start HTTP servers."></a>
-                        <a class="trait" href="Server.html" title="An HTTP server."></a>
-                        <a href="Server.html" title="An HTTP server.">Server</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="ServerOptions.html" title="Allow to configure an HTTP server."></a>
-                        <a href="ServerOptions.html" title="Allow to configure an HTTP server.">ServerOptions</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="ServerSentEvents$.html" title="Support for Server Sent Events content."></a>
-                        <a href="ServerSentEvents$.html" title="Support for Server Sent Events content.">ServerSentEvents</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates."></a>
-                        <a href="package$$UrlMatcher.html" title="The url interpolation is mainly useful in pattern matching to match and extract dynamic parameters in URL templates.">UrlMatcher</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="object" href="at$.html" title="Request extractor."></a>
-                        <a href="at$.html" title="Request extractor.">at</a>
+                        <a class="object" href="" title="Default instances for the ToHtml type class."></a>
+                        <a class="trait" href="ToHtml.html" title="A type class to provide Html rendering."></a>
+                        <a href="ToHtml.html" title="A type class to provide Html rendering.">ToHtml</a>
                       </li>
               </ul>
             </div>
           </div>
           <div id="content">
-            <body class="class type">
+            <body class="object value">
       <div id="definition">
-        <div class="big-circle class">c</div>
-        <p id="owner"><a href="../index.html" class="extype" name="lol">lol</a>.<a href="index.html" class="extype" name="lol.http">http</a></p>
-        <h1>LiteralHttpString<span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html" title="Permalink">
+        <a href="ToHtml.html" title="See companion trait"><div class="big-circle object-companion-trait">o</div></a>
+        <p id="owner"><a href="../index.html" class="extype" name="lol">lol</a>.<a href="index.html" class="extype" name="lol.html">html</a></p>
+        <h1><a href="ToHtml.html" title="See companion trait">ToHtml</a><span class="permalink">
+      <a href="../../lol/html/ToHtml$.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
-        <h3><span class="morelinks"></span></h3>
+        <h3><span class="morelinks"><div>
+            Companion <a href="ToHtml.html" title="See companion trait">trait ToHtml</a>
+          </div></span></h3>
       </div>
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">class</span>
+        <span class="modifier"></span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">LiteralHttpString</span><span class="result"> extends <a href="https://www.scala-lang.org/api/current/scala/collection/immutable/List.html#scala.AnyRef" class="extype" name="scala.collection.immutable.List">AnyRef</a></span>
+        <span class="name">ToHtml</span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>The <code>h</code> interpolation creates <a href="HttpString.html" class="extype" name="lol.http.HttpString">HttpString</a> values. You can use it as a matcher too.</p><pre><span class="kw">val</span> header = h<span class="lit">"LOCATION"</span>
-header <span class="kw">match</span> {
-  <span class="kw">case</span> h<span class="lit">"Location"</span> <span class="kw">=&gt;</span> println(<span class="lit">"this is the Location header"</span>)
-  <span class="kw">case</span> _ <span class="kw">=&gt;</span> println(<span class="lit">"wrong header"</span>)
-}</pre></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/core/src/main/scala/package.scala" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Default instances for the <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a> type class.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/criteo/lolhttp/blob/master/html/src/main/scala/html.scala" target="_blank">html.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -254,7 +201,7 @@ header <span class="kw">match</span> {
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="lol.http.LiteralHttpString"><span>LiteralHttpString</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="lol.html.ToHtml"><span>ToHtml</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -272,26 +219,7 @@ header <span class="kw">match</span> {
 
       <div id="template">
         <div id="allMembers">
-        <div id="constructors" class="members">
-              <h3>Instance Constructors</h3>
-              <ol><li name="lol.http.LiteralHttpString#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(ctx:StringContext):lol.http.package.LiteralHttpString"></a><a id="&lt;init&gt;:LiteralHttpString"></a>
-      <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#&lt;init&gt;(ctx:StringContext):lol.http.package.LiteralHttpString" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">LiteralHttpString</span><span class="params">(<span name="ctx">ctx: <a href="https://www.scala-lang.org/api/current/scala/StringContext.html#scala.StringContext" class="extype" name="scala.StringContext">StringContext</a></span>)</span>
-      </span>
-      
-      
-    </li></ol>
-            </div>
+        
 
         
 
@@ -303,7 +231,7 @@ header <span class="kw">match</span> {
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -319,7 +247,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html###():Int" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -335,7 +263,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -348,10 +276,42 @@ header <span class="kw">match</span> {
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="lol.html.ToHtml#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="apply[A](f:A=&gt;lol.html.Html):lol.html.ToHtml[A]"></a><a id="apply[A]((A)⇒Html):ToHtml[A]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#apply[A](f:A=&gt;lol.html.Html):lol.html.ToHtml[A]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="lol.html.ToHtml.apply.A">A</span>) ⇒ <a href="Html.html" class="extype" name="lol.html.Html">Html</a></span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.apply.A">A</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Creates an instance of <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a> using the provided function.</p>
+    </li><li name="lol.html.ToHtml#arrayToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="arrayToHtml[A](implicitevidence$6:lol.html.ToHtml[A]):lol.html.ToHtml[Array[A]]"></a><a id="arrayToHtml[A](ToHtml[A]):ToHtml[Array[A]]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#arrayToHtml[A](implicitevidence$6:lol.html.ToHtml[A]):lol.html.ToHtml[Array[A]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">arrayToHtml</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.arrayToHtml.A">A</span>]</span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Array.html#scala.Array" class="extype" name="scala.Array">Array</a>[<span class="extype" name="lol.html.ToHtml.arrayToHtml.A">A</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Join all elements rendering.</p>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -364,10 +324,42 @@ header <span class="kw">match</span> {
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="lol.html.ToHtml#booleanToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="booleanToHtml:lol.html.ToHtml[Boolean]"></a><a id="booleanToHtml:ToHtml[Boolean]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#booleanToHtml:lol.html.ToHtml[Boolean]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">booleanToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">toString.</p>
+    </li><li name="lol.html.ToHtml#charToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="charToHtml:lol.html.ToHtml[Char]"></a><a id="charToHtml:ToHtml[Char]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#charToHtml:lol.html.ToHtml[Char]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">charToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Char.html#scala.Char" class="extype" name="scala.Char">Char</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">toString.</p>
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#clone():Object" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -388,10 +380,26 @@ header <span class="kw">match</span> {
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="lol.html.ToHtml#doubleToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="doubleToHtml:lol.html.ToHtml[Double]"></a><a id="doubleToHtml:ToHtml[Double]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#doubleToHtml:lol.html.ToHtml[Double]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">doubleToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Double.html#scala.Double" class="extype" name="scala.Double">Double</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">toString.</p>
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -407,7 +415,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#equals(x$1:Any):Boolean" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#equals(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -423,7 +431,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#finalize():Unit" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -442,10 +450,26 @@ header <span class="kw">match</span> {
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="lol.html.ToHtml#floatToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="floatToHtml:lol.html.ToHtml[Float]"></a><a id="floatToHtml:ToHtml[Float]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#floatToHtml:lol.html.ToHtml[Float]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">floatToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Float.html#scala.Float" class="extype" name="scala.Float">Float</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">toString.</p>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#getClass():Class[_]" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -464,7 +488,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#hashCode():Int" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#hashCode():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -480,10 +504,42 @@ header <span class="kw">match</span> {
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li name="lol.html.ToHtml#htmlToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="htmlToHtml:lol.html.ToHtml[lol.html.Html]"></a><a id="htmlToHtml:ToHtml[Html]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#htmlToHtml:lol.html.ToHtml[lol.html.Html]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">htmlToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="Html.html" class="extype" name="lol.html.Html">Html</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Identity function.</p>
+    </li><li name="lol.html.ToHtml#intToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="intToHtml:lol.html.ToHtml[Int]"></a><a id="intToHtml:ToHtml[Int]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#intToHtml:lol.html.ToHtml[Int]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">intToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">toString.</p>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -496,10 +552,42 @@ header <span class="kw">match</span> {
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="lol.html.ToHtml#listToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="listToHtml[A](implicitevidence$4:lol.html.ToHtml[A]):lol.html.ToHtml[List[A]]"></a><a id="listToHtml[A](ToHtml[A]):ToHtml[List[A]]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#listToHtml[A](implicitevidence$4:lol.html.ToHtml[A]):lol.html.ToHtml[List[A]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">listToHtml</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.listToHtml.A">A</span>]</span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="lol.html.ToHtml.listToHtml.A">A</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Join all elements rendering.</p>
+    </li><li name="lol.html.ToHtml#longToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="longToHtml:lol.html.ToHtml[Long]"></a><a id="longToHtml:ToHtml[Long]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#longToHtml:lol.html.ToHtml[Long]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">longToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">toString.</p>
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -512,10 +600,26 @@ header <span class="kw">match</span> {
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="lol.html.ToHtml#noneToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="noneToHtml:lol.html.ToHtml[None.type]"></a><a id="noneToHtml:ToHtml[None.type]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#noneToHtml:lol.html.ToHtml[None.type]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">noneToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/None$.html#scala.None" class="extype" name="scala.None">None</a>.type]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Empty.</p>
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#notify():Unit" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -534,7 +638,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#notifyAll():Unit" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -550,10 +654,90 @@ header <span class="kw">match</span> {
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li name="lol.html.ToHtml#optionToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="optionToHtml[A](implicitevidence$2:lol.html.ToHtml[A]):lol.html.ToHtml[Option[A]]"></a><a id="optionToHtml[A](ToHtml[A]):ToHtml[Option[A]]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#optionToHtml[A](implicitevidence$2:lol.html.ToHtml[A]):lol.html.ToHtml[Option[A]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">optionToHtml</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.optionToHtml.A">A</span>]</span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="lol.html.ToHtml.optionToHtml.A">A</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Encode the content if available or empty.</p>
+    </li><li name="lol.html.ToHtml#seqToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="seqToHtml[A](implicitevidence$3:lol.html.ToHtml[A]):lol.html.ToHtml[Seq[A]]"></a><a id="seqToHtml[A](ToHtml[A]):ToHtml[Seq[A]]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#seqToHtml[A](implicitevidence$3:lol.html.ToHtml[A]):lol.html.ToHtml[Seq[A]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">seqToHtml</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.seqToHtml.A">A</span>]</span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="lol.html.ToHtml.seqToHtml.A">A</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Join all elements rendering.</p>
+    </li><li name="lol.html.ToHtml#setToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="setToHtml[A](implicitevidence$5:lol.html.ToHtml[A]):lol.html.ToHtml[Set[A]]"></a><a id="setToHtml[A](ToHtml[A]):ToHtml[Set[A]]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#setToHtml[A](implicitevidence$5:lol.html.ToHtml[A]):lol.html.ToHtml[Set[A]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setToHtml</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.setToHtml.A">A</span>]</span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="lol.html.ToHtml.setToHtml.A">A</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Join all elements rendering.</p>
+    </li><li name="lol.html.ToHtml#someToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="someToHtml[A](implicitevidence$1:lol.html.ToHtml[A]):lol.html.ToHtml[Some[A]]"></a><a id="someToHtml[A](ToHtml[A]):ToHtml[Some[A]]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#someToHtml[A](implicitevidence$1:lol.html.ToHtml[A]):lol.html.ToHtml[Some[A]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">someToHtml</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="lol.html.ToHtml.someToHtml.A">A</span>]</span>)</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="scala.Some">Some</span>[<span class="extype" name="lol.html.ToHtml.someToHtml.A">A</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Encode the content.</p>
+    </li><li name="lol.html.ToHtml#stringToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="stringToHtml:lol.html.ToHtml[String]"></a><a id="stringToHtml:ToHtml[String]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#stringToHtml:lol.html.ToHtml[String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stringToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Encode string with safe escape of &lt; characters.</p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -569,7 +753,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#toString():String" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#toString():String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -582,10 +766,26 @@ header <span class="kw">match</span> {
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="lol.html.ToHtml#unitToHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="unitToHtml:lol.html.ToHtml[Unit]"></a><a id="unitToHtml:ToHtml[Unit]"></a>
+      <span class="permalink">
+      <a href="../../lol/html/ToHtml$.html#unitToHtml:lol.html.ToHtml[Unit]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unitToHtml</span><span class="result">: <a href="ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a>[<a href="https://www.scala-lang.org/api/current/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Empty,</p>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#wait():Unit" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -607,7 +807,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -629,7 +829,7 @@ header <span class="kw">match</span> {
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../lol/html/ToHtml$.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -650,22 +850,6 @@ header <span class="kw">match</span> {
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="lol.http.LiteralHttpString.h" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="h"></a><a id="h:h"></a>
-      <span class="permalink">
-      <a href="../../lol/http/package$$LiteralHttpString.html#h" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="package$$LiteralHttpString$h$.html"><span class="name">h</span></a>
-      </span>
-      
-      
     </li>
               </ol>
             </div>

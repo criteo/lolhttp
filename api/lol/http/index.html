@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>lolhttp 0.9.4 - lol.http</title>
-          <meta name="description" content="lolhttp 0.9.4 - lol.http" />
-          <meta name="keywords" content="lolhttp 0.9.4 lol.http" />
+          <title>lolhttp 10.0.0 - lol.http</title>
+          <meta name="description" content="lolhttp 10.0.0 - lol.http" />
+          <meta name="keywords" content="lolhttp 10.0.0 lol.http" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">lolhttp<span id="doc-version">0.9.4</span></span>
+        <span id="doc-title">lolhttp<span id="doc-version">10.0.0</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -102,21 +102,20 @@
       </span>
       
       <p class="shortcomment cmt">HTML templating.</p><div class="fullcomment"><div class="comment cmt"><p>HTML templating.</p><pre><span class="kw">val</span> items: <span class="std">List</span>[Item] = ???
-<span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"
+<span class="kw">val</span> content: Html = tmpl<span class="lit">""</span><span class="lit">"
   <­h1>Items<­/h1>
-  ${if(items.isEmpty) {
-    html"</span>&lt;­em&gt;No results&lt;­/em&gt;<span class="lit">"
-  } else {
-    html"</span><span class="lit">""</span>
-      &lt;­ul&gt;
-        ${items.map { item <span class="kw">=&gt;</span>
-          html<span class="lit">"<­li>${item.name}<­/li>"</span>
-        }}
-      &lt;­/ul&gt;
-    <span class="lit">""</span><span class="lit">"
-  }}
-"</span><span class="lit">""</span></pre><p><a href="../html/Html.html" class="extype" name="lol.html.Html">Html</a> values can be easily created from the <a href="../html/package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
-They will be encoded as <a href="Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="../html/Html$.html#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
+  @if(items.isEmpty) {
+    <­em>No results<­/em>
+  }
+  else {
+    <­ul>
+       @items.map { item =>
+         &lt;li>@item.name&lt;/li>
+       }
+
+  }
+"</span><span class="lit">""</span></pre><p><a href="../html/Html.html" class="extype" name="lol.html.Html">Html</a> values can also be easily created from the <a href="../html/package$$HtmlInterpolation.html" class="extype" name="lol.html.HtmlInterpolation">html</a> interpolation.
+Conversion from Scala values is done via the <a href="../html/ToHtml.html" class="extype" name="lol.html.ToHtml">ToHtml</a> type class.</p><pre><span class="kw">val</span> content: Html = html<span class="lit">""</span><span class="lit">"Hello ${name}!"</span><span class="lit">""</span></pre><p>They will be encoded as <a href="Content.html" class="extype" name="lol.http.Content">Content</a> thanks to <a href="../html/Html$.html#encoder(codec:scala.io.Codec):lol.http.ContentEncoder[lol.html.Html]" class="extmbr" name="lol.html.Html#encoder">Html.encoder</a>.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="lol">lol</a></dd></dl></div>
     </li><li name="lol.http" visbl="pub" class="indented2 current" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="http"></a><a id="http:http"></a>
@@ -968,9 +967,9 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
       
       <p class="shortcomment cmt">Constructs a PUT <a href="Request.html" class="extype" name="lol.http.Request">Request</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Constructs a PUT <a href="Request.html" class="extype" name="lol.http.Request">Request</a>.</p></div><dl class="paramcmts block"><dt class="param">url</dt><dd class="cmt"><p>the request URL.</p></dd><dt class="param">content</dt><dd class="cmt"><p>the request content body.</p></dd><dt class="param">encoder</dt><dd class="cmt"><p>the content encoder to use.</p></dd><dt>returns</dt><dd class="cmt"><p>a <a href="Request.html" class="extype" name="lol.http.Request">Request</a> value.</p></dd></dl></div>
     </li><li name="lol.http#Redirect" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Redirect(url:String,permanent:Boolean):lol.http.Response"></a><a id="Redirect(String,Boolean):Response"></a>
+      <a id="Redirect(url:String,code:Int):lol.http.Response"></a><a id="Redirect(String,Int):Response"></a>
       <span class="permalink">
-      <a href="../../lol/http/index.html#Redirect(url:String,permanent:Boolean):lol.http.Response" title="Permalink">
+      <a href="../../lol/http/index.html#Redirect(url:String,code:Int):lol.http.Response" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -979,10 +978,10 @@ url<span class="lit">"/?section=home&update=$date"</span> = <span class="lit">"/
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">Redirect</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="permanent">permanent: <a href="https://www.scala-lang.org/api/current/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a> = <span class="symbol">false</span></span>)</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
+        <span class="name">Redirect</span><span class="params">(<span name="url">url: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="code">code: <a href="https://www.scala-lang.org/api/current/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a> = <span class="symbol">307</span></span>)</span><span class="result">: <a href="Response.html" class="extype" name="lol.http.Response">Response</a></span>
       </span>
       
-      <p class="shortcomment cmt">Create 30x HTTP redirects.</p><div class="fullcomment"><div class="comment cmt"><p>Create 30x HTTP redirects.</p></div><dl class="paramcmts block"><dt class="param">url</dt><dd class="cmt"><p>will be used as <code>Location</code> header value.</p></dd><dt class="param">permanent</dt><dd class="cmt"><p>308 if true, otherwise 307.</p></dd><dt>returns</dt><dd class="cmt"><p>a 30x <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></dd></dl></div>
+      <p class="shortcomment cmt">Create 30x HTTP redirects.</p><div class="fullcomment"><div class="comment cmt"><p>Create 30x HTTP redirects.</p></div><dl class="paramcmts block"><dt class="param">url</dt><dd class="cmt"><p>will be used as <code>Location</code> header value.</p></dd><dt class="param">code</dt><dd class="cmt"><p>the actual status code to use (default to 307).</p></dd><dt>returns</dt><dd class="cmt"><p>a 30x <a href="Response.html" class="extype" name="lol.http.Response">Response</a>.</p></dd></dl></div>
     </li><li name="lol.http#SwitchingProtocol" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="SwitchingProtocol(protocol:lol.http.HttpString,upgradeConnection:fs2.Stream[cats.effect.IO,Byte]=&gt;fs2.Stream[cats.effect.IO,Byte]):lol.http.Response"></a><a id="SwitchingProtocol(HttpString,(Stream[IO,Byte])⇒Stream[IO,Byte]):Response"></a>
       <span class="permalink">

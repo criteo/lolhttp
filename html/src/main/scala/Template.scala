@@ -38,54 +38,57 @@ private[html] object Template {
         val sourceMap = ListBuffer.empty[(Range,Int)]
         transpile(ast, scalaSource, sourceMap)
 
-        def transpose(point: Int): Int =
+        def transposePoint(point: Int): Int =
           sourceMap.find(_._1.contains(point)).map {
             case (range, offset) =>
               startPoint + offset + (point - range.head)
           }.getOrElse(startPoint)
 
-        def map(tree: Tree): Tree =
+        def transpose(tree: Tree): Tree =
           atPos(
             tree.pos match {
               case NoPosition => pos
-              case _ => pos.withPoint(transpose(tree.pos.point))
+              case _ => pos.withPoint(transposePoint(tree.pos.point))
             }
           )(
             tree match {
               case Apply(fun, args) =>
-                Apply(map(fun), args.map(map(_)))
+                Apply(transpose(fun), args.map(transpose(_)))
               case Select(q, name) =>
-                Select(map(q), name)
+                Select(transpose(q), name)
               case Ident(name) =>
                 Ident(name)
               case Literal(value) =>
                 Literal(value)
               case Function(params, body) =>
-                Function(params, map(body))
+                Function(params, transpose(body))
               case If(cond, thenp, elsep) =>
-                If(map(cond), map(thenp), map(elsep))
+                If(transpose(cond), transpose(thenp), transpose(elsep))
               case If(cond, thenp, elsep) =>
-                If(map(cond), map(thenp), map(elsep))
+                If(transpose(cond), transpose(thenp), transpose(elsep))
               case Match(selector, cases) =>
-                Match(map(selector), cases)
+                Match(transpose(selector), cases.map(transpose(_).asInstanceOf[CaseDef]))
+              case CaseDef(pat, guard, body) =>
+                CaseDef(transpose(pat), transpose(guard), transpose(body))
+              case Bind(name, body) =>
+                Bind(name, transpose(body))
               case EmptyTree =>
                 EmptyTree
               case x =>
-                sys.error(s"Missing case if Tree.map for ${x.getClass}")
+                sys.error(s"Missing case for ${x.getClass}")
             }
           )
 
         val tree =
           try {
-            map(c.parse(scalaSource.toString))
+            transpose(c.parse(scalaSource.toString))
           } catch {
             case e: scala.reflect.macros.ParseException =>
               c.abort(
-                pos.withPoint(transpose(e.pos.point)),
+                pos.withPoint(transposePoint(e.pos.point)),
                 e.getMessage
               )
           }
-
         c.Expr(tree)
     }
   }
@@ -127,27 +130,32 @@ private[html] object Template {
       P(ws ~ (!("=>" | "\n") ~ AnyChar).rep(min = 1).! ~ "=>")
         .opaque("<block arguments>")
     lazy val block: P[Block] =
-      P(Index ~ blockPrefix.? ~ ws ~ "{" ~ blockArgs.? ~ mixed ~ "}")
+      P(Index ~ blockPrefix.? ~ ws ~ "{" ~ blockArgs.? ~ ws ~ mixed ~ ws ~ "}")
         .map { case (o, prefix, args, content) => Block(prefix, args, content, o)}
         .opaque("<block>")
+    lazy val caseSelector: P[String] =
+      P(ws ~ "case" ~ (!("=>" | "\n") ~ AnyChar).rep.! ~ "=>" ~ ws)
     lazy val caseBlock: P[Case] =
-      P(Index ~ ws ~ "case" ~ (!("=>" | "\n") ~ AnyChar).rep.! ~ "=>" ~ ws ~ "{" ~ mixed ~ "}")
+      P(Index ~ caseSelector ~ mixed)
         .map { case (o, selector, content) => Case(selector, content, o) }
         .opaque("<case>")
-    lazy val cases: P[Seq[Case]] =
-      P(ws ~ "{" ~ caseBlock.rep ~ ws ~ "}")
+    lazy val matchCases: P[Seq[Case]] =
+      P("match" ~ ws ~ "{" ~ caseBlock.rep ~ ws ~ "}")
     lazy val expression: P[Ast] =
       P( "@" ~/
         ( NoCut(Index ~ (parentheses | brackets)).map { case (o, code) => Expression(code, Nil, o) }
-        | NoCut(Index ~ auto ~ " ".rep(min = 1) ~ "match" ~ cases).map { case (o, code, cases) => MatchExpression(code, cases.toList, o) }
+        | NoCut(Index ~ auto ~ " ".rep(min = 1) ~ matchCases).map { case (o, code, cases) => MatchExpression(code, cases.toList, o) }
         | NoCut(Index ~ auto ~ block.rep).map { case (o, code, blocks) => Expression(code, blocks.toList, o) }
         ).opaque("<scala expression>")
       )
     lazy val plain: P[Plain] =
-      P((!("@" | "}") ~ (brackets | AnyChar)).rep(min = 1).!)
+      P((!("@" | "{" | ws ~ "}" | caseSelector) ~ AnyChar).rep(min = 1).!)
         .map { case html => Plain(html) }
+    lazy val mixedBrackets: P[Mixed] =
+      P("{" ~ mixed ~ ws.! ~ "}")
+        .map { case (content, trailing) => Mixed(List(Plain("{"), content, Plain(trailing), Plain("}"))) }
     lazy val mixed: P[Mixed] =
-      P((plain | expression).rep)
+      P((plain | expression | mixedBrackets).rep)
         .map { case parts => Mixed(parts.toList) }
 
     (Start ~ mixed ~ End).parse(code)
@@ -158,12 +166,16 @@ private[html] object Template {
   def transpile(ast: Ast, buffer: StringBuffer, sourceMap: ListBuffer[(Range,Int)]): Unit =
     ast match {
       case Mixed(parts) =>
-        parts.foreach(transpile(_, buffer, sourceMap))
+        parts.foreach {
+          case part =>
+            transpile(part, buffer, sourceMap)
+            buffer.append(" ++ ")
+        }
         buffer.append("_root_.lol.html.Html.empty")
       case Plain(html) =>
         buffer.append("_root_.lol.html.Html(\"\"\"")
         buffer.append(html)
-        buffer.append("\"\"\") ++ ")
+        buffer.append("\"\"\")")
       case Expression(code, blocks, position) =>
         buffer.append(s"_root_.lol.html.toHtml(")
         sourceMap += (((buffer.length - 1) to (buffer.length - 1)) -> (position - 1))
@@ -174,7 +186,7 @@ private[html] object Template {
             List(Block(Some("else"), None, Mixed(Nil), position))
           else Nil
         (blocks ++ autoElse).foreach(transpile(_, buffer, sourceMap))
-        buffer.append(") ++ ")
+        buffer.append(")")
       case Block(prefix, args, content, position) =>
         prefix.foreach { prefix =>
           buffer.append(" ")
@@ -194,7 +206,7 @@ private[html] object Template {
         buffer.append(expr)
         buffer.append(" match {")
         cases.foreach(transpile(_, buffer, sourceMap))
-        buffer.append("}) ++ ")
+        buffer.append("})")
       case Case(selector, content, position) =>
         buffer.append("case")
         sourceMap += ((buffer.length to (buffer.length + selector.length)) -> position)

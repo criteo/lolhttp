@@ -74,18 +74,25 @@ class HtmlTests extends Tests {
     tmpl"<h1>@items.size</h1>".content should be ("<h1>2</h1>")
     tmpl"<h1>@(items.size)!</h1>".content should be ("<h1>2!</h1>")
     tmpl"<h1>@{items.size}!</h1>".content should be ("<h1>2!</h1>")
+    tmpl"<h1>{ @items.size }</h1>".content should be ("<h1>{ 2 }</h1>")
     tmpl"<h1>@items.size!</h1>".content should be ("<h1>2!</h1>")
-    tmpl"<h1>@if(items.nonEmpty) {@items.size items} else {no items}</h1>".content should be ("<h1>2 items</h1>")
+    tmpl"<h1>@if(items.nonEmpty) { @items.size items } else { no items }</h1>".content should be ("<h1>2 items</h1>")
     tmpl"<h1>@if(false) { LOL }</h1>".content should be ("<h1></h1>")
     tmpl"<h1>@if(false) { LOL } else if(false) { LOL }</h1>".content should be ("<h1></h1>")
-    tmpl"<h1>@if(false) { LOL } else if(false) { LOL } else {wat?}</h1>".content should be ("<h1>wat?</h1>")
-    tmpl"<ul>@for(i <- 0 to 1) {<li>@i</li>}</ul>".content should be ("<ul></ul>")
-    tmpl"<ul>@for(i <- 0 to 1) yield {<li>@i</li>}</ul>".content should be ("<ul><li>0</li><li>1</li></ul>")
+    tmpl"<h1>@if(false) { LOL } else if(false) { LOL } else { wat? }</h1>".content should be ("<h1>wat?</h1>")
+    tmpl"<ul>@for(i <- 0 to 1) { <li>@i</li> }</ul>".content should be ("<ul></ul>")
+    tmpl"<ul>@for(i <- 0 to 1) yield { <li>@i</li> }</ul>".content should be ("<ul><li>0</li><li>1</li></ul>")
     tmpl"""
       <p>@items.lift(0) match {
-        case Some(Item(id, name)) => {<em>@name</em>}
-        case None => {<em>Empty</em>}
+        case Some(Item(id, name)) => <em>@name</em>
+        case None => <em>Empty</em>
       }</p>
     """.content.trim should be ("<p><em>Lol</em></p>")
+    tmpl"""
+      <p>@items.lift(0) match {
+        case Some(Item(id, name)) => { <em>@name</em> }
+        case None => { <em>Empty</em> }
+      }</p>
+    """.content.trim should be ("<p>{ <em>Lol</em> }</p>")
   }
 }

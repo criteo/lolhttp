@@ -43,6 +43,15 @@ class ServerTests extends Tests {
     }
   }
 
+  test("Address") {
+    val app: Service = req => Ok(s"Client: ${req.from.map(_.getHostAddress).getOrElse("?")}")
+    foreachProtocol(HTTP, HTTP2) { protocol =>
+      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(app)) { server =>
+        contentString(Get(s"http://localhost:${server.port}"), protocol = protocol) should equal (s"Client: 127.0.0.1")
+      }
+    }
+  }
+
   test("Headers") {
     foreachProtocol(HTTP, HTTP2) { protocol =>
       withServer(Server.listen(options = ServerOptions(protocols = Set(protocol))) { req =>

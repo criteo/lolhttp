@@ -11,6 +11,7 @@ import io.netty.channel.{
   ChannelFuture,
   ChannelHandlerContext,
   SimpleChannelInboundHandler }
+import io.netty.channel.socket.{ SocketChannel }
 import io.netty.handler.logging.{ LogLevel, LoggingHandler }
 import io.netty.util.concurrent.{ GenericFutureListener }
 import io.netty.buffer.{ Unpooled, ByteBuf }
@@ -342,7 +343,13 @@ private[http] object NettySupport {
                             (HttpString(h.getKey.toString), HttpString(h.getValue.toString))
                           }.toMap.filterKeys(_.toString.toLowerCase.startsWith("content-"))
                         ),
-                        protocol = HTTP2
+                        protocol = HTTP2,
+                        from = channel match {
+                          case socket: SocketChannel =>
+                            Option(socket.remoteAddress).map(_.getAddress)
+                          case _ =>
+                            None
+                        }
                       )
                     }
                 }
@@ -405,7 +412,13 @@ private[http] object NettySupport {
                           headers = nettyRequest.headers.asScala.map { h =>
                             (HttpString(h.getKey), HttpString(h.getValue))
                           }.toMap.filter(_._1.toString.toLowerCase.startsWith("content-"))
-                        )
+                        ),
+                        from = channel match {
+                          case socket: SocketChannel =>
+                            Option(socket.remoteAddress).map(_.getAddress)
+                          case _ =>
+                            None
+                        }
                       )
                     }
                   case x =>

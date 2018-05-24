@@ -21,7 +21,8 @@ case class Request(
   scheme: String = "http",
   content: Content = Content.empty,
   headers: Map[HttpString,HttpString] = Map.empty,
-  protocol: String = HTTP
+  protocol: String = HTTP,
+  from: Option[java.net.InetAddress] = None
 ) {
 
   private lazy val (p, qs) = url.split("[?]").toList match {

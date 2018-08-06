@@ -4,7 +4,7 @@ import http._
 
 import cats.effect.IO
 
-import io.circe.{ Decoder }
+import io.circe.Decoder
 
 /** Provides integration with the [[https://circe.github.io/circe/ circe]] JSON library.
   *

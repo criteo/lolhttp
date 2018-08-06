@@ -1,10 +1,6 @@
 package lol
 
-import cats.effect.{ IO }
-import fs2.{ Stream }
-
-import scala.concurrent.{ ExecutionContext }
-import scala.concurrent.duration.{ FiniteDuration }
+import cats.effect.IO
 
 import scala.language.implicitConversions
 
@@ -41,10 +37,6 @@ package object http {
 
   /** Automatically convert a [[Response]] into a pure [[IO[Response]]] if needed. */
   implicit def pureResponse(response: Response): IO[Response] = IO.pure(response)
-
-  /** Wrap a pure value a into an async effect that will be available after the `delay`. */
-  def timeout[A](a: => A, delay: FiniteDuration)(implicit ec: ExecutionContext): IO[A] =
-    IO.fromFuture(IO(internal.timeout(a, delay)))
 
   /** Protocol version for HTTP/1.1 */
   val HTTP = "HTTP/1.1"
@@ -90,16 +82,6 @@ package object http {
 
   /** A 400 Bad request [[Response]]. */
   lazy val BadRequest = Response(400)
-
-  /** Create a 101 Switching protocol [[Response]].
-    * @param protocol the new protocol the server accepts to switch to.
-    * @param upgradeConnection this function will be called with the upstream as parameter and must retun the downstream.
-    * @return a 101 [[Response]].
-    */
-  def SwitchingProtocol(protocol: HttpString, upgradeConnection: (Stream[IO,Byte]) => Stream[IO,Byte]) = {
-    Response(101, upgradeConnection = upgradeConnection).
-      addHeaders(Headers.Upgrade -> protocol, Headers.Connection -> h"Upgrade")
-  }
 
   /** Create a 426 Upgrade required [[Response]].
     * @param protocol the new protocol the server want to switch to.

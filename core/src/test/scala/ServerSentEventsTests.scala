@@ -1,8 +1,9 @@
 package lol.http
 
 
+import cats.implicits._
 import cats.effect.IO
-import fs2.{ Scheduler, Stream }
+import fs2.{ Chunk, Stream }
 import lol.http.ServerSentEvents._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,90 +15,76 @@ class ServerSentEventsTests extends Tests {
     case url"/" =>
       Ok("Hello")
     case url"/stream" =>
-      Ok(Stream.covaryPure[IO, Event[String], Event[String]](Stream(Event("Hello"), Event("World"))))
+      Ok(Stream(Event("Hello"), Event("World")).covaryAll[IO, Event[String]])
     case url"/fakeStream" =>
       Ok("Hello").addHeaders(h"Content-Type" -> h"text/event-stream")
   }
 
   test("Valid string events stream") {
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        await() {
-          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            client.run(Get("/stream")) { response =>
-              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.compile.toVector.map(_.toList)
-              }
-            }
-          }
-        } should be (List(Event("Hello"), Event("World")))
-      }
-    }
-  }
-
-  test("Events stream that sends nothing should be stopped by server when client closes the connection") {
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      val isRunning = fs2.async.signalOf[IO, Boolean](true).unsafeRunSync()
-
-      val App: Service = {
-        case url"/streamThatSendsNothing" =>
-          val emptyInfiniteStream: Stream[IO,Nothing] =
-            Scheduler[IO](corePoolSize = 1).flatMap { scheduler =>
-              scheduler.sleep[IO](100.milliseconds).flatMap(_ => Stream.empty).repeat
-            }
-          Ok(emptyInfiniteStream.onFinalize(isRunning.set(false)))
-      }
-
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        await() {
-          val client = Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol)))
-          timeout(client.stopSync(), 1.second).unsafeRunAsync(_ => ())
-          client.run(Get("/streamThatSendsNothing")) { response =>
+    withServer(Server.listen()(App)) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          client.run(Get("/stream")) { response =>
             response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-              eventStream.compile.toVector.map { e =>
-                e.toList
-              }
+              eventStream.compile.toVector.map(_.toList)
             }
           }
         }
+      } should be (List(Event("Hello"), Event("World")))
+    }
+  }
 
-        eventually({
-          val t = isRunning.get.unsafeRunSync()
-          t shouldBe false
-        })
+  test("Events stream should be stopped by server when client closes the connection") {
+    val isRunning = fs2.async.signalOf[IO, Boolean](true).unsafeRunSync()
+
+    val App: Service = {
+      case url"/infiniteStream" =>
+        val infiniteStream =
+          Stream.sleep[IO](100.milliseconds).flatMap(_ => Stream.chunk(Chunk.bytes("LOL\n".getBytes("utf-8")))).repeat
+        Ok(Content(infiniteStream.onFinalize(isRunning.set(false))))
+    }
+
+    withServer(Server.listen()(App)) { server =>
+      await() {
+        val client = Client("localhost", server.port)
+        (IO.sleep(1.second) >> IO(client.stopSync())).unsafeRunAsync(_ => ())
+        client.run(Get("/infiniteStream")) { response =>
+          response.readAs[String]
+        }
       }
+
+      eventually({
+        val t = isRunning.get.unsafeRunSync()
+        t shouldBe false
+      })
     }
   }
 
   test("Not an events stream") {
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        the [Error] thrownBy await() {
-          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            client.run(Get("/")) { response =>
-              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.compile.toVector.map(_.toList)
-              }
+    withServer(Server.listen()(App)) { server =>
+      the [Error] thrownBy await() {
+        Client("localhost", server.port).runAndStop { client =>
+          client.run(Get("/")) { response =>
+            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+              eventStream.compile.toVector.map(_.toList)
             }
           }
-        } should be (Error.UnexpectedContentType())
-      }
+        }
+      } should be (Error.UnexpectedContentType())
     }
   }
 
   test("Invalid events stream ") {
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        await() {
-          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            client.run(Get("/fakeStream")) { response =>
-              response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
-                eventStream.compile.toVector.map(_.toList)
-              }
+    withServer(Server.listen()(App)) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          client.run(Get("/fakeStream")) { response =>
+            response.readAs[Stream[IO,Event[String]]].flatMap { eventStream =>
+              eventStream.compile.toVector.map(_.toList)
             }
           }
-        } should be (Nil)
-      }
+        }
+      } should be (Nil)
     }
   }
 

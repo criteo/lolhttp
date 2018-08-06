@@ -2,7 +2,7 @@ package lol.html
 
 import lol.http._
 
-import scala.io.{ Codec }
+import scala.io.Codec
 
 /** A type class to provide Html rendering. */
 trait ToHtml[-A] {

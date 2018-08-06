@@ -2,15 +2,15 @@ package lol.http
 
 import Headers._
 
-import scala.io.{ Codec }
-import scala.util.{ Try }
+import scala.io.Codec
+import scala.util.Try
 
-import java.io.{ File, InputStream }
-import java.nio.{ ByteBuffer, CharBuffer }
-import java.nio.channels.{ AsynchronousFileChannel, CompletionHandler }
-import java.nio.file.{ StandardOpenOption }
+import java.io.{File, InputStream}
+import java.nio.{ByteBuffer, CharBuffer}
+import java.nio.channels.{AsynchronousFileChannel, CompletionHandler}
+import java.nio.file.StandardOpenOption
 
-import cats.effect.{ IO }
+import cats.effect.IO
 import fs2.{ Chunk, Stream }
 
 /** An HTTP message content body.
@@ -138,7 +138,7 @@ object ContentDecoder {
     * @return a content decoder for `Array[Byte]`.
     */
   def binary(maxSize: Int = MaxSize): ContentDecoder[Array[Byte]] = new ContentDecoder[Array[Byte]] {
-    def apply(content: Content) = content.stream.take(maxSize).chunks.compile.toVector.map { arrays =>
+    def apply(content: Content) = content.stream.take(maxSize.toLong).chunks.compile.toVector.map { arrays =>
       val totalSize = arrays.foldLeft(0)(_ + _.size)
       val result = Array.ofDim[Byte](totalSize)
       arrays.foldLeft(0) {
@@ -349,7 +349,7 @@ object ContentEncoder {
     def apply(data: File) = {
       val channel = AsynchronousFileChannel.open(data.toPath, StandardOpenOption.READ)
       val buffer = ByteBuffer.allocateDirect(chunkSize)
-      var position = 0
+      var position = 0:Long
       val stream = Stream.eval(IO.async[Option[Chunk[Byte]]] { cb =>
         try {
           if(channel.isOpen) {

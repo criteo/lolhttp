@@ -72,7 +72,7 @@ class ExamplesTests extends Tests  {
           Client("localhost", 8888, maxConnections = 1).runAndStop { client =>
             sizes.map { i =>
               val fakeContent = Content(
-                Stream.chunk(message) ++ (Stream.chunk(chunk).repeat.take(i * chunk.size))
+                Stream.chunk(message) ++ (Stream.chunk(chunk).repeat.take(i.toLong * chunk.size))
               ).addHeaders(h"Content-Length" -> h"${message.size + (i * chunk.size)}")
               client.run(Post("/upload", fakeContent))(_.readAs[String])
             }.sequence
@@ -173,6 +173,16 @@ class ExamplesTests extends Tests  {
   test("GithubClient", Slow) {
     val forked = runExample("GithubClient")
     forked.waitFor should be (0)
+  }
+
+  test("DatabaseAccess", Slow) {
+    val forked = runExample("DatabaseAccess")
+    try {
+      eventually(Client.runSync(Get("http://localhost:8888/"))(_.readSuccessAs[String])) should include ("3 Countries")
+    }
+    finally {
+      forked.destroy()
+    }
   }
 
 }

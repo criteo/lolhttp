@@ -4,10 +4,10 @@ import lol.http._
 
 import cats.effect.IO
 
-import scala.io.{ Codec }
+import scala.io.Codec
 
-import io.circe.{ Json }
-import io.circe.parser.{ parse }
+import io.circe.Json
+import io.circe.parser.parse
 
 /** Provides [[lol.http.ContentEncoder ContentEncoder]] and [[lol.http.ContentDecoder ContentDecoder]]
   * for `io.circe.Json` values.

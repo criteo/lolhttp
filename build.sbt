@@ -1,31 +1,33 @@
-val VERSION = "0.10.1"
+val VERSION = "0.11.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
-  scalaVersion := "2.12.4",
-  crossScalaVersions := Seq("2.11.11", scalaVersion.value),
+  scalaVersion := "2.12.6",
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value),
   scalacOptions ++= {
     Seq(
       "-deprecation",
       "-encoding", "UTF-8",
       "-feature",
+      "-language:existentials",
+      "-language:higherKinds",
+      "-language:implicitConversions",
       "-unchecked",
+      "-Xfatal-warnings",
       "-Xlint",
+      "-Xlint:-inaccessible",
       "-Yno-adapted-args",
       "-Ywarn-dead-code",
+      "-Ywarn-numeric-widen",
       "-Xfuture",
-      "-Ywarn-unused-import",
-      "-language:experimental.macros"
+      "-Ywarn-unused-import"
     ) ++ (
       if(scalaVersion.value.startsWith("2.11"))
         // 2.11.x options
         Nil
-      else if(scalaVersion.value.startsWith("2.12"))
-        // 2.12.x options
-        Seq("-Ywarn-macros:after")
       else
-        Nil
+        Seq("-Ywarn-macros:after")
     )
   },
 
@@ -105,28 +107,14 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.10.2",
-      "io.netty" % "netty-codec-http2" % "4.1.16.Final",
-      "org.scalatest" %% "scalatest" % "3.0.4" % "test"
+      "co.fs2" %% "fs2-core" % "1.0.0-M3",
+      "org.typelevel" %% "cats-core" % "1.1.0",
+      "org.typelevel" %% "cats-effect" % "1.0.0-RC2-78a795d",
+      "org.http4s" %% "blaze-http" % "0.14.0-M3",
+      "org.scalatest" %% "scalatest" % "3.0.4" % "test",
+      "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
     ),
 
-    // Vendorise internal libs
-    assemblyShadeRules in assembly := Seq(
-      ShadeRule.rename("io.netty.**" -> "lol.http.internal.@0").inAll
-    ),
-    assemblyMergeStrategy in assembly := {
-      case "META-INF/io.netty.versions.properties" =>
-        MergeStrategy.first
-      case x =>
-        val defaultStrategy = (assemblyMergeStrategy in assembly).value
-        defaultStrategy(x)
-    },
-    assemblyExcludedJars in assembly := {
-      val cp = (fullClasspath in assembly).value
-      cp.filterNot { el =>
-        !el.data.getName.endsWith(".jar") || el.data.getName.startsWith("netty-")
-      }
-    },
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
     publishArtifact in (Compile, packageBin) := false,
     artifact in (Compile, assembly) := {
@@ -134,7 +122,7 @@ lazy val lolhttp =
       val vendorised = (artifact in (Compile, assembly)).value
       vendorised
     },
-    pomPostProcess := removeDependencies("io.netty", "org.scalatest")
+    pomPostProcess := removeDependencies("org.scalatest")
   ).
   settings(addArtifact(artifact in (Compile, assembly), assembly): _*)
 
@@ -148,7 +136,7 @@ lazy val loljson =
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser",
       "io.circe" %% "circe-optics"
-    ).map(_ % "0.9.1"),
+    ).map(_ % "0.10.0-M1"),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
@@ -177,15 +165,19 @@ lazy val examples: Project =
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "doobie-core",
       "org.tpolecat" %% "doobie-h2"
-    ).map(_ % "0.5.0"),
+    ).map(_ % "0.6.0-M2"),
+
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
 
     fork in IntegrationTest := true,
 
-    // Running integration tests with Java 8 requires to install the right version of alpn-boot.
+    // Running HTTP2 examples with Java 8 requires to install the right version of alpn-boot.
     // See http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting
     javaOptions in IntegrationTest := {
       Option(System.getProperty("java.version")).getOrElse("") match {
-        case noAlpn if noAlpn.startsWith("1.8") =>
+        case noAlpn if noAlpn.startsWith("1.7") || noAlpn.startsWith("1.8") =>
+          if(file("alpn-boot.jar").exists)
+            println(s"Picking alpn-boot.jar from ${file("alpn-boot.jar").getAbsolutePath}")
           Seq(s"""-Xbootclasspath/p:${file("alpn-boot.jar").getAbsolutePath}""")
         case _ =>
           Nil
@@ -241,9 +233,9 @@ lazy val root =
             case (jar, module) if module.name == "scala-library" =>
               jar -> "https://www.scala-lang.org/api/current/"
             case (jar, module) if module.name == "fs2-core_2.12" =>
-              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.5/fs2-core_2.12-0.9.5-javadoc.jar/!/"
+              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/1.0.0-M3/fs2-core_2.12-1.0.0-M3-javadoc.jar/!/"
             case (jar, module) if module.name == "cats-effect_2.12" =>
-              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!/"
+              jar -> "https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/1.0.0-RC2/cats-effect_2.12-1.0.0-RC2-javadoc.jar/!/"
             case (jar, module) if module.name.startsWith("circe") =>
               jar -> "https://circe.github.io/circe/api/"
           }.

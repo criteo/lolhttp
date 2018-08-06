@@ -1,6 +1,7 @@
 package lol
 
 import scala.language.implicitConversions
+import scala.language.experimental.macros
 
 /** HTML templating.
   *

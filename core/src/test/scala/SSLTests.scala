@@ -9,13 +9,13 @@ class SSLTests extends Tests {
 
   test("SSL over self signed certificate") {
     implicit val trustAll = SSL.trustAll
-    withServer(Server.listen(ssl = Some(SSL.selfSigned()))(App)) { server =>
+    withServer(Server.listen(ssl = Some(SSL.selfSigned))(App)) { server =>
       contentString(Get(s"https://localhost:${server.port}/")) should be ("Well done")
     }
   }
 
   test("insecure connection rejected") {
-    withServer(Server.listen(ssl = Some(SSL.selfSigned()))(App)) { server =>
+    withServer(Server.listen(ssl = Some(SSL.selfSigned))(App)) { server =>
       an [Exception] should be thrownBy contentString(Get(s"https://localhost:${server.port}/"))
     }
   }

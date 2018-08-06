@@ -172,10 +172,12 @@ private[html] object Template {
             buffer.append(" ++ ")
         }
         buffer.append("_root_.lol.html.Html.empty")
+        ()
       case Plain(html) =>
         buffer.append("_root_.lol.html.Html(\"\"\"")
         buffer.append(html)
         buffer.append("\"\"\")")
+        ()
       case Expression(code, blocks, position) =>
         buffer.append(s"_root_.lol.html.toHtml(")
         sourceMap += (((buffer.length - 1) to (buffer.length - 1)) -> (position - 1))
@@ -187,6 +189,7 @@ private[html] object Template {
           else Nil
         (blocks ++ autoElse).foreach(transpile(_, buffer, sourceMap))
         buffer.append(")")
+        ()
       case Block(prefix, args, content, position) =>
         prefix.foreach { prefix =>
           buffer.append(" ")
@@ -200,6 +203,7 @@ private[html] object Template {
         }
         transpile(content, buffer, sourceMap)
         buffer.append("} ")
+        ()
       case MatchExpression(expr, cases, position) =>
         sourceMap += ((buffer.length to (buffer.length + expr.length)) -> position)
         buffer.append("(")
@@ -207,6 +211,7 @@ private[html] object Template {
         buffer.append(" match {")
         cases.foreach(transpile(_, buffer, sourceMap))
         buffer.append("})")
+        ()
       case Case(selector, content, position) =>
         buffer.append("case")
         sourceMap += ((buffer.length to (buffer.length + selector.length)) -> position)
@@ -214,6 +219,7 @@ private[html] object Template {
         buffer.append("=> {")
         transpile(content, buffer, sourceMap)
         buffer.append("} ")
+        ()
     }
 
 }

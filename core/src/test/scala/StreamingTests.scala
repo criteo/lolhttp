@@ -57,8 +57,8 @@ class StreamingTests extends Tests {
       println(s"Received in ${timeToReceive/1000}s")
       println(s"Sent in ${timeToSend/1000}s")
 
-      timeToReceive should be > 30000
-      timeToSend should be > 20000
+      timeToReceive should be > 25000
+      timeToSend should be > 15000
     }
   }
   test("Client read compressed", Slow) {

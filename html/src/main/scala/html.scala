@@ -84,14 +84,14 @@ case class Html(content: String) {
   def ++(next: Html): Html = Html(content + next.content)
 }
 
-/** Provides the [[lol.http.ContentEncoder ContentEncoder]] for HTML documents. */
+/** Provides the `ContentEncoder` for HTML documents. */
 object Html {
 
   val empty = Html("")
 
   /** Encoder for HTML documents.
     * @param codec the charset to use to encode the HTML string as bytes.
-    * @return a [[lol.http.ContentEncoder ContentEncoder]] for [[Html]].
+    * @return a `ContentEncoder` for [[Html]].
     */
   def encoder(codec: Codec) = new ContentEncoder[Html] {
     def apply(html: Html) = {

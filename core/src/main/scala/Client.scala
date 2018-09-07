@@ -342,7 +342,7 @@ object Client {
     * @param ssl if provided the custom SSL configuration to use for this client.
     * @param protocol the protocol to use for this client (HTTP or HTTP/2).
     * @param maxConnections the maximum number of TCP connections to maintain with the remote server.
-    * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
+    * @param executor the `scala.concurrent.ExecutionContext` to use to run user code.
     * @return an HTTP client instance.
     */
   def apply(

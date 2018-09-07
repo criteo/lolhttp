@@ -21,7 +21,7 @@ import scala.language.implicitConversions
   * are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
   * of [[HttpString HTTP headers]], and a [[Content]] body.
   *
-  * The content [[fs2.Stream Stream]] is based on [[fs2]] and can be lazily consumed if needed.
+  * The content `fs2.Stream` is based on `fs2` and can be lazily consumed if needed.
   * It can be encoded and decoded using the appropriate [[ContentEncoder]] and [[ContentDecoder]].
   *
   * [[SSL]] is supported on both sides.
@@ -35,7 +35,7 @@ package object http {
   /** A partial service is not defined for all [[Request]]. */
   type PartialService = PartialFunction[Request,IO[Response]]
 
-  /** Automatically convert a [[Response]] into a pure [[IO[Response]]] if needed. */
+  /** Automatically convert a [[Response]] into a pure `IO[Response]` if needed. */
   implicit def pureResponse(response: Response): IO[Response] = IO.pure(response)
 
   /** Protocol version for HTTP/1.1 */

@@ -66,7 +66,7 @@ trait Server extends Service {
   * }}}
   *
   * Starting an HTTP server require a [[lol.http.Service service]] function. The service
-  * function will be run on the provided [[scala.concurrent.ExecutionContext ExecutionContext]].
+  * function will be run on the provided `scala.concurrent.ExecutionContext`.
   * This function should be non-blocking, but you can also decide to go with a blocking service
   * if you provide an appropriate ExecutionContext (just note that if the ExecutionContext is fully
   * blocked, the HTTP server is fully blocked).
@@ -90,7 +90,7 @@ object Server {
    * @param address the ip address this server listen at. __0.0.0.0__ means listening on all available address. This is the default.
    * @param ssl if provided, the SSL configuration to use. In this case the server will listen for HTTPS requests.
    * @param options the server options such as the number of IO thread to use.
-   * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
+   * @param executor the `scala.concurrent.ExecutionContext ` to use to run user code.
    * @return a server instance that you can stop later.
    */
   def listen(

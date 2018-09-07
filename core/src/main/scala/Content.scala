@@ -20,7 +20,7 @@ import fs2.{ Chunk, Stream }
   * (such as `Content-Length`, `Content-Type`, etc.).
   *
   * The provided stream is not pure and can only be consumed once.
-  * @param stream an [[fs2.Stream]] of `Byte`.
+  * @param stream an `fs2.Stream` of `Byte`.
   * @param headers a set of content-related HTTP headers.
   */
 case class Content(
@@ -28,9 +28,9 @@ case class Content(
   headers: Map[HttpString,HttpString] = Map.empty
 ) {
 
-  /** Create an [[cats.effect.IO]] that consumes this stream to a value of type `A`.
+  /** Create an `cats.effect.IO` that consumes this stream to a value of type `A`.
     * @param decoder the [[lol.http.ContentDecoder]] is able to read stream as values of type `A`.
-    * @return an [[cats.effect.IO]] that can be run to consume the stream.
+    * @return an `cats.effect.IO` that can be run to consume the stream.
     */
   def as[A](implicit decoder: ContentDecoder[A]): IO[A] = decoder(this)
 
@@ -84,9 +84,9 @@ object Content {
   */
 trait ContentDecoder[+A] {
 
-  /** Create an [[cats.effect.IO]] that consumes the content stream and produces a scala value.
+  /** Create an `cats.effect.IO` that consumes the content stream and produces a scala value.
     * @param content an HTTP content.
-    * @return an [[cats.effect.IO]] that you can run to eventually retrieve the scala value.
+    * @return an `cats.effect.IO` that you can run to eventually retrieve the scala value.
     */
   def apply(content: Content): IO[A]
 }

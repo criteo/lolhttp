@@ -1,6 +1,7 @@
 package lol
 
 import scala.language.implicitConversions
+import scala.language.experimental.macros
 
 /** HTML templating.
   *
@@ -25,21 +26,21 @@ import scala.language.implicitConversions
   * Conversion from Scala values is done via the [[ToHtml]] type class.
   *
   * {{{
-  * val content: Html = html"""Hello ${name}!"""
+  * val content: Html = html"""Hello $${name}!"""
   * }}}
   *
-  * They will be encoded as [[lol.http.Content Content]] thanks to [[Html.encoder]].
+  * They will be encoded as `lol.http.Content` thanks to [[Html.encoder]].
   */
 package object html {
 
   /** Convert a value to [[Html]] using the right [[ToHtml]] type class instance.
     *
-    * If use the provided type class instances, values are encoded this way.:
-    *  - [[String]] values are safely HTML escaped to avoid XSS issues with generated documents.
-    *  - [[scala.Option]] can be directly inserted. `Some` values content is included, while
-        `None` produces an empty string.
-    *  - [[scala.Unit]] produces an empty string.
-    *  - [[scala.Seq]] outputs every item without any separator.
+    * If using the provided type class instances, values are encoded this way.:
+    *  - `String` values are safely HTML escaped to avoid XSS issues with generated documents.
+    *  - `scala.Option` can be directly inserted. `Some` values content is included, while
+    *  - `None` produces an empty string.
+    *  - `scala.Unit` produces an empty string.
+    *  - `scala.Seq` outputs every item without any separator.
     */
   implicit def toHtml[A: ToHtml](value: A): Html = implicitly[ToHtml[A]].print(value)
 
@@ -58,7 +59,7 @@ package object html {
     def tmpl(args: Any*): Html = macro Template.macroImpl
   }
 
-  /** Extension methods for [[Seq[Html]]]. */
+  /** Extension methods for `Seq[Html]`. */
   implicit class SeqHtmlExtensions(val seq: Seq[Html]) {
     def mkHtml[B: ToHtml](separator: B) = {
       val separatorHtml = implicitly[ToHtml[B]].print(separator)
@@ -71,7 +72,7 @@ package object html {
     }
   }
 
-  /** Extension methods for [[Seq[_]]]. */
+  /** Extension methods for `Seq[_]`. */
   implicit class SeqHtmlExtensions0[A](val seq: Seq[A]) {
     def join[B: ToHtml](separator: B)(f: A => Html) =
       seq.map(f).mkHtml(separator)

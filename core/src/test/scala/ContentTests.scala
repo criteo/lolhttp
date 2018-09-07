@@ -5,6 +5,8 @@ import scala.io.{ Source, Codec }
 
 import fs2.{ Stream }
 
+import scala.concurrent.duration._
+
 class ContentTests extends Tests {
 
   test("Text encoding", Pure) {
@@ -72,15 +74,10 @@ class ContentTests extends Tests {
 
   test("InputStream", Pure) {
     def a = this.getClass.getResourceAsStream("/lol.txt")
-    def b = this.getClass.getResourceAsStream("/META-INF/INDEX.LIST")
 
     a != null should be (true)
-    b != null should be (true)
-
-    val bRealContent = Source.fromInputStream(b)(Codec.UTF8).mkString
 
     getBytes(ContentEncoder.inputStream().apply(a)) should contain theSameElementsInOrderAs "LOL\n".getBytes("utf-8")
-    getString(ContentEncoder.inputStream().apply(b)) should be (bRealContent)
 
     ContentEncoder.inputStream(chunkSize = 1).apply(a).stream.chunks.map(c => new String(c.toArray)).
       interleave(Stream("_").repeat).
@@ -143,7 +140,8 @@ class ContentTests extends Tests {
     }) { server =>
       val url = s"http://localhost:${server.port}"
 
-      headers(Get(s"$url/lol.txt")) should be (Map(TransferEncoding -> "chunked", ContentType -> "text/plain"))
+      header(Get(s"$url/lol.txt"), TransferEncoding) should be (Some("chunked"))
+      header(Get(s"$url/lol.txt"), ContentType) should be (Some("text/plain"))
 
       status(Get(s"$url/lol.txt")) should be (200)
       contentString(Get(s"$url/lol.txt")) should be ("LOL\n")
@@ -151,7 +149,7 @@ class ContentTests extends Tests {
       status(Get(s"$url/bam.png")) should be (404)
       contentString(Get(s"$url/bam.png")) should be ("bam.png not found")
 
-      contentString(Get(s"$url/broken")) shouldBe empty
+      contentString(Get(s"$url/broken"), atMost = 5.seconds) shouldBe empty
     }
   }
 }

@@ -1,10 +1,10 @@
 package lol.http.internal
 
-import scala.util.{ Try }
-import scala.io.{ Codec }
-import scala.util.matching.{ Regex }
+import scala.util.Try
+import scala.io.Codec
+import scala.util.matching.Regex
 
-import java.util.regex.{ Pattern }
+import java.util.regex.Pattern
 import java.net.{ URLDecoder, URLEncoder }
 
 import lol.http._

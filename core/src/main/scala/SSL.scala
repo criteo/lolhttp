@@ -1,27 +1,33 @@
 package lol.http
 
-import java.io.{ File }
-import java.security.{ KeyStore }
-import javax.net.ssl.{ TrustManagerFactory }
+import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.{SSLContext, KeyManagerFactory, X509TrustManager}
 
-import io.netty.handler.ssl.{ SslContextBuilder }
-import io.netty.handler.ssl.util.{
-  InsecureTrustManagerFactory,
-  SelfSignedCertificate }
+
+import org.http4s.blaze.util.BogusKeystore
 
 /** lol SSL. */
 object SSL {
 
-  private[http] trait SslContext { def builder: SslContextBuilder }
-  private[http] object SslContext { def apply(b0: SslContextBuilder) = new SslContext { val builder = b0 } }
-
   /** SSL configuration for clients.  */
-  class ClientConfiguration private[http] (private[http] val ctx: SslContext, name: String) {
+  class ClientConfiguration private[http] (val ctx: SSLContext, name: String) {
+    def engine = {
+      val engine = ctx.createSSLEngine()
+      engine.setUseClientMode(true)
+      engine
+    }
     override def toString = s"ClientConfiguration($name)"
   }
 
   /** SSL configuration for servers.  */
-  class ServerConfiguration private[http] (private[http] val ctx: SslContext, name: String) {
+  class ServerConfiguration private[http] (val ctx: SSLContext, name: String) {
+    def engine = {
+      val engine = ctx.createSSLEngine()
+      engine.setUseClientMode(false)
+      engine
+    }
     override def toString = s"ServerConfiguration($name)"
   }
 
@@ -29,9 +35,9 @@ object SSL {
   object ClientConfiguration {
     /** The default SSL configuration. */
     implicit lazy val default = new ClientConfiguration({
-      val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
-      trustManagerFactory.init(null: KeyStore)
-      SslContext(SslContextBuilder.forClient.trustManager(trustManagerFactory))
+      val sslContext = SSLContext.getInstance("TLS")
+      sslContext.init(null, null, null)
+      sslContext
     }, "default")
   }
 
@@ -40,24 +46,29 @@ object SSL {
     * insecure server.
     */
   lazy val trustAll = new ClientConfiguration({
-    SslContext(SslContextBuilder.forClient.trustManager(InsecureTrustManagerFactory.INSTANCE))
+    val sslContext = SSLContext.getInstance("TLS")
+    val trustAllCerts =
+      new X509TrustManager() {
+        def getAcceptedIssuers() = new Array[X509Certificate](0)
+        def checkClientTrusted(certs: Array[X509Certificate], authType: String) = ()
+        def checkServerTrusted(certs: Array[X509Certificate], authType: String) = ()
+      }
+    sslContext.init(null, Array(trustAllCerts), new SecureRandom())
+    sslContext
   }, "trustAll")
 
-  /** Generate an SSL server configuration with a self-signed certificate.
+  /** An SSL server configuration with a self-signed certificate.
     * You can use it to start an HTTPS server with an insecure certificate.
-    * @param fqdn the fqdn to use for the certificate (default to localhost)
     */
-  def selfSigned(fqdn: String = "localhost") = new ServerConfiguration({
-    val ssc = new SelfSignedCertificate(fqdn)
-    SslContext(SslContextBuilder.forServer(ssc.certificate, ssc.privateKey))
-  }, s"selfSigned for $fqdn")
-
-  def serverCertificate(certificate: File, privateKey: File, privateKeyPassword: String): ServerConfiguration =
-    new ServerConfiguration({
-      SslContext(SslContextBuilder.forServer(certificate, privateKey, privateKeyPassword))
-    }, s"serverCertificate from $certificate")
-
-  def serverCertificate(certificatePath: String, privateKeyPath: String, privateKeyPassword: String): ServerConfiguration =
-    serverCertificate(new File(certificatePath), new File(privateKeyPath), privateKeyPassword)
+  lazy val selfSigned = new ServerConfiguration({
+    val ksStream = BogusKeystore.asInputStream()
+    val ks = KeyStore.getInstance("JKS")
+    ks.load(ksStream, BogusKeystore.getKeyStorePassword)
+    val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+    kmf.init(ks, BogusKeystore.getCertificatePassword)
+    val sslContext = SSLContext.getInstance("SSL")
+    sslContext.init(kmf.getKeyManagers(), null, null)
+    sslContext
+  }, "selfSigned")
 
 }

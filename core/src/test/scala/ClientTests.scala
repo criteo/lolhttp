@@ -9,6 +9,8 @@ import scala.util._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
+import java.util.concurrent.TimeoutException
+
 class ClientTests extends Tests {
 
   test("Client") {
@@ -29,26 +31,24 @@ class ClientTests extends Tests {
       }
     }
 
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        await() {
-          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            for {
-              keys <- client.run(Get("/keys"))(_.readAs[String])
-              _ = keys should be ("1,2,3")
-              oops <- client.run(Get("/blah"))(res => IO.pure(res.status))
-              _ = oops should be (404)
-              results <-
-                keys.split("[,]").toList.map { key =>
-                  client.run(Get(s"/data/$key"))(_.readAs[String])
-                }.sequence
-              x <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
-              _ = x._1 should be (400)
-              _ = x._2 should be ("Invalid key format: coco")
-            } yield results
-          }
-        } should contain theSameElementsInOrderAs data.values
-      }
+    withServer(Server.listen()(App)) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          for {
+            keys <- client.run(Get("/keys"))(_.readAs[String])
+            _ = keys should be ("1,2,3")
+            oops <- client.run(Get("/blah"))(res => IO.pure(res.status))
+            _ = oops should be (404)
+            results <-
+              keys.split("[,]").toList.map { key =>
+                client.run(Get(s"/data/$key"))(_.readAs[String])
+              }.sequence
+            x <- client.run(Get("/data/coco"))(res => res.readAs[String].map(c => (res.status, c)))
+            _ = x._1 should be (400)
+            _ = x._2 should be ("Invalid key format: coco")
+          } yield results
+        }
+      } should contain theSameElementsInOrderAs data.values
     }
   }
 
@@ -67,47 +67,26 @@ class ClientTests extends Tests {
       }
     }
 
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(App)) { server =>
-        await() {
-          Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol))).runAndStop { client =>
-            for {
-              response <- client(Get("/huge"))
-              _ = response.status should be (200)
-              length <- response.content.stream.chunks.compile.fold(0: Long)(_ + _.size)
-            } yield length
-          }
-        } should be (1024 * 1024)
-      }
+    withServer(Server.listen()(App)) { server =>
+      await() {
+        Client("localhost", server.port).runAndStop { client =>
+          for {
+            response <- client(Get("/huge"))
+            _ = response.status should be (200)
+            length <- response.content.stream.chunks.compile.fold(0: Long)(_ + _.size)
+          } yield length
+        }
+      } should be (1024 * 1024)
     }
   }
 
-  test("Connection close") {
-    withServer(Server.listen() {
-      case GET at "/bye" => Ok("See you").addHeaders(Headers.Connection -> h"Close")
-      case GET at "/hello" => Ok("World")
-    }) { server =>
+  test("Client close") {
+    withServer(Server.listen() { case GET at "/hello" => Ok("World") }) { server =>
       await() {
         Client("localhost", server.port).runAndStop { client =>
           for {
-            bye <- client.run(Get("/bye"))(_.readAs[String])
-            _ = bye should be ("See you")
-            _ = eventually(client.openedConnections should be (0))
-            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"CLOSE"))(_.readAs[String])
+            hello <- client.run(Get("/hello"))(_.readAs[String])
             _ = hello should be ("World")
-            _ = eventually(client.openedConnections should be (0))
-            _ <- client.stop()
-            _ = the [Error] thrownBy await() { client.run(Get("/hello"))() } shouldBe (Error.ClientAlreadyClosed)
-          } yield ()
-        }
-      }
-
-      await() {
-        Client("localhost", server.port).runAndStop { client =>
-          for {
-            hello <- client.run(Get("/hello").addHeaders(Headers.Connection -> h"Close"))(_.readAs[String])
-            _ = hello should be ("World")
-            _ = eventually(client.openedConnections should be (0))
             _ <- client.stop()
             _ = the [Error] thrownBy await() { client.run(Get("/hello"))() } shouldBe (Error.ClientAlreadyClosed)
           } yield ()
@@ -120,9 +99,9 @@ class ClientTests extends Tests {
     withServer(Server.listen() { _ => Ok("World" * 1024 * 100) }) { server =>
 
       def makeCalls(client: Client, x: Int) =
-        fs2.async.parallelSequence((1 to x).map { i =>
+        (1 to x).map { i =>
           client(Get("/"), timeout = 1.second).map(_ => "OK").recover { case _ => "REJECTED"}
-        }.toList)
+        }.toList.parSequence
 
       await() {
         Client("localhost", server.port, maxConnections = 2).runAndStop { client =>
@@ -160,7 +139,7 @@ class ClientTests extends Tests {
         }
       } should be (Error.StreamAlreadyConsumed)
 
-      a [java.util.concurrent.TimeoutException] should be thrownBy await(2.seconds) {
+      a [TimeoutException] should be thrownBy await(2.seconds) {
         Client("localhost", server.port, maxConnections = 1).runAndStop { client =>
           for {
             response <- client(Get("/Hello"))
@@ -177,23 +156,20 @@ class ClientTests extends Tests {
   }
 
   test("Timeouts", Slow) {
-    val app: Service = _ => timeout(Ok, 5.seconds)
-    foreachProtocol(HTTP, HTTP2) { protocol =>
-      withServer(Server.listen(options = ServerOptions(protocols = Set(protocol)))(app)) { server =>
-        val client = Client("localhost", server.port, options = ClientOptions(protocols = Set(protocol)))
+    val app: Service = _ => IO.sleep(5.seconds) >> IO(Ok)
+    withServer(Server.listen()(app)) { server =>
+      val client = Client("localhost", server.port)
 
-        try {
-          the [Error] thrownBy await() {
-            client.run(Get("/"), timeout = 1.second)(res => IO.pure(res.status))
-          } should be (Error.Timeout(1.second))
-
-          eventually(client.openedConnections should be (0), timeout = 5.seconds)
+      try {
+        val thrown = the [TimeoutException] thrownBy await() {
+          client.run(Get("/"), timeout = 1.second)(res => IO.pure(res.status))
         }
-        finally {
-          client.stopSync()
-        }
-
+        thrown.getMessage should equal ("1 second")
       }
+      finally {
+        client.stopSync()
+      }
+
     }
   }
 
@@ -215,15 +191,12 @@ class ClientTests extends Tests {
 
       await(5.seconds) { (1 to requests).map(send).toList.sequence }.sum should be (0)
       eventually(client.openedConnections should be (0))
-      eventually(client.waitingConnections should be (0))
 
       await(5.seconds) { (1 to requests).map(send).toList.sequence }.sum should be (0)
       eventually(client.openedConnections should be (0))
-      eventually(client.waitingConnections should be (0))
 
       await(5.seconds) { (1 to requests).map(send).toList.sequence }.sum should be (0)
       eventually(client.openedConnections should be (0))
-      eventually(client.waitingConnections should be (0))
     }
     finally {
       client.stopSync()

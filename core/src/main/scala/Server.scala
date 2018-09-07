@@ -1,60 +1,28 @@
 package lol.http
 
-import java.net.{ InetSocketAddress }
+import java.net.InetSocketAddress
 
-import io.netty.channel.{
-  ChannelHandlerContext,
-  ChannelInitializer }
-import io.netty.channel.nio.{ NioEventLoopGroup }
-import io.netty.bootstrap.{ ServerBootstrap }
-import io.netty.channel.socket.nio.{ NioServerSocketChannel }
-import io.netty.util.concurrent.{
-  GenericFutureListener,
-  Future => NettyFuture }
-import io.netty.channel.socket.{ SocketChannel }
-import io.netty.handler.logging.{
-  LogLevel,
-  LoggingHandler }
-import io.netty.buffer.{
-  ByteBuf,
-  ByteBufUtil,
-  Unpooled
-}
-import io.netty.handler.codec.{ ByteToMessageDecoder }
-import io.netty.handler.ssl.{
-  ApplicationProtocolNames,
-  ApplicationProtocolConfig,
-  ApplicationProtocolNegotiationHandler }
-import io.netty.handler.codec.http2.{ Http2CodecUtil }
+import org.http4s.blaze.http._
+import org.http4s.blaze.channel._
+import org.http4s.blaze.http.HttpServerStageConfig
+import org.http4s.blaze.channel.nio1.NIO1SocketServerGroup
+import org.http4s.blaze.http.http1.server.Http1ServerStage
+import org.http4s.blaze.pipeline.{LeafBuilder, TrunkBuilder}
+import org.http4s.blaze.pipeline.stages.SSLStage
+import org.http4s.blaze.pipeline.stages.monitors.BasicConnectionMonitor
+import org.http4s.blaze.http.http2.server.ServerSelector
 
-import fs2.{ Stream }
+import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future }
 
-import scala.util.{ Try }
-import scala.concurrent.{
-  ExecutionContext,
-  Promise,
-  Future }
-import scala.concurrent.duration._
+import cats.implicits._
 
-import cats.effect.{ IO }
+import cats.effect.IO
+import cats.effect.concurrent.Semaphore
 
-import internal.NettySupport._
+import fs2._
 
-/** Allow to configure an HTTP server.
-  * @param ioThreads the number of threads used for the IO work. Default to `max(availableProcessors, 2)`.
-  * @param tcpNoDelay if true disable Nagle's algorithm. Default `true`.
-  * @param bufferSize if defined used as a hint for the TCP buffer size. If none use the system default. Default to `None`.
-  * @param protocols the allowed protocols (HTTP, HTTP2 or both). If SSL enabled the protocol is negociated using ALPN.
-  *                  Without SSL enabled only direct HTTP2 connections with prior knowledge are supported.
-  * @param debug if defined log the TCP traffic with the provided logger name. Default to `None`.
-  */
-case class ServerOptions(
-  ioThreads: Int = Math.max(Runtime.getRuntime.availableProcessors, 2),
-  tcpNoDelay: Boolean = true,
-  bufferSize: Option[Int] = None,
-  protocols: Set[String] = Set(HTTP),
-  debug: Option[String] = None
-)
+import java.nio.ByteBuffer
 
 /** An HTTP server.
   *
@@ -77,23 +45,16 @@ trait Server extends Service {
   /** @return the SSL configuration if enabled. */
   def ssl: Option[SSL.ServerConfiguration]
 
-  /** @return the server options such as the number of IO thread used. */
-  def options: ServerOptions
+  /** @return the server protocol. */
+  def protocol: String
 
   /** @return the TCP port from the underlying server socket. */
   def port = socketAddress.getPort
 
-  /** Stop this server instance gracefully. It ensures that no requests are handled for
-    * 'the quiet period' (usually a couple seconds) before it shuts itself down. If a request is
-    * submitted during the quiet period, it is guaranteed to be accepted and the quiet period will
-    * start over.
-    * @param quietPeriod The quiet period for the graceful shutdown.
-    * @param timeout The maximum amount of time to wait until the server is shutdown regardless of the quiet period.
-    * @return a Future resolved as soon as the server is shutdown.
-    */
-  def stop(quietPeriod: Duration = 2.seconds, timeout: Duration = 15.seconds): Future[Unit]
+  /** Stop this server instance. */
+  def stop(): Unit
 
-  override def toString() = s"Server(socketAddress=$socketAddress, ssl=$ssl, options=$options)"
+  override def toString() = s"Server(socketAddress=$socketAddress, ssl=$ssl, protocol=$protocol)"
 }
 
 /** Build and start HTTP servers.
@@ -105,7 +66,7 @@ trait Server extends Service {
   * }}}
   *
   * Starting an HTTP server require a [[lol.http.Service service]] function. The service
-  * function will be run on the provided [[scala.concurrent.ExecutionContext ExecutionContext]].
+  * function will be run on the provided `scala.concurrent.ExecutionContext`.
   * This function should be non-blocking, but you can also decide to go with a blocking service
   * if you provide an appropriate ExecutionContext (just note that if the ExecutionContext is fully
   * blocked, the HTTP server is fully blocked).
@@ -114,11 +75,11 @@ trait Server extends Service {
   * The server also set up a lazy stream for the body. User code can pull from this stream and consume it
   * if needed. Otherwise it will be drained after exchange completion (ie. when the response has been fully sent).
   *
-  * The response value returned by the servcie function will be transfered back to the client.
+  * The response value returned by the service function will be transfered back to the client.
   */
 object Server {
-  private val defaultErrorResponse = Response(500, Content.of("Internal server error"))
-  private val defaultErrorHandler = (e: Throwable) => {
+  val defaultErrorResponse = Response(500, Content.of("Internal server error"))
+  val defaultErrorHandler = (e: Throwable) => {
     e.printStackTrace()
     defaultErrorResponse
   }
@@ -129,163 +90,170 @@ object Server {
    * @param address the ip address this server listen at. __0.0.0.0__ means listening on all available address. This is the default.
    * @param ssl if provided, the SSL configuration to use. In this case the server will listen for HTTPS requests.
    * @param options the server options such as the number of IO thread to use.
-   * @param executor the [[scala.concurrent.ExecutionContext ExecutionContext]] to use to run user code.
+   * @param executor the `scala.concurrent.ExecutionContext ` to use to run user code.
    * @return a server instance that you can stop later.
    */
   def listen(
     port: Int = 0,
     address: String = "0.0.0.0",
     ssl: Option[SSL.ServerConfiguration] = None,
-    options: ServerOptions = ServerOptions(),
+    protocol: String = HTTP,
     onError: (Throwable => Response) = defaultErrorHandler
   )(service: Service)(implicit executor: ExecutionContext): Server = {
+    val ssl0 = ssl
+    val protocol0 = protocol
+    val port0 = port
+    val emptyBuffer = ByteBuffer.allocate(0)
 
-    def serveRequest(request: Request) =
+    def serveRequest(request: Request): IO[Response] =
       IO.suspend(service(request)).attempt.map {
         case Left(e) => Try(onError(e)).toOption.getOrElse(defaultErrorResponse)
         case Right(x) => x
       }
 
-    // Setup an HTTP connection on the channel, and loop over incoming requests
-    def newConnection(channel: SocketChannel, protocol: String): Unit = {
-      val connection = Netty.serverConnection(channel, options.debug, protocol)
-      val asyncResult: PartialFunction[Either[Throwable,Unit],Unit] = {
-        case Right(_) =>
-        case Left(e) =>
-          if(channel.isOpen) channel.close()
-      }
-
-      // Loop over incoming request
-      Stream.eval(connection()).evalMap { case (request, responseHandler) =>
-        // Handle the request in a totally asynchronous way,
-        // allowing the loop to pick the next available request ASAP
-        // if the underlying protocol does allow it (HTTP/1.1 pipelining
-        // or HTTP/2.0)
-        IO((for {
-          // Apply user code and retrieve the response
-          response <- serveRequest(request)
-          // If the user code did not open the content stream
-          // we need to drain it now
-          _ <- request.content.stream.compile.drain.attempt.flatMap {
-            case Left(e) => e match {
-              case Error.StreamAlreadyConsumed => IO.unit
-              case _ => IO.raiseError(e)
+    def serveRequest0(connection: SocketConnection)(request: HttpRequest): Future[RouteAction] =
+      (for {
+        // We use synchronouse queue for inbound & outbound trafic, so
+        // backpressure is fully managed by user code.
+        inboundQueue <- async.synchronousQueue[IO, ByteBuffer]
+        outboundQueue <- async.synchronousQueue[IO, ByteBuffer]
+        // Read asynchronously the request body (if any) in the inbound queue
+        requestBytes = request.body
+        _ <-
+          Stream.eval(
+            for {
+              chunk <-
+                IO.fromFuture(IO(requestBytes())).recoverWith {
+                  case e: Throwable =>
+                    inboundQueue.enqueue1(emptyBuffer) >> IO.raiseError(e)
+                }
+              hasRemaining = chunk.hasRemaining
+              _ <- inboundQueue.enqueue1(chunk)
+            } yield hasRemaining
+          ).takeWhile(identity).repeat.compile.drain.runAsync(_ => IO.unit)
+        // As soon as we get the request header, invoke user code
+        readers <- Semaphore[IO](1)
+        response <-
+          serveRequest(Request(
+            HttpMethod(request.method),
+            request.url,
+            if(ssl.isDefined) "https" else "http",
+            Content(
+              Stream.
+                // The content stream can be read only once
+                eval(readers.tryAcquire).flatMap {
+                  case false =>
+                    Stream.raiseError(Error.StreamAlreadyConsumed)
+                  case true =>
+                    inboundQueue.dequeue
+                      .takeWhile(_.hasRemaining)
+                      .map(buf => Chunk.byteBuffer(buf))
+                      .flatMap(bytes => Stream.chunk(bytes))
+                      .onFinalize(IO(requestBytes.discard()))
+                },
+              request.headers.collect {
+                case (key, value) if key.toLowerCase.startsWith("content-") =>
+                  (HttpString(key), HttpString(value))
+              }.toMap
+            ),
+            request.headers.map {
+              case (key, value) =>
+                (HttpString(key), HttpString(value))
+            }.toMap,
+            if(request.majorVersion == 2) HTTP2 else HTTP,
+            connection.remote match {
+              case socketAddress: InetSocketAddress =>
+                Some(socketAddress.getAddress)
+              case _ =>
+                None
             }
-            case Right(_) => IO.unit
-          }
-          // Write the response message
-          _ <- responseHandler(response)
-        } yield ()).unsafeRunAsync(asyncResult))
-      }.repeat.compile.drain.unsafeRunAsync(asyncResult)
-    }
-
-    val eventLoop = new NioEventLoopGroup(options.ioThreads)
-    val bootstrap = new ServerBootstrap().
-      group(eventLoop).
-      channel(classOf[NioServerSocketChannel]).
-      childHandler(new ChannelInitializer[SocketChannel] {
-        val HTTP2_PREFACE = Unpooled.unreleasableBuffer(Http2CodecUtil.connectionPrefaceBuf)
-        override def initChannel(channel: SocketChannel) = {
-          channel.config.setTcpNoDelay(options.tcpNoDelay)
-          options.bufferSize.foreach { size =>
-            channel.config.setReceiveBufferSize(size)
-            channel.config.setSendBufferSize(size)
-          }
-          ssl match {
-            // SSL with APLN
-            case Some(ssl) if options.protocols.contains(HTTP2) =>
-              val ctx = ssl.ctx.builder.
-                applicationProtocolConfig(new ApplicationProtocolConfig(
-                  ApplicationProtocolConfig.Protocol.ALPN,
-                  ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
-                  ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
-                  (Seq(ApplicationProtocolNames.HTTP_2) ++
-                  (if(options.protocols.contains(HTTP)) Seq(ApplicationProtocolNames.HTTP_1_1) else Nil)): _*)).
-                build()
-              channel.pipeline.addLast("SSL", ctx.newHandler(channel.alloc()))
-              channel.pipeline.addLast("APLN", new ApplicationProtocolNegotiationHandler(
-                if(options.protocols.contains(HTTP)) ApplicationProtocolNames.HTTP_1_1 else ApplicationProtocolNames.HTTP_2) {
-                def configurePipeline(ctx: ChannelHandlerContext, protocol: String) =
-                  newConnection(channel, protocol match {
-                    case "h2" => HTTP2
-                    case _ => HTTP
-                  })
-              })
-            // SSL, no protocol negotiation
-            case Some(ssl) if options.protocols.contains(HTTP) =>
-              val ctx = ssl.ctx.builder.build()
-              channel.pipeline.addLast("SSL", ctx.newHandler(channel.alloc()))
-              newConnection(channel, HTTP)
-            // No SSL but peek inbound messages to detect HTTP2 protocol
-            case None if options.protocols.contains(HTTP2) =>
-              channel.pipeline.addLast("HTTP2", new ByteToMessageDecoder {
-                override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: java.util.List[Object]): Unit = {
-                    val prefaceLength = HTTP2_PREFACE.readableBytes
-                    val bytesRead = Math.min(in.readableBytes, prefaceLength)
-                    if(!ByteBufUtil.equals(
-                      HTTP2_PREFACE,
-                      HTTP2_PREFACE.readerIndex,
-                      in,
-                      in.readerIndex(),
-                      bytesRead
-                    )) {
-                      if(options.protocols.contains(HTTP)) {
-                        newConnection(channel, HTTP)
-                        ctx.pipeline.remove(this)
-                      }
-                      else {
-                        channel.close()
-                      }
-                    }
-                    else if(bytesRead == prefaceLength) {
-                      newConnection(channel, HTTP2)
-                      ctx.pipeline.remove(this)
-                    }
-                }
-              })
-            // Simple HTTP connection
-            case None if options.protocols.contains(HTTP) =>
-              newConnection(channel, HTTP)
-            case _ =>
-              channel.close()
-          }
-        }
-      })
-    options.debug.foreach { logger =>
-      bootstrap.handler(new LoggingHandler(s"$logger", LogLevel.INFO))
-    }
-
-    try {
-      val channel = bootstrap.bind(address, port).sync().channel()
-      val localAddress = Try(channel.localAddress.asInstanceOf[InetSocketAddress]).getOrElse(Panic.!!!())
-      val (options0, ssl0) = (options, ssl)
-      new Server {
-        val socketAddress = localAddress
-        val ssl = ssl0
-        val options = options0
-        def stop(quietPeriod: Duration, timeout: Duration) = {
-          val p = Promise[Unit]
-          eventLoop.shutdownGracefully(quietPeriod.toMillis, timeout.toMillis, java.util.concurrent.TimeUnit.MILLISECONDS).
-            asInstanceOf[NettyFuture[Unit]].
-            addListener(new GenericFutureListener[NettyFuture[Unit]] {
-              override def operationComplete(f: NettyFuture[Unit]) = {
-                if(f.isSuccess) {
-                  p.success(())
-                }
-                else {
-                  p.failure(f.cause)
-                }
+          ))
+        // Copy the response body to the client
+        endOfStream <- async.signalOf[IO, Boolean](false)
+        _ <-
+          (
+            response.content.stream
+              .handleErrorWith {
+                case e: Throwable =>
+                  Stream.eval(outboundQueue.enqueue1(emptyBuffer) >> IO.raiseError(e))
               }
-            })
-          p.future
+              .interruptWhen(endOfStream)
+              .chunks.evalMap {
+                case chunk =>
+                  outboundQueue.enqueue1(ByteBuffer.wrap(chunk.toArray))
+              } ++ Stream.eval(outboundQueue.enqueue1(emptyBuffer))
+          ).compile.drain.runAsync(_ => IO.unit)
+        // As soon as we get the response headers, write the response back
+        routeAction = new RouteAction {
+          override def handle[T <: BodyWriter](responder: (HttpResponsePrelude) => T) = {
+            val writer = responder(
+              HttpResponsePrelude(
+                response.status,
+                response.status.toString,
+                (response.content.headers ++ response.headers).map {
+                  case (key, value) =>
+                    (key.toString, value.toString)
+                }.toSeq
+              )
+            )
+            outboundQueue.dequeue.evalMap {
+              case chunk if !chunk.hasRemaining =>
+                (endOfStream.set(true) >> IO.fromFuture(IO(writer.close()))).map(Right.apply _)
+              case chunk =>
+                IO.fromFuture(IO(writer.write(chunk) >> writer.flush())).recoverWith {
+                  case e: Throwable =>
+                    endOfStream.set(true) >> IO.raiseError(e)
+                }.map(Left.apply _)
+
+            }
+            .takeThrough {
+              case Left(_) => true
+              case Right(_) => false
+            }
+            .compile.last.map {
+              case Some(Right(finished)) =>
+                finished
+              case x =>
+                Panic.!!!("Unreacheable code")
+            }.unsafeToFuture
+          }
         }
-        def apply(request: Request) = serveRequest(request)
-      }
-    }
-    catch {
-      case e: Throwable =>
-        eventLoop.shutdownGracefully()
-        throw e
+      } yield routeAction).unsafeToFuture
+
+    new Server {
+      val ssl = ssl0
+      val protocol = protocol0
+      val config = HttpServerStageConfig()
+      val f: SocketPipelineBuilder =
+        new BasicConnectionMonitor().wrapBuilder { connection =>
+          if(protocol0 == HTTP2) {
+            val sslEngine = ssl.getOrElse(SSL.selfSigned).engine
+            Future.successful(
+              TrunkBuilder(new SSLStage(sslEngine))
+                .cap(ServerSelector(sslEngine, serveRequest0(connection), config))
+            )
+          }
+          else {
+            val builder = LeafBuilder(new Http1ServerStage(serveRequest0(connection), config))
+            Future.successful {
+              ssl0 match {
+                case Some(ssl) =>
+                  builder.prepend(new SSLStage(ssl.engine, 100 * 1024))
+                case None =>
+                  builder
+              }
+            }
+          }
+        }
+      val ch =
+        NIO1SocketServerGroup.fixedGroup(workerThreads = 4).bind(new InetSocketAddress(address, port0), f)
+          .getOrElse(sys.error(s"Failed to start server on port $port0"))
+      val socketAddress = ch.socketAddress
+      def stop() = ch.close()
+      def apply(req: Request) = serveRequest(req)
+
+      // Keep the server alive until `stop()` is called.
+      new Thread { override def run = ch.join() }.start()
     }
   }
 

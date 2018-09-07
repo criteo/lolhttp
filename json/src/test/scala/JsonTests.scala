@@ -100,7 +100,7 @@ class JsonTests extends Tests {
   test("JSON over Server Sent Events") {
     withServer(Server.listen() {
       case url"/stream" =>
-        Ok(Stream.covaryPure[IO, Event[Json], Event[Json]](Stream(Event(Json.obj("hello" -> "world".asJson)), Event(Json.Null), Event(12.asJson))))
+        Ok(Stream[IO, Event[Json]](Event(Json.obj("hello" -> "world".asJson)), Event(Json.Null), Event(12.asJson)))
     }) { server =>
       await() {
         Client("localhost", server.port).runAndStop { client =>
@@ -138,7 +138,7 @@ class JsonTests extends Tests {
     else {
       val c: Stream[IO, Byte] = Stream.emit('a'.toByte)
         .repeat
-        .take(wantedSizeBytes - templateSizeBytes)
+        .take((wantedSizeBytes - templateSizeBytes).toLong)
 
       val contentStream: Stream[IO, Byte] = Stream.emits(jsonLeft.getBytes(encoding )) ++
         c ++

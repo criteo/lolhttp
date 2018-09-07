@@ -1,31 +1,21 @@
 package lol.http
 
-import cats.effect.{ IO }
-import fs2.{ Stream }
+import cats.effect.IO
+import fs2.Stream
 
 /** An HTTP response.
   *
   * Represent all the data available in the HTTP response headers, and the response content that
   * can be consumed lazily if needed.
   *
-  * A response can be used to upgrade the HTTP connection to a plain TCP connection. As a server,
-  * when you create a response to accept the connection upgrade you must provide this function. It will
-  * be called if the client decide to continue and to upgrade the connection. In this case you will
-  * receive the upstream as parameter and you have to return the downstream.
-  *
-  * If, as a client you receive a 101 response, you can call this function by providing the upstream. In
-  * return you will get the downstream.
-  *
   * @param status the HTTP response code such as `200` or `404`.
   * @param content the response content.
   * @param headers the HTTP headers.
-  * @param upgradeConnection a function that will be called to upgrade the connection to a plain TCP connection.
   */
 case class Response(
   status: Int,
   content: Content = Content.empty,
-  headers: Map[HttpString,HttpString] = Map.empty,
-  upgradeConnection: (Stream[IO,Byte]) => Stream[IO,Byte] = _ => Stream.empty
+  headers: Map[HttpString,HttpString] = Map.empty
 ) {
 
   /** Set the content of this response.

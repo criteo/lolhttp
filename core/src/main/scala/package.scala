@@ -1,10 +1,6 @@
 package lol
 
-import cats.effect.{ IO }
-import fs2.{ Stream }
-
-import scala.concurrent.{ ExecutionContext }
-import scala.concurrent.duration.{ FiniteDuration }
+import cats.effect.IO
 
 import scala.language.implicitConversions
 
@@ -25,7 +21,7 @@ import scala.language.implicitConversions
   * are shared between the client and the server API, making it easy to assemble them. Both are seen as a set
   * of [[HttpString HTTP headers]], and a [[Content]] body.
   *
-  * The content [[fs2.Stream Stream]] is based on [[fs2]] and can be lazily consumed if needed.
+  * The content `fs2.Stream` is based on `fs2` and can be lazily consumed if needed.
   * It can be encoded and decoded using the appropriate [[ContentEncoder]] and [[ContentDecoder]].
   *
   * [[SSL]] is supported on both sides.
@@ -39,12 +35,8 @@ package object http {
   /** A partial service is not defined for all [[Request]]. */
   type PartialService = PartialFunction[Request,IO[Response]]
 
-  /** Automatically convert a [[Response]] into a pure [[IO[Response]]] if needed. */
+  /** Automatically convert a [[Response]] into a pure `IO[Response]` if needed. */
   implicit def pureResponse(response: Response): IO[Response] = IO.pure(response)
-
-  /** Wrap a pure value a into an async effect that will be available after the `delay`. */
-  def timeout[A](a: => A, delay: FiniteDuration)(implicit ec: ExecutionContext): IO[A] =
-    IO.fromFuture(IO(internal.timeout(a, delay)))
 
   /** Protocol version for HTTP/1.1 */
   val HTTP = "HTTP/1.1"
@@ -90,16 +82,6 @@ package object http {
 
   /** A 400 Bad request [[Response]]. */
   lazy val BadRequest = Response(400)
-
-  /** Create a 101 Switching protocol [[Response]].
-    * @param protocol the new protocol the server accepts to switch to.
-    * @param upgradeConnection this function will be called with the upstream as parameter and must retun the downstream.
-    * @return a 101 [[Response]].
-    */
-  def SwitchingProtocol(protocol: HttpString, upgradeConnection: (Stream[IO,Byte]) => Stream[IO,Byte]) = {
-    Response(101, upgradeConnection = upgradeConnection).
-      addHeaders(Headers.Upgrade -> protocol, Headers.Connection -> h"Upgrade")
-  }
 
   /** Create a 426 Upgrade required [[Response]].
     * @param protocol the new protocol the server want to switch to.

@@ -4,19 +4,19 @@ import lol.http._
 
 import cats.effect.IO
 
-import scala.io.{ Codec }
+import scala.io.Codec
 
-import io.circe.{ Json }
-import io.circe.parser.{ parse }
+import io.circe.Json
+import io.circe.parser.parse
 
-/** Provides [[lol.http.ContentEncoder ContentEncoder]] and [[lol.http.ContentDecoder ContentDecoder]]
+/** Provides `lol.http.ContentEncoder` and `lol.http.ContentDecoder`
   * for `io.circe.Json` values.
   */
 object JsonContent {
 
   /** Creates JSON encoders.
     * @param codec the charset to use to read the JSON text. Default to `UTF-8`.
-    * @return a [[lol.http.ContentEncoder ContentEncoder]] for `io.circe.JSON`.
+    * @return a `lol.http.ContentEncoder` for `io.circe.JSON`.
     */
   def encoder(codec: Codec = Codec.UTF8): ContentEncoder[Json] = new ContentEncoder[Json] {
     def apply(data: Json) = ContentEncoder.text()(data.noSpaces).addHeaders(
@@ -27,7 +27,7 @@ object JsonContent {
   /** Creates JSON decoders.
     * @param maxSize the maximum amout of byte to read in memory.
     * @param codec the charset to use to read the JSON text. Default to `UTF-8`.
-    * @return a [[lol.http.ContentDecoder ContentDecoder]] for `io.circe.JSON`.
+    * @return a `lol.http.ContentDecoder` for `io.circe.JSON`.
     */
   def decoder(maxSize: Int = ContentDecoder.MaxSize, codec: Codec = Codec.UTF8) = new ContentDecoder[Json] {
     def apply(content: Content) = {

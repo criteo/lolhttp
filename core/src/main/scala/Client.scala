@@ -18,7 +18,7 @@ import java.nio.ByteBuffer
 
 import cats.implicits._
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO, Timer}
 import cats.effect.concurrent.Semaphore
 
 /** An HTTP client.
@@ -51,6 +51,9 @@ trait Client extends Service {
   private lazy val lock = Semaphore[IO](maxConnections.toLong).unsafeRunSync
   private lazy val connections = new LinkedBlockingQueue[HttpClientSession](maxConnections)
   private lazy val freeConnections = new LinkedBlockingQueue[HttpClientSession](maxConnections)
+
+  implicit private lazy val cs: ContextShift[IO] = IO.contextShift(executor)
+  implicit private lazy val timer: Timer[IO] = IO.timer(executor)
 
   private def newHttp1Connection() = {
     val clazz = Class.forName("org.http4s.blaze.http.http1.client.Http1ClientStage")
@@ -151,23 +154,21 @@ trait Client extends Service {
     for {
       // Get a free connection for this request
       connection <- getConnection()
-      // We use synchronouse queue for inbound & outbound trafic, so
+      // We use synchronous queue for inbound & outbound trafic, so
       // backpressure is fully managed by user code.
-      inboundQueue <- fs2.async.synchronousQueue[IO, ByteBuffer]
-      outboundQueue <- fs2.async.synchronousQueue[IO, ByteBuffer]
+      inboundQueue <- fs2.concurrent.Queue.synchronous[IO, ByteBuffer]
+      outboundQueue <- fs2.concurrent.Queue.synchronous[IO, ByteBuffer]
       // Asynchronously write the response body to the outbound queue
       _ <-
-        (
-          request.content.stream
-            .handleErrorWith {
-              case e: Throwable =>
-                fs2.Stream.eval(outboundQueue.enqueue1(emptyBuffer) >> IO.raiseError(e))
-            }
-            .chunks.evalMap {
-              case chunk =>
-                inboundQueue.enqueue1(ByteBuffer.wrap(chunk.toArray))
-            } ++ fs2.Stream.eval(inboundQueue.enqueue1(emptyBuffer))
-        ).compile.drain.runAsync(_ => IO.unit)
+        (request.content.stream
+          .handleErrorWith {
+            case e: Throwable =>
+              fs2.Stream.eval(outboundQueue.enqueue1(emptyBuffer) >> IO.raiseError(e))
+          }
+          .chunks.evalMap[IO, Unit] {
+            case chunk =>
+              inboundQueue.enqueue1(ByteBuffer.wrap(chunk.toArray))
+          } ++ fs2.Stream.eval[IO, Unit](inboundQueue.enqueue1(emptyBuffer))).compile.drain.runAsync(_ => IO.unit).toIO
       // Send the request and get the response headers
       releasableResponse <-
         IO.fromFuture(IO(
@@ -203,7 +204,7 @@ trait Client extends Service {
             hasRemaining = chunk.hasRemaining
             _ <- outboundQueue.enqueue1(chunk)
           } yield hasRemaining
-        ).takeWhile(identity).repeat.compile.drain.runAsync(_ => IO.unit)
+        ).takeWhile(identity).repeat.compile.drain.runAsync(_ => IO.unit).toIO
       readers <- Semaphore[IO](1)
       response =
         Response(
@@ -213,7 +214,7 @@ trait Client extends Service {
               // The content stream can be read only once
               eval(readers.tryAcquire).flatMap {
                 case false =>
-                  fs2.Stream.raiseError(Error.StreamAlreadyConsumed)
+                  fs2.Stream.raiseError[IO](Error.StreamAlreadyConsumed)
                 case true =>
                   outboundQueue.dequeue
                     .takeWhile(_.hasRemaining)
@@ -383,6 +384,8 @@ object Client {
   )
   (f: Response => IO[A] = (_: Response) => IO.unit)
   (implicit executor: ExecutionContext, ssl: SSL.ClientConfiguration): IO[A] = {
+    implicit val ctx = IO.contextShift(executor)
+
     if(request.headers.get(Headers.Host).isEmpty) new Exception().printStackTrace()
     request.headers.get(Headers.Host).map { hostHeader =>
       val client = hostHeader.toString.split("[:]").toList match {

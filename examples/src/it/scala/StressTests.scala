@@ -1,5 +1,7 @@
 package lol.http.examples
 
+import cats.effect._
+
 import lol.http._
 import lol.json._
 
@@ -7,11 +9,15 @@ import io.circe.parser._
 
 import cats.implicits._
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 class StressTests extends Tests {
   val bigJsonDocument = parse(s"""[${1 to 2048 mkString(",")}]""").right.get
   val app: Service = req => Ok(bigJsonDocument).addHeaders(h"X-RESPONSE-FOR" -> HttpString(req.path))
+
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val timer: Timer[IO] = IO.timer(ec)
+  implicit val cs: ContextShift[IO] = IO.contextShift(ec)
 
   test("Using a new connection for each request", Slow) {
     withServer(Server.listen()(app)) { server =>

@@ -75,7 +75,7 @@ case class Response(
     */
   def drain: IO[Unit] = read(_.handleErrorWith {
     case e: Throwable if e == Error.StreamAlreadyConsumed => Stream.empty
-    case e: Throwable => Stream.raiseError(e)
+    case e: Throwable => Stream.raiseError[IO](e)
   }.compile.drain)
 
   /** Return a successful unit IO if the response status is in the Success 2xx range.

@@ -2,14 +2,19 @@ package lol.http
 
 
 import cats.implicits._
-import cats.effect.IO
-import fs2.{ Chunk, Stream }
+import cats.effect.{ContextShift, IO, Timer}
+import fs2.concurrent.SignallingRef
+import fs2.{Chunk, Stream}
 import lol.http.ServerSentEvents._
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 class ServerSentEventsTests extends Tests {
+
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val timer: Timer[IO] = IO.timer(ec)
+  implicit val cs: ContextShift[IO] = IO.contextShift(ec)
 
   val App: Service = {
     case url"/" =>
@@ -35,7 +40,7 @@ class ServerSentEventsTests extends Tests {
   }
 
   test("Events stream should be stopped by server when client closes the connection") {
-    val isRunning = fs2.async.signalOf[IO, Boolean](true).unsafeRunSync()
+    val isRunning = SignallingRef[IO, Boolean](true).unsafeRunSync()
 
     val App: Service = {
       case url"/infiniteStream" =>

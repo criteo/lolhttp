@@ -32,7 +32,7 @@ object DatabaseAccess extends IOApp {
 
     // Also we need to import fake data for the example.
     val importData = sql"""
-      INSERT INTO country (code, name) VALUESclean
+      INSERT INTO country (code, name) VALUES
         ('FR', 'France'),
         ('US', 'United States'),
         ('DE', 'GERMANY');

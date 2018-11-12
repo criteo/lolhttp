@@ -54,20 +54,20 @@ class ServerTests extends Tests {
 
       val responseHeaders = await() { Client.run(Get(url))(res => IO.pure(res.headers)) }
 
-      responseHeaders should contain allOf (
+      responseHeaders.toList should contain allElementsOf List(
         h"X-Lol" -> h"xxx",
         h"X-Foo" -> h"Bar",
         h"X-Bam" -> h"Bom",
         h"X-Paf" -> h"Pif"
       )
-      responseHeaders should contain allOf (
+      responseHeaders.toList should contain allElementsOf List(
         h"x-LOL" -> h"XxX",
         h"X-FOO" -> h"BAR",
         h"X-Bam" -> h"bom",
         h"x-paf" -> h"Pif"
       )
       responseHeaders.keys should not contain (h"X-Ohh")
-      responseHeaders should contain (h"Content-Type" -> h"text/plain; charset=UTF-8")
+      responseHeaders.toList should contain (h"Content-Type" -> h"text/plain; charset=UTF-8")
       responseHeaders.get(h"Content-Length") should be (Some(
         h"host: localhost:${server.port}|content-length: 0".toString.size.toString
       ))

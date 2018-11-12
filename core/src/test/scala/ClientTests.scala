@@ -1,17 +1,20 @@
 package lol.http
 
-import cats.effect.{ IO }
+import cats.effect.{ContextShift, IO, Timer}
 import cats.implicits._
-
-import fs2.{ Chunk, Stream }
+import fs2.{Chunk, Stream}
 
 import scala.util._
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-
 import java.util.concurrent.TimeoutException
 
+import scala.concurrent.ExecutionContext
+
 class ClientTests extends Tests {
+
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val timer: Timer[IO] = IO.timer(ec)
+  implicit val cs: ContextShift[IO] = IO.contextShift(ec)
 
   test("Client") {
     val data = Map(1 -> "Youhou", 2 -> "Lol", 3 -> "Bam")

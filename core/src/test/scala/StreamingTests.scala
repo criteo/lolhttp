@@ -2,13 +2,17 @@ package lol.http.examples
 
 import lol.http._
 
-import cats.effect.{ IO }
-import fs2.{ Chunk, Pipe, Pull, Stream }
+import cats.effect.{ContextShift, IO, Timer}
+import fs2.{Chunk, Pipe, Pull, Stream}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class StreamingTests extends Tests {
+
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val timer: Timer[IO] = IO.timer(ec)
+  implicit val cs: ContextShift[IO] = IO.contextShift(ec)
 
   def now = System.currentTimeMillis
   val `10Meg` = 10 * 1024 * 1024

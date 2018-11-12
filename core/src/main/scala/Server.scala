@@ -100,6 +100,8 @@ object Server {
     protocol: String = HTTP,
     onError: (Throwable => Response) = defaultErrorHandler
   )(service: Service)(implicit executor: ExecutionContext): Server = {
+    implicit val cs = IO.contextShift(executor)
+
     val ssl0 = ssl
     val protocol0 = protocol
     val port0 = port
@@ -115,8 +117,8 @@ object Server {
       (for {
         // We use synchronouse queue for inbound & outbound trafic, so
         // backpressure is fully managed by user code.
-        inboundQueue <- async.synchronousQueue[IO, ByteBuffer]
-        outboundQueue <- async.synchronousQueue[IO, ByteBuffer]
+        inboundQueue <- fs2.concurrent.Queue.synchronous[IO, ByteBuffer]
+        outboundQueue <- fs2.concurrent.Queue.synchronous[IO, ByteBuffer]
         // Read asynchronously the request body (if any) in the inbound queue
         requestBytes = request.body
         _ <-
@@ -130,7 +132,7 @@ object Server {
               hasRemaining = chunk.hasRemaining
               _ <- inboundQueue.enqueue1(chunk)
             } yield hasRemaining
-          ).takeWhile(identity).repeat.compile.drain.runAsync(_ => IO.unit)
+          ).takeWhile(identity).repeat.compile.drain.runAsync(_ => IO.unit).toIO
         // As soon as we get the request header, invoke user code
         readers <- Semaphore[IO](1)
         response <-
@@ -143,7 +145,7 @@ object Server {
                 // The content stream can be read only once
                 eval(readers.tryAcquire).flatMap {
                   case false =>
-                    Stream.raiseError(Error.StreamAlreadyConsumed)
+                    Stream.raiseError[IO](Error.StreamAlreadyConsumed)
                   case true =>
                     inboundQueue.dequeue
                       .takeWhile(_.hasRemaining)
@@ -169,7 +171,7 @@ object Server {
             }
           ))
         // Copy the response body to the client
-        endOfStream <- async.signalOf[IO, Boolean](false)
+        endOfStream <- fs2.concurrent.SignallingRef[IO, Boolean](false)
         _ <-
           (
             response.content.stream
@@ -178,11 +180,11 @@ object Server {
                   Stream.eval(outboundQueue.enqueue1(emptyBuffer) >> IO.raiseError(e))
               }
               .interruptWhen(endOfStream)
-              .chunks.evalMap {
+              .chunks.evalMap[IO, Unit] {
                 case chunk =>
                   outboundQueue.enqueue1(ByteBuffer.wrap(chunk.toArray))
               } ++ Stream.eval(outboundQueue.enqueue1(emptyBuffer))
-          ).compile.drain.runAsync(_ => IO.unit)
+          ).compile.drain.runAsync(_ => IO.unit).toIO
         // As soon as we get the response headers, write the response back
         routeAction = new RouteAction {
           override def handle[T <: BodyWriter](responder: (HttpResponsePrelude) => T) = {
@@ -198,7 +200,7 @@ object Server {
             )
             outboundQueue.dequeue.evalMap {
               case chunk if !chunk.hasRemaining =>
-                (endOfStream.set(true) >> IO.fromFuture(IO(writer.close()))).map(Right.apply _)
+                (endOfStream.set(true) >> IO.fromFuture(IO(writer.close(None)))).map(Right.apply _)
               case chunk =>
                 IO.fromFuture(IO(writer.write(chunk) >> writer.flush())).recoverWith {
                   case e: Throwable =>

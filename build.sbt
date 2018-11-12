@@ -18,6 +18,7 @@ lazy val commonSettings = Seq(
       "-Xlint",
       "-Xlint:-inaccessible",
       "-Yno-adapted-args",
+      "-Ypartial-unification",
       "-Ywarn-dead-code",
       "-Ywarn-numeric-widen",
       "-Xfuture",
@@ -107,10 +108,10 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "1.0.0-M3",
+      "co.fs2" %% "fs2-core" % "1.0.0",
       "org.typelevel" %% "cats-core" % "1.1.0",
-      "org.typelevel" %% "cats-effect" % "1.0.0-RC2-78a795d",
-      "org.http4s" %% "blaze-http" % "0.14.0-M3",
+      "org.typelevel" %% "cats-effect" % "1.0.0",
+      "org.http4s" %% "blaze-http" % "0.14.0-M8",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
     ),
@@ -136,7 +137,7 @@ lazy val loljson =
       "io.circe" %% "circe-generic",
       "io.circe" %% "circe-parser",
       "io.circe" %% "circe-optics"
-    ).map(_ % "0.10.0-M1"),
+    ).map(_ % "0.10.0"),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
@@ -165,7 +166,7 @@ lazy val examples: Project =
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "doobie-core",
       "org.tpolecat" %% "doobie-h2"
-    ).map(_ % "0.6.0-M2"),
+    ).map(_ % "0.6.0"),
 
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
 
@@ -196,9 +197,9 @@ lazy val examples: Project =
         "-P:socco:package_lol.http:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
         "-P:socco:package_io.circe:http://circe.github.io/circe/api/",
-        "-P:socco:package_doobie:https://static.javadoc.io/org.tpolecat/doobie-core_2.12/0.5.0-M8",
-        "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/0.4/cats-effect_2.12-0.4-javadoc.jar/!",
-        "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/0.9.4/fs2-core_2.12-0.9.4-javadoc.jar/!/"
+        "-P:socco:package_doobie:https://static.javadoc.io/org.tpolecat/doobie-core_2.12/0.6.0",
+        "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/1.0.0/cats-effect_2.12-1.0.0-javadoc.jar/!/",
+        "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/1.0.0/fs2-core_2.12-1.0.0-javadoc.jar/!/"
       )
     )).getOrElse(Nil): _*
   ).

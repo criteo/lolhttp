@@ -247,11 +247,16 @@ object Server {
             }
           }
         }
+      private val group: ServerChannelGroup = NIO1SocketServerGroup.fixedGroup(workerThreads = 4)
       val ch =
-        NIO1SocketServerGroup.fixedGroup(workerThreads = 4).bind(new InetSocketAddress(address, port0), f)
+        group.bind(new InetSocketAddress(address, port0), f)
           .getOrElse(sys.error(s"Failed to start server on port $port0"))
       val socketAddress = ch.socketAddress
-      def stop() = ch.close()
+      def stop() = {
+        ch.close()
+        ch.join()
+        group.closeGroup
+      }
       def apply(req: Request) = serveRequest(req)
 
       // Keep the server alive until `stop()` is called.

@@ -102,15 +102,17 @@ def removeDependencies(groups: String*)(xml: scala.xml.Node) = {
   ))(xml)
 }
 
+val circeVersion = "0.10.1"
+
 lazy val lolhttp =
   (project in file("core")).
   settings(
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "1.0.0",
-      "org.typelevel" %% "cats-core" % "1.1.0",
-      "org.typelevel" %% "cats-effect" % "1.0.0",
+      "co.fs2" %% "fs2-core" % "1.0.2",
+      "org.typelevel" %% "cats-core" % "1.5.0",
+      "org.typelevel" %% "cats-effect" % "1.1.0",
       "org.http4s" %% "blaze-http" % "0.14.0-M8",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
@@ -135,9 +137,8 @@ lazy val loljson =
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser",
-      "io.circe" %% "circe-optics"
-    ).map(_ % "0.10.0"),
+      "io.circe" %% "circe-parser"
+    ).map(_ % circeVersion),
     pomPostProcess := removeDependencies("org.scalatest")
   ).
   dependsOn(lolhttp % "compile->compile;test->test")
@@ -169,6 +170,8 @@ lazy val examples: Project =
     ).map(_ % "0.6.0"),
 
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
+
+    libraryDependencies += "io.circe" %% "circe-optics" % "0.10.0",
 
     fork in IntegrationTest := true,
 

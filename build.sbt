@@ -149,7 +149,7 @@ lazy val lolhtml =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "fastparse" % "1.0.0"
+      "com.lihaoyi" %% "fastparse" % "2.1.2"
     ),
     pomPostProcess := removeDependencies("org.scalatest")
   ).

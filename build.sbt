@@ -171,7 +171,7 @@ lazy val examples: Project =
 
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
 
-    libraryDependencies += "io.circe" %% "circe-optics" % "0.10.0",
+    libraryDependencies += "io.circe" %% "circe-optics" % "0.11.0",
 
     fork in IntegrationTest := true,
 

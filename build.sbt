@@ -200,7 +200,7 @@ lazy val examples: Project =
         "-P:socco:package_lol.http:https://criteo.github.io/lolhttp/api/",
         "-P:socco:package_scala.concurrent:http://www.scala-lang.org/api/current/",
         "-P:socco:package_io.circe:http://circe.github.io/circe/api/",
-        "-P:socco:package_doobie:https://static.javadoc.io/org.tpolecat/doobie-core_2.12/0.6.0",
+        "-P:socco:package_doobie:https://static.javadoc.io/org.tpolecat/doobie-core_2.12/0.7.0",
         "-P:socco:package_cats.effect:https://oss.sonatype.org/service/local/repositories/releases/archive/org/typelevel/cats-effect_2.12/1.0.0/cats-effect_2.12-1.0.0-javadoc.jar/!/",
         "-P:socco:package_fs2:https://oss.sonatype.org/service/local/repositories/releases/archive/co/fs2/fs2-core_2.12/1.0.0/fs2-core_2.12-1.0.0-javadoc.jar/!/"
       )

@@ -102,7 +102,7 @@ def removeDependencies(groups: String*)(xml: scala.xml.Node) = {
   ))(xml)
 }
 
-val circeVersion = "0.10.1"
+val circeVersion = "0.11.1"
 
 lazy val lolhttp =
   (project in file("core")).

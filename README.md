@@ -35,8 +35,8 @@ The core module to use is `"com.criteo.lolhttp" %% "lolhttp" % "0.12.0"`.
 
 There are also 2 optional companion libraries:
 
-- `"com.criteo.lolhttp" %% "loljson" % "0.12.0"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
-- `"com.criteo.lolhttp" %% "lolhtml" % "0.12.0"`, provides minimal HTML templating.
+- `"com.criteo.lolhttp" %% "loljson" % "0.13.0"`, provides integration with the [circe](https://circe.github.io/circe/) JSON library.
+- `"com.criteo.lolhttp" %% "lolhtml" % "0.13.0"`, provides minimal HTML templating.
 
 ## Documentation
 

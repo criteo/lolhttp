@@ -87,7 +87,7 @@ class JsonTests extends Tests {
             _ = r.data.find(_.id == 8).map(_.label) should be (Some("Bam"))
 
             r <- client.run(Post("/add", "xxx"))(_.readAs[String])
-            _ = r should startWith ("expected json value got x")
+            _ = r should startWith ("expected json value got 'x")
 
             r <- client.run(Post("/add", "{}"))(_.readAs[String])
             _ = r should startWith ("Attempt to decode value on failed cursor")

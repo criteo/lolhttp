@@ -167,7 +167,7 @@ lazy val examples: Project =
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "doobie-core",
       "org.tpolecat" %% "doobie-h2"
-    ).map(_ % "0.7.0-M2"),
+    ).map(_ % "0.7.0"),
 
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
 

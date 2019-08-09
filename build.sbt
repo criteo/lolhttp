@@ -1,9 +1,9 @@
-val VERSION = "0.12.0"
+val VERSION = "0.13.0"
 
 lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
-  scalaVersion := "2.12.6",
+  scalaVersion := "2.12.8",
   crossScalaVersions := Seq("2.11.12", scalaVersion.value),
   scalacOptions ++= {
     Seq(
@@ -102,7 +102,7 @@ def removeDependencies(groups: String*)(xml: scala.xml.Node) = {
   ))(xml)
 }
 
-val circeVersion = "0.10.1"
+val circeVersion = "0.11.1"
 
 lazy val lolhttp =
   (project in file("core")).
@@ -113,7 +113,7 @@ lazy val lolhttp =
       "co.fs2" %% "fs2-core" % "1.0.2",
       "org.typelevel" %% "cats-core" % "1.5.0",
       "org.typelevel" %% "cats-effect" % "1.1.0",
-      "org.http4s" %% "blaze-http" % "0.14.0-M8",
+      "org.http4s" %% "blaze-http" % "0.14.7",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
     ),
@@ -167,11 +167,11 @@ lazy val examples: Project =
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "doobie-core",
       "org.tpolecat" %% "doobie-h2"
-    ).map(_ % "0.6.0"),
+    ).map(_ % "0.7.0-M2"),
 
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
 
-    libraryDependencies += "io.circe" %% "circe-optics" % "0.10.0",
+    libraryDependencies += "io.circe" %% "circe-optics" % "0.11.0",
 
     fork in IntegrationTest := true,
 

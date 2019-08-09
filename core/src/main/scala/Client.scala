@@ -50,7 +50,6 @@ trait Client extends Service {
   private lazy val address = new InetSocketAddress(host, port)
   private lazy val lock = Semaphore[IO](maxConnections.toLong).unsafeRunSync
   private lazy val connections = new LinkedBlockingQueue[HttpClientSession](maxConnections)
-  private lazy val freeConnections = new LinkedBlockingQueue[HttpClientSession](maxConnections)
 
   implicit private lazy val cs: ContextShift[IO] = IO.contextShift(executor)
   implicit private lazy val timer: Timer[IO] = IO.timer(executor)
@@ -62,37 +61,20 @@ trait Client extends Service {
     defaultConstructor.newInstance(HttpClientConfig.Default).asInstanceOf[TailStage[ByteBuffer]]
   }
 
-  private def check(connection: HttpClientSession): Option[HttpClientSession] =
-    if(connection == null) {
-      None
-    }
-    else if(connection.isReady) {
-      Some(connection)
-    }
-    else {
-      connection.closeNow()
-      freeConnections.remove(connection) // just in case
-      connections.remove(connection)
-      None
-    }
-
   private def getConnection(): IO[HttpClientSession] =
     for {
       _ <- if(closed.get) IO.raiseError(Error.ClientAlreadyClosed) else IO.unit
       _ <- lock.acquire
-      freeConnection <- IO(check(freeConnections.poll))
       connection <-
-        freeConnection.map(IO.pure).getOrElse {
-          IO.fromFuture(IO(factory.connect(address).map { head =>
-            val connection = newHttp1Connection()
-            var builder = LeafBuilder(connection)
-            if(scheme.toLowerCase == "https") builder = builder.prepend(new SSLStage(ssl.engine))
-            builder.base(head)
-            head.sendInboundCommand(Command.Connected)
-            connections.add(connection.asInstanceOf[HttpClientSession])
-            connection.asInstanceOf[HttpClientSession]
-          }))
-        }.recoverWith {
+        IO.fromFuture(IO(factory.connect(address).map { head =>
+          val connection = newHttp1Connection()
+          var builder = LeafBuilder(connection)
+          if(scheme.toLowerCase == "https") builder = builder.prepend(new SSLStage(ssl.engine))
+          builder.base(head)
+          head.sendInboundCommand(Command.Connected)
+          connections.add(connection.asInstanceOf[HttpClientSession])
+          connection.asInstanceOf[HttpClientSession]
+        })).recoverWith {
           case e: Throwable =>
             lock.release >> IO.raiseError(e)
         }
@@ -100,7 +82,10 @@ trait Client extends Service {
 
   private def releaseConnection(connection: HttpClientSession): IO[Unit] =
     for {
-      _ <- IO(check(connection).foreach(freeConnections.add))
+      _ <- IO {
+        connections.remove(connection)
+        connection.closeNow()
+      }
       _ <- lock.release
     } yield ()
 

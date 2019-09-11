@@ -102,7 +102,7 @@ def removeDependencies(groups: String*)(xml: scala.xml.Node) = {
   ))(xml)
 }
 
-val circeVersion = "0.11.1"
+val circeVersion = "0.12.1"
 
 lazy val lolhttp =
   (project in file("core")).
@@ -110,9 +110,9 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "1.0.5",
-      "org.typelevel" %% "cats-core" % "1.6.1",
-      "org.typelevel" %% "cats-effect" % "1.3.1",
+      "co.fs2" %% "fs2-core" % "2.0.0",
+      "org.typelevel" %% "cats-core" % "2.0.0",
+      "org.typelevel" %% "cats-effect" % "2.0.0",
       "org.http4s" %% "blaze-http" % "0.14.8",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
@@ -172,7 +172,7 @@ lazy val examples: Project =
 
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
 
-    libraryDependencies += "io.circe" %% "circe-optics" % "0.11.0",
+    libraryDependencies += "io.circe" %% "circe-optics" % "0.12.0-RC2",
 
     fork in IntegrationTest := true,
 

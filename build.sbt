@@ -110,7 +110,7 @@ lazy val lolhttp =
     commonSettings,
 
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "1.0.5",
+      "co.fs2" %% "fs2-core" % "2.0.0",
       "org.typelevel" %% "cats-core" % "1.6.1",
       "org.typelevel" %% "cats-effect" % "1.3.1",
       "org.http4s" %% "blaze-http" % "0.14.8",

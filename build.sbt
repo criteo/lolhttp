@@ -113,7 +113,7 @@ lazy val lolhttp =
       "co.fs2" %% "fs2-core" % "1.0.5",
       "org.typelevel" %% "cats-core" % "1.6.1",
       "org.typelevel" %% "cats-effect" % "1.3.1",
-      "org.http4s" %% "blaze-http" % "0.14.8",
+      "org.http4s" %% "blaze-http" % "0.14.14",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
     ),

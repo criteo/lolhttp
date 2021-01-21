@@ -108,7 +108,7 @@ object Server {
     val emptyBuffer = ByteBuffer.allocate(0)
 
     def serveRequest(request: Request): IO[Response] =
-      IO.suspend(service(request)).attempt.map {
+      cs.shift >> IO.suspend(service(request)).attempt.map {
         case Left(e) => Try(onError(e)).toOption.getOrElse(defaultErrorResponse)
         case Right(x) => x
       }

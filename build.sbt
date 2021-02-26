@@ -4,7 +4,7 @@ lazy val commonSettings = Seq(
   organization := "com.criteo.lolhttp",
   version := VERSION,
   scalaVersion := "2.12.8",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value),
+  crossScalaVersions := Seq("2.13.5", scalaVersion.value),
   scalacOptions ++= {
     Seq(
       "-deprecation",

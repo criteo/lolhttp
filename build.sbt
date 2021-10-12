@@ -58,9 +58,9 @@ lazy val commonSettings = Seq(
     else
       Opts.resolver.sonatypeStaging
   ),
-  pgpPassphrase := sys.env.get("SONATYPE_PASSWORD").map(_.toArray),
-  pgpSecretRing := file(".travis/secring.gpg"),
-  pgpPublicRing := file(".travis/pubring.gpg"),
+  pgpPassphrase := sys.env.get("MAVEN_SECRING_PASSWORD").map(_.toCharArray),
+  pgpSecretRing := sys.env.get("MAVEN_SECRING_GPG_BASE64"),
+  pgpPublicRing := sys.env.get("MAVEN_PUBRING_GPG_BASE64"),
   pomExtra in Global := {
     <url>https://github.com/criteo/lolhttp</url>
     <licenses>

@@ -1,0 +1,28 @@
+name: Deployment
+
+on:
+  release:
+    types: [created]
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+    - name: Run tests
+      run: sbt +it:compile +test
+    - name: Deploy on Sonatype
+      env:
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        MAVEN_PUBRING_GPG_BASE64: ${{ secrets.MAVEN_PUBRING_GPG_BASE64 }}
+        MAVEN_SECRING_GPG_BASE64: ${{ secrets.MAVEN_SECRING_GPG_BASE64 }}
+        MAVEN_SECRING_PASSWORD: ${{ secrets.MAVEN_SECRING_PASSWORD }}
+      run: sbt +publishSigned "sonatypeReleaseAll com.criteo"

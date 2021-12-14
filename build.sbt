@@ -115,7 +115,7 @@ lazy val lolhttp =
       "org.typelevel" %% "cats-effect" % "1.3.1",
       "org.http4s" %% "blaze-http" % "0.14.8",
       "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-      "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
+      "ch.qos.logback" % "logback-classic" % "1.2.8" % "test"
     ),
 
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
@@ -170,7 +170,7 @@ lazy val examples: Project =
       "org.tpolecat" %% "doobie-h2"
     ).map(_ % "0.7.0"),
 
-    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.8",
 
     libraryDependencies += "io.circe" %% "circe-optics" % "0.11.0",
 

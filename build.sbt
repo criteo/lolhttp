@@ -33,7 +33,7 @@ lazy val commonSettings = Seq(
   },
 
   // Tests
-  fork in Test := true,
+  (Test / fork) := true,
 
   // Useful to run flakey tests
   commands += Command.single("repeat") { (state, arg) =>
@@ -61,7 +61,7 @@ lazy val commonSettings = Seq(
   pgpPassphrase := sys.env.get("MAVEN_SECRING_PASSWORD").map(_.toArray),
   pgpSecretRing := file("secring.gpg"),
   pgpPublicRing := file("pubring.gpg"),
-  pomExtra in Global := {
+  (Global / pomExtra) := {
     <url>https://github.com/criteo/lolhttp</url>
     <licenses>
       <license>
@@ -118,16 +118,16 @@ lazy val lolhttp =
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "test"
     ),
 
-    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-    publishArtifact in (Compile, packageBin) := false,
-    artifact in (Compile, assembly) := {
-      val core = (artifact in (Compile, packageBin)).value
-      val vendorised = (artifact in (Compile, assembly)).value
+    (assembly / assemblyOption) := (assembly / assemblyOption).value.copy(includeScala = false),
+    (Compile / packageBin / publishArtifact) := false,
+    (Compile / assembly / artifact) := {
+      val core = (Compile / packageBin / artifact).value
+      val vendorised = (Compile / assembly / artifact).value
       vendorised
     },
     pomPostProcess := removeDependencies("org.scalatest")
   ).
-  settings(addArtifact(artifact in (Compile, assembly), assembly): _*)
+  settings(addArtifact((Compile / assembly / artifact), assembly): _*)
 
 lazy val loljson =
   (project in file("json")).
@@ -174,11 +174,11 @@ lazy val examples: Project =
 
     libraryDependencies += "io.circe" %% "circe-optics" % "0.11.0",
 
-    fork in IntegrationTest := true,
+    (IntegrationTest / fork) := true,
 
     // Running HTTP2 examples with Java 8 requires to install the right version of alpn-boot.
     // See http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting
-    javaOptions in IntegrationTest := {
+    (IntegrationTest / javaOptions) := {
       Option(System.getProperty("java.version")).getOrElse("") match {
         case noAlpn if noAlpn.startsWith("1.7") || noAlpn.startsWith("1.8") =>
           if(file("alpn-boot.jar").exists)
@@ -188,7 +188,7 @@ lazy val examples: Project =
           Nil
       }
     },
-    connectInput in IntegrationTest := true
+    (IntegrationTest / connectInput) := true
   ).
   settings(
     Option(System.getProperty("generateExamples")).map(_ => Seq(
@@ -216,7 +216,7 @@ lazy val root =
     commonSettings,
 
     publishArtifact := false,
-    scalacOptions in (Compile,doc) ++= Seq(
+    (Compile / doc / scalacOptions) ++= Seq(
       Seq(
         "-sourcepath", baseDirectory.value.getAbsolutePath
       ),
@@ -225,11 +225,11 @@ lazy val root =
       Opts.doc.sourceUrl("https://github.com/criteo/lolhttp/blob/master€{FILE_PATH}.scala")
     ).flatten,
     // Not so useful for now because of SI-9967
-    unidocAllAPIMappings in (ScalaUnidoc, unidoc) ++= {
+    (ScalaUnidoc / unidoc / unidocAllAPIMappings) ++= {
       val allJars = {
-        (fullClasspath in lolhttp in Compile).value ++
-        (fullClasspath in loljson in Compile).value ++
-        (fullClasspath in lolhtml in Compile).value
+        (Compile / fullClasspath in lolhttp)(lolhttp / fullClasspath).value ++
+        (Compile / fullClasspath in loljson)(loljson / fullClasspath).value ++
+        (Compile / fullClasspath in lolhtml)(lolhtml / fullClasspath).value
       }
       Seq(
         allJars.
@@ -248,6 +248,6 @@ lazy val root =
           mapValues(url => new java.net.URL(url))
       )
     },
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inProjects(lolhttp, loljson, lolhtml)
+    (ScalaUnidoc / unidoc / unidocProjectFilter) := inProjects(lolhttp, loljson, lolhtml)
   ).
   aggregate(lolhttp, loljson, lolhtml, examples)

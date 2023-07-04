@@ -15,6 +15,7 @@ import org.http4s.blaze.pipeline.stages.SSLStage
 
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
+import javax.net.ssl.{SNIHostName, SNIServerName}
 
 import cats.implicits._
 
@@ -69,7 +70,13 @@ trait Client extends Service {
         IO.fromFuture(IO(factory.connect(address).map { head =>
           val connection = newHttp1Connection()
           var builder = LeafBuilder(connection)
-          if(scheme.toLowerCase == "https") builder = builder.prepend(new SSLStage(ssl.engine))
+          if(scheme.toLowerCase == "https") {
+            val sslParameters = ssl.engine.getSSLParameters()
+            val sniList = List(new SNIHostName(host): SNIServerName).asJava
+            sslParameters.setServerNames(sniList)
+            ssl.engine.setSSLParameters(sslParameters)
+            builder = builder.prepend(new SSLStage(ssl.engine))
+          }
           builder.base(head)
           head.sendInboundCommand(Command.Connected)
           connections.add(connection.asInstanceOf[HttpClientSession])

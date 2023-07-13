@@ -1,9 +1,10 @@
 package lol.http
 
+import scala.collection.JavaConverters._
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import javax.net.ssl.{SSLContext, KeyManagerFactory, X509TrustManager}
+import javax.net.ssl.{KeyManagerFactory, SNIHostName, SNIServerName, SSLContext, X509TrustManager}
 
 
 import org.http4s.blaze.util.BogusKeystore
@@ -12,9 +13,16 @@ import org.http4s.blaze.util.BogusKeystore
 object SSL {
 
   /** SSL configuration for clients.  */
-  class ClientConfiguration private[http] (val ctx: SSLContext, name: String) {
+  class ClientConfiguration private[http] (val ctx: SSLContext, name: String, hostname: String = "") {
     def engine = {
       val engine = ctx.createSSLEngine()
+      if(hostname != "") {
+        val sslParameters = engine.getSSLParameters()
+        val sniList = List(new SNIHostName(hostname): SNIServerName).asJava
+        sslParameters.setServerNames(sniList)
+        sslParameters.setEndpointIdentificationAlgorithm("HTTPS")
+        engine.setSSLParameters(sslParameters)
+      }
       engine.setUseClientMode(true)
       engine
     }

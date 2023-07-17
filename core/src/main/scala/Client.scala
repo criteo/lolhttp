@@ -14,8 +14,8 @@ import org.http4s.blaze.pipeline.{Command, TailStage, LeafBuilder}
 import org.http4s.blaze.pipeline.stages.SSLStage
 
 import java.net.InetSocketAddress
+import javax.net.ssl.SSLContext
 import java.nio.ByteBuffer
-import javax.net.ssl.{SNIHostName, SNIServerName}
 
 import cats.implicits._
 
@@ -70,13 +70,7 @@ trait Client extends Service {
         IO.fromFuture(IO(factory.connect(address).map { head =>
           val connection = newHttp1Connection()
           var builder = LeafBuilder(connection)
-          if(scheme.toLowerCase == "https") {
-            val sslParameters = ssl.engine.getSSLParameters()
-            val sniList = List(new SNIHostName(host): SNIServerName).asJava
-            sslParameters.setServerNames(sniList)
-            ssl.engine.setSSLParameters(sslParameters)
-            builder = builder.prepend(new SSLStage(ssl.engine))
-          }
+          if(scheme.toLowerCase == "https") builder = builder.prepend(new SSLStage(ssl.engine))
           builder.base(head)
           head.sendInboundCommand(Command.Connected)
           connections.add(connection.asInstanceOf[HttpClientSession])
@@ -346,9 +340,18 @@ object Client {
     protocol: String = HTTP,
     maxConnections: Int = 10
   )(implicit executor: ExecutionContext): Client = {
-    val (host0, port0, scheme0, ssl0, protocol0, maxConnections0, executor0) = (
-      host, port, scheme, ssl, protocol, maxConnections, executor
+    val (host0, port0, scheme0, protocol0, maxConnections0, executor0) = (
+      host, port, scheme, protocol, maxConnections, executor
     )
+    // Create a TLS configuration with SNI properly setup if no specific one provided.
+    val ssl0 = if(ssl == SSL.ClientConfiguration.default){
+      new SSL.ClientConfiguration({
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, null, null)
+        sslContext
+      }, "tls", host)
+    } else ssl
+
     new Client {
       val host = host0
       val port = port0
